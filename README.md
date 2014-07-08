@@ -36,28 +36,168 @@ What does this look like to the typical sysadmin?
 
 ``eval $(gpg-agent --daemon)``
 
-*  Decrypt so you can edit:
+*  Decrypt the file so it is editable:
 
 ``bin/blackbox_edit_start.sh FILENAME``
 
-This decrypts the data. (You will need to enter your GPG passphrase.)
+(You will need to enter your GPG passphrase.)
 
 *  Edit FILENAME as you desire.
 
 ``vim FILENAME``
 
-*  Re-encrypt the file.
+*  Re-encrypt the file:
 
 ``bin/blackbox_edit_end.sh FILENAME``
 
-Encrypts the data.
 
 *  Commit the changes.
 
-``git commit -a``
-or
-``hg commit``
+```
+git commit -a
+# or
+hg commit
+```
 
 
 This content is released under the MIT License.  See the LICENSE.txt file.
 
+How to use the secrets with Puppet?
+================================
+
+### Small strings:
+
+Small strings, such as passwords and API keys, are stored in a hiera yaml file.  You can access them using the hiera() function.
+
+Puppet example for a single password:
+
+```
+$the_password = hiera('module::test_password', 'fail')
+file {'/tmp/debug-blackbox.txt':
+    content => $the_password,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0600',
+}
+```
+
+### Entire files:
+
+Entire files, such as SSL certs and private keys, are treated just like files.
+
+Puppet example for an encrypted file:
+
+```
+file { '/etc/my_little_secret.key':
+    ensure  => 'file',
+    owner   => 'root',
+    group   => 'puppet',
+    mode    => '0760',
+    source  => "puppet:///modules/${module_name}/secret_file.key",
+}
+```
+
+
+How to enroll a new file into the system?
+============================
+
+*  If you need to, start the GPG Agent:
+
+``eval $(gpg-agent --daemon)``
+
+* Add the file to the system:
+
+```
+bin/blackbox_register_new_file.sh path/to/file.name.key
+```
+
+How do to indoctrinate a new user into the system?
+============================
+
+``keyrings/live/blackbox-admins.txt`` is a file that
+lists which users are able to decrypt files.
+(More pedantically, it is a list of the GnuPG key
+names that the file is encrypted for.)
+
+To join the list of people that can edit the file requires three steps; You create a GPG key and add it to the key ring.  Then, someone that already has access adds you to the system. Lastly, you should test your access.
+
+### Step 1: YOU create a GPG key pair on a secure machine and add to public keychain.
+
+
+```
+KEYNAME=$USER@$DOMAINNAME
+gpg --gen-key
+```
+
+Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphrase.
+
+When GPG is generating entropy, consider running this on the machine in another window:
+
+```
+dd if=/dev/sda of=/dev/null
+```
+
+Add your public key to the public key-ring.
+
+```
+gpg --export -a $KEYNAME >~/.gnupg/pubkey.txt
+wc -l ~/.gnupg/pubkey.txt
+```
+
+The output of "wc" should be non-zero (usually it is 30 or more)
+
+Add your keyname to the list of keys:
+
+```
+cd keyrings/live
+gpg --homedir=. --import ~/.gnupg/pubkey.txt
+echo $KEYNAME >>blackbox-admins.txt
+sort  -fdu -o blackbox-admins.txt <(echo $KEYNAME) blackbox-admins.txt
+```
+
+Check all these updates into the VCS:
+
+```
+git commit -m"Adding my gpg key" pubring.gpg trustdb.gpg blackbox-admins.txt
+
+or
+
+hg commit -m"Adding my gpg key" pubring.gpg trustdb.gpg blackbox-admins.txt
+```
+
+
+### Step 2: SOMEONE ELSE adds you to the system.
+
+Ask someone that already has access to re-encrypt the data files. This gives you access.  They simply decrypt and re-encrypt the data without making any changes:
+
+```
+gpg --import keyrings/live/pubring.gpg
+bin/blackbox_update_all_files.sh
+```
+
+Push the re-encrypted files:
+
+```
+git push
+
+or
+
+hg push
+```
+
+### Step 3: YOU test.
+
+Make sure you can decrypt a file.  (NOTE: It is a good idea to keep a dummy file in VCS just for new people to practice on.)
+
+
+Setting up the Puppet Master:
+===========================
+
+Whatever user that pushes code updates to the Puppet master must (1) have a GPG key with no pass phrase, (2) run the ``bin/blackbox_postinstall.sh`` script after new code is pushed.
+
+(docs coming soon.)
+
+Setting up hiera:
+=================
+
+(docs coming soon)
