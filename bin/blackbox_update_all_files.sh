@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # blackbox_edit_end.sh -- Re-encrypt file after edits.
 #
 
-source bin/blackbox_common.sh
+source blackbox_common.sh
 set -e
 
 fail_if_bad_environment

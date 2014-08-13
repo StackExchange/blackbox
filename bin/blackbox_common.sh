@@ -12,14 +12,16 @@ PUBRING="${KEYRINGDIR}/pubring.gpg"
 # Exit with error if the environment is not right.
 function fail_if_bad_environment() {
   # Current checked:
-  #   Are we in the base directory.
+  #   Nothing.
 
-  # Are we in the base directory.
-  if [[ ! $(pwd) =~ \/puppet$ ]]; then
-    echo 'ERROR: Please run this script from the base directory.'
-    echo 'Exiting...'
-    exit 1
-  fi
+  :
+
+  ## Are we in the base directory.
+  #if [[ ! $(pwd) =~ \/puppet$ ]]; then
+  #  echo 'ERROR: Please run this script from the base directory.'
+  #  echo 'Exiting...'
+  #  exit 1
+  #fi
 }
 
 # Exit with error if a file exists.
@@ -180,9 +182,13 @@ function enumerate_subdirs() {
 
 # Are we in git, hg, or other repo?
 function which_vcs() {
-  if [[ -d .git || git rev-parse --git-dir > /dev/null 2>&1 ]]; then
+  if [[ -d .git ]]; then
     echo git
-  elif [[ -d .hg || hg status >/dev/null 2>&1 ]]; then
+  elif [[ -d .hg ]]; then
+    echo hg
+  elif git rev-parse --git-dir > /dev/null 2>&1 ; then
+    echo git
+  elif hg status >/dev/null 2>&1 ; then
     echo hg
   else
     echo other
@@ -216,4 +222,20 @@ function is_in_git() {
   else
     echo false
   fi
+}
+
+# Remove file from repo, even if it was deleted locally already.
+# If it doesn't exist yet in the repo, it should be a no-op.
+function rm_from_vcs() {
+  rm_from_$(which_vcs) """$@"""
+}
+
+# rm from mercurial.
+function rm_from_hg() {
+  hg rm -A """$@"""
+}
+
+# rm from git.
+function rm_from_git() {
+  git rm --ignore-unmatch -f -- """$@"""
 }

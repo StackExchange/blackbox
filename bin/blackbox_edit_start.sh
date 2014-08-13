@@ -4,7 +4,7 @@
 # blackbox_edit_start.sh -- Decrypt a file for editing.
 #
 
-source bin/blackbox_common.sh
+source blackbox_common.sh
 set -e
 
 fail_if_bad_environment

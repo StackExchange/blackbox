@@ -111,7 +111,7 @@ How to enroll a new file into the system?
 bin/blackbox_register_new_file.sh path/to/file.name.key
 ```
 
-How do to indoctrinate a new user into the system?
+How to indoctrinate a new user into the system?
 ============================
 
 ``keyrings/live/blackbox-admins.txt`` is a file that
@@ -126,6 +126,8 @@ To join the list of people that can edit the file requires three steps; You crea
 
 ```
 KEYNAME=$USER@$DOMAINNAME
+# For example...
+KEYNAME=myusername@example.com
 gpg --gen-key
 ```
 
@@ -151,13 +153,14 @@ Add your keyname to the list of keys:
 ```
 cd keyrings/live
 gpg --homedir=. --import ~/.gnupg/pubkey.txt
-echo $KEYNAME >>blackbox-admins.txt
-sort  -fdu -o blackbox-admins.txt <(echo $KEYNAME) blackbox-admins.txt
+cd ../..
+blackbox_addadmin.sh $KEYNAME
 ```
 
 Check all these updates into the VCS:
 
 ```
+git add pubring.gpg trustdb.gpg blackbox-admins.txt
 git commit -m"Adding my gpg key" pubring.gpg trustdb.gpg blackbox-admins.txt
 
 or
@@ -189,15 +192,239 @@ hg push
 
 Make sure you can decrypt a file.  (NOTE: It is a good idea to keep a dummy file in VCS just for new people to practice on.)
 
-
-Setting up the Puppet Master:
+First Time Setup
 ===========================
 
-Whatever user that pushes code updates to the Puppet master must (1) have a GPG key with no pass phrase, (2) run the ``bin/blackbox_postinstall.sh`` script after new code is pushed.
+Overview:
 
-(docs coming soon.)
+To add "blackbox" to a git repo, you'll need to do the following:
 
-Setting up hiera:
-=================
+  1. Create some directories
+  2. For each user, have them createa GPG key and add it to the key ring.
+  3. For any automated user (one that must be able to decrypt without a passphrase), create a GPG key and create a subkey with an empty passphrase.
+  4. Add
 
-(docs coming soon)
+###  Create some directories
+
+You'll want to include blackbox's binaries in your PATH:
+```
+export PATH=$PATH:/the/path/to/blackbox/bin
+```
+
+In the git repo you plan on using blackbox, add these two lines to .gitignore
+
+```
+pubring.gpg~
+secring.gpg
+```
+
+Create this directory.  It is where the pubkeys will be stored:
+```
+mkdir -p keyrings/live
+```
+
+And commit the change:
+
+```
+git add keyrings
+git add .gitignore
+git commit -m'Update .gitignore' .gitignore keyrings
+```
+
+
+### For each user, have them create a GPG key and add it to the key ring.
+
+Follow the instructions for "How to indoctrinate a new user into
+the system?".  For the first user, you only have to do Step 1.
+
+Once that is done, is a good idea to test the system by making sure
+a file can be added to the system (see "How to enroll a new file
+into the system?"), and a different user can decrypt the file.
+
+Make a new file and register it:
+
+```
+rm -f foo.txt.gpg foo.txt
+echo This is a test. >foo.txt
+blackbox_register_new_file.sh foo.txt
+```
+
+Decrypt it:
+
+```
+blackbox_edit_start.sh foo.txt.gpg 
+cat foo.txt
+echo This is the new file contents. >foo.txt
+```
+
+Re-encrypt it:
+```
+blackbox_edit_end.sh foo.txt.gpg 
+ls -l foo.txt*
+```
+
+Push these changes to the repo.  Make sure another user can
+check out and change the contents of the file.
+
+
+### For any automated user create a key and subkey.
+
+An automated user (a "role account") is one that that must be able
+to decrypt without a passphrase.  In general you'll want to do this
+for the user that pulls the files from the repo to the master.  This
+may be automated with Jenkins CI or other CI system.
+
+GPG keys have to have a passphrase. However, passphrases are optional
+on subkeys. Therefore, we will create a key with a passphrase then
+create a subkey without a passphrase.
+Since the subkey is very powerful, it should be created on a very
+secure machine.
+
+There's another catch.  The role account probably can't check files
+into Git.  It probably only has read-only access to the repo. That's
+a good security policy.  This means that the role account can't
+be used to upload the subkey public bits into the repo.
+
+Therefore, we will create the key/subkey on a secure machine
+as yourself.  From there we can commit the public portions into
+the repo.  Also from this account we will export the parts
+that the role account needs, copy them to where the role account
+can access them, and import them as the role account.
+
+ProTip: If asked to generate entropy, consider running this on the same machine in another window:`sudo dd if=/dev/sda of=/dev/null`
+
+For the rest of this doc, you'll need to make the following substittions:
+
+  - ROLEUSER: svc_deployacct or whatever your role account's name is.
+  - NEWMASTER: the machine this role account exists on.
+  - SECUREHOST: The machine you use to create the keys. 
+
+NOTE: This should be more automated.  Patches welcome.
+
+On SECUREHOST, create thew puppet master's keys:
+
+```
+$ mkdir /tmp/NEWMASTER
+$ cd /tmp/NEWMASTER
+$ gpg --homedir . --gen-key
+Your selection? 
+   (1) RSA and RSA (default)
+What keysize do you want? (2048) DEFAULT
+Key is valid for? (0) DEFAULT
+
+# Real name: Puppet CI Deploy Account
+# Email address: svc_deployacct@hostname.domain.name
+```
+
+NOTE: Rather than a real email address, use the username@FQDN of
+the host the key will be used on.  If you use this role account on
+many machines, each should have its own key.  By using the FQDN of
+the host, you will be able to know which key is which.
+In this doc, we'll refer to username@FQDN as $KEYNAME
+
+Save the passphrase somewhere safe!
+
+ProTip: If asked to generate entropy, consider running this on the same machine in another window:`sudo dd if=/dev/sda of=/dev/null`
+
+Create a sub-key that has no password:
+
+```
+$ gpg --homedir . --edit-key svc_deployacct
+gpg> addkey
+(enter passphrase)
+  Please select what kind of key you want:
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (5) Elgamal (encrypt only)
+   (6) RSA (encrypt only)
+Your selection? 6
+What keysize do you want? (2048) 
+Key is valid for? (0) 
+Command> key 2
+(the new subkey has a "*" next to it)
+Command> passwd
+(enter the main key's passphrase)
+(enter an empty passphrase for the subkey... confirm you want to do this)
+Command> save
+```
+
+Now securely export this directory to NEWMASTER:
+
+```
+$ gpg --homedir . --export -a svc_sadeploy >/tmp/NEWMACHINE/pubkey.txt
+$ tar cvf /tmp/keys.tar .
+$ rsync -avP /tmp/keys.tar NEWMASTER:/tmp/.
+```
+
+On NEWMASTER, receive the new GnuPG config:
+
+```
+sudo -u svc_deployacct bash
+mkdir -m 0700 -p ~/.gnupg
+cd ~/.gnupg && tar xpvf /tmp/keys.tar
+```
+
+<!---
+Back on SECUREHOST, import the pubkey into the repository.
+
+```
+$ cd keyrings/live
+$ gpg --homedir . --import /tmp/NEWMACHINE/pubkey.txt
+```
+-->
+
+Back on SECUREHOST, add the new email address to keyrings/live/blackbox-admins.txt:
+
+```
+cd /path/to/the/repo
+blackbox_addadmin.sh $KEYNAME
+```
+
+Verify that secring.gpg is a zero-length file. If it isn't, you have
+somehow added a private key to the keyring.  Start over.
+
+```
+$ cd keyrings/live
+$ ls -l secring.gpg
+```
+
+Commit the recent changes:
+
+```
+$ cd keyrings/live
+git commit -m"Adding key for KEYNAME" pubring.gpg trustdb.gpg blackbox-admins.txt
+```
+
+Regenerate all encrypted files with the new key:
+
+```
+blackbox_update_all_files.sh
+git status
+git commit -m"updated encryption" -a
+git push
+```
+
+On NEWMASTER, import the keys and decrypt the files:
+
+```
+sudo -u svc_sadeploy bash   # Become the role account.
+gpg --import /etc/puppet/keyrings/live/pubring.gpg
+export PATH=$PATH:/path/to/blackbox/bin
+blackbox_postinstall.sh
+sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
+```
+
+ProTip: If you get "gpg: decryption failed: No secret key" then you forgot to re-encrypt blackbox.yaml with the new key.
+
+On SECUREHOST, securerly delete your files:
+
+```
+cd /tmp/NEWMASTER
+# On machines with the "shred" command:
+shred -u /tmp/keys.tar
+find . -type f -print0 | xargs -0 shred -u
+# All else:
+rm -rf /tmp/NEWMASTER
+```
+
+Also shred any other temporary files you may have made.

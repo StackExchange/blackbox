@@ -8,7 +8,7 @@
 # to the puppet masters, it will be decrypted.  The puppet masters
 # refer to the unencrypted filename.
 
-source bin/blackbox_common.sh
+source blackbox_common.sh
 set -e
 
 fail_if_bad_environment
@@ -34,20 +34,24 @@ add_filename_to_cryptlist "$unencrypted_file"
 # for HG vs. GIT use and DTRT depending.
 
 # Is the unencrypted file already in HG? (ie. are we correcting a bad situation)
-SECRETSEXPOSED=$(is_in_hg ${unencrypted_file})
+SECRETSEXPOSED=$(is_in_vcs ${unencrypted_file})
 echo "========== CREATED: ${encrypted_file}"
-echo "========== UPDATING HG:"
+echo "========== UPDATING REPO:"
 shred_file "$unencrypted_file"
+
+# NOTE(tlim): Because we use $VCSCMD, we can only use commands that
+# work for both git and hg.
+VCSCMD=$(which_vcs)
 if $SECRETSEXPOSED ; then
-  hg rm -A "$unencrypted_file"
-  hg add "$encrypted_file"
+  rm_from_vcs "$unencrypted_file"
+  $VCSCMD add "$encrypted_file"
   COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"
 else
   COMMIT_FILES="$BB_FILES $encrypted_file"
 fi
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
-hg add $BB_FILES $encrypted_file
-hg commit -m"registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
+$VCSCMD add $BB_FILES $encrypted_file
+$VCSCMD commit -m"registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
 echo "========== UPDATING HG: DONE"
 echo "Local repo updated.  Please push when ready."
-echo "    hg push"
+echo "    $VCSCMD push"
