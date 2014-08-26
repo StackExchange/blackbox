@@ -16,6 +16,9 @@ function fail_if_bad_environment() {
 
   :
 
+  # TODO: Consider: cd $(git rev-parse --show-toplevel)
+  # And: hg root
+
   ## Are we in the base directory.
   #if [[ ! $(pwd) =~ \/puppet$ ]]; then
   #  echo 'ERROR: Please run this script from the base directory.'
