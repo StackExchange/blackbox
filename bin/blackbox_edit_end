@@ -1,13 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
-# blackbox_edit_end.sh -- Re-encrypt file after edits.
+# blackbox_edit_end -- Re-encrypt file after edits.
 #
 
-source blackbox_common.sh
-set -e
+. _blackbox_common.sh
 
-fail_if_bad_environment
 unencrypted_file=$(get_unencrypted_filename "$1")
 encrypted_file=$(get_encrypted_filename "$1")
 echo ========== PLAINFILE "$unencrypted_file"

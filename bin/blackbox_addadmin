@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_addadmin -- Add an admin to the system
+#
+#
+# Example:
+#    blackbox_addadmin tal@example.com
+#
+
+. _blackbox_common.sh
+
+# Add the email address to the BB_ADMINS file.  Remove any duplicates.
+
+# The file must exist for sort to act as we expect.
+touch "$BB_ADMINS"
+sort  -fdu -o "$BB_ADMINS" <(echo "$1") "$BB_ADMINS"

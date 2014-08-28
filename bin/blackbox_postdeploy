@@ -4,14 +4,16 @@
 # blackbox_postdeploy.sh -- Decrypt all blackbox files.
 #
 
-: ${BASEDIR:=/etc/puppet} ;
-: ${CHGRP:=chgrp} ;
+# Since this is often run in a security-critical situation, we
+# force /usr/bin and /bin to the front of the PATH.
+export PATH=/usr/bin:/bin:"$PATH"
 
-cd "$BASEDIR"
-export PATH=/usr/bin:/bin:"$BASEDIR"/bin:"$PATH"
+. _blackbox_common.sh
 
-source blackbox_common.sh
-set -e
+# If we aren't in a repo, assume /etc/puppet.
+if [[ "$REPOBASE" = "/dev/null" ]]; then
+  REPOBASE=/etc/puppet
+fi
 
 prepare_keychain
 

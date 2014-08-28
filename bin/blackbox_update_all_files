@@ -4,10 +4,7 @@
 # blackbox_edit_end.sh -- Re-encrypt file after edits.
 #
 
-source blackbox_common.sh
-set -e
-
-fail_if_bad_environment
+. _blackbox_common.sh
 
 if [[ -z $GPG_AGENT_INFO ]]; then
   echo 'WARNING: You probably want to run gpg-agent as'
@@ -53,8 +50,12 @@ done
 fail_if_keychain_has_secrets
 
 echo '========== COMMITING TO HG:'
-hg commit -m'Re-encrypted keys' $(awk <$BB_FILES '{ print $1 ".gpg" }' )
+VCSCMD=$(which_vcs)
+$VCSCMD commit -m'Re-encrypted keys' $(awk <$BB_FILES '{ print $1 ".gpg" }' )
+# NOTE(tlim): Because we use $VCSCMD as a command, we can only use commands
+# that work for both git and hg. That's pretty lazy. We should add
+# a function to _blackbox_common.sh that commits a file.
 
 echo '========== DONE.'
 echo 'Likely next step:'
-echo '    hg push'
+echo "    ${VCSCMD} push"

@@ -25,7 +25,7 @@ After deploying an update to your Puppet Master, the master runs a script that d
 Passwords are kept in hieradata/blackbox.yaml.gpg, which is decrypted to become hieradata/blackbox.yaml.  This data can be read by hiera.  This file is encrypted/decrypted just like any other blackbox file.
 
 **Key management:**
-The Puppet Masters have GPG keys with no passphrase so that they can decrypt the file unattended.  That means having root access on a puppet master gives you the ability to find out all our secrets.  That's ok because if you have root access to the puppet master, you own the world anyway.
+The Puppet Masters have GPG keys with no passphrase so that they can decrypt the file unattended.  That means having root access on a puppet master gives you the ability to find out all our secrets.  That is ok because if you have root access to the puppet master, you own the world anyway.
 
 The secret files are encrypted such that any one key on a list of keys can decrypt them.  That is, when encrypting it is is "encrypted for multiple users".  Each person that should have acecss to the secrets should have a key and be on the key list.  There should also be a key for account that deploys new code to the Puppet master.
 
@@ -38,7 +38,7 @@ What does this look like to the typical sysadmin?
 
 *  Decrypt the file so it is editable:
 
-``bin/blackbox_edit_start.sh FILENAME``
+``bin/blackbox_edit_start FILENAME``
 
 (You will need to enter your GPG passphrase.)
 
@@ -48,7 +48,7 @@ What does this look like to the typical sysadmin?
 
 *  Re-encrypt the file:
 
-``bin/blackbox_edit_end.sh FILENAME``
+``bin/blackbox_edit_end FILENAME``
 
 
 *  Commit the changes.
@@ -108,7 +108,7 @@ How to enroll a new file into the system?
 * Add the file to the system:
 
 ```
-bin/blackbox_register_new_file.sh path/to/file.name.key
+bin/blackbox_register_new_file path/to/file.name.key
 ```
 
 How to indoctrinate a new user into the system?
@@ -154,7 +154,7 @@ Add your keyname to the list of keys:
 cd keyrings/live
 gpg --homedir=. --import ~/.gnupg/pubkey.txt
 cd ../..
-blackbox_addadmin.sh $KEYNAME
+blackbox_addadmin $KEYNAME
 ```
 
 Check all these updates into the VCS:
@@ -175,7 +175,7 @@ Ask someone that already has access to re-encrypt the data files. This gives you
 
 ```
 gpg --import keyrings/live/pubring.gpg
-bin/blackbox_update_all_files.sh
+bin/blackbox_update_all_files
 ```
 
 Push the re-encrypted files:
@@ -246,20 +246,20 @@ Make a new file and register it:
 ```
 rm -f foo.txt.gpg foo.txt
 echo This is a test. >foo.txt
-blackbox_register_new_file.sh foo.txt
+blackbox_register_new_file foo.txt
 ```
 
 Decrypt it:
 
 ```
-blackbox_edit_start.sh foo.txt.gpg 
+blackbox_edit_start foo.txt.gpg 
 cat foo.txt
 echo This is the new file contents. >foo.txt
 ```
 
 Re-encrypt it:
 ```
-blackbox_edit_end.sh foo.txt.gpg 
+blackbox_edit_end foo.txt.gpg 
 ls -l foo.txt*
 ```
 
@@ -377,7 +377,7 @@ Back on SECUREHOST, add the new email address to keyrings/live/blackbox-admins.t
 
 ```
 cd /path/to/the/repo
-blackbox_addadmin.sh $KEYNAME
+blackbox_addadmin $KEYNAME
 ```
 
 Verify that secring.gpg is a zero-length file. If it isn't, you have
@@ -398,7 +398,7 @@ git commit -m"Adding key for KEYNAME" pubring.gpg trustdb.gpg blackbox-admins.tx
 Regenerate all encrypted files with the new key:
 
 ```
-blackbox_update_all_files.sh
+blackbox_update_all_files
 git status
 git commit -m"updated encryption" -a
 git push
@@ -410,7 +410,7 @@ On NEWMASTER, import the keys and decrypt the files:
 sudo -u svc_sadeploy bash   # Become the role account.
 gpg --import /etc/puppet/keyrings/live/pubring.gpg
 export PATH=$PATH:/path/to/blackbox/bin
-blackbox_postinstall.sh
+blackbox_postinstall
 sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
 ```
 

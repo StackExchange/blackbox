@@ -1,31 +1,37 @@
+#!/usr/bin/env bash
 
 #
 # Common constants and functions used by the blackbox_* utilities.
 #
 
-KEYRINGDIR=keyrings/live
+# Usage:
+#   . _blackbox_common.sh
+
+# Where in the VCS repo should the blackbox data be found?
+: ${BLACKBOXDATA:=keyrings/live} ;   # If BLACKBOXDATA not set, set it.
+
+set -e
+
+# Outputs a string that is the base directory of this VCS repo.
+# By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
+# or 'unknown'.
+function _determine_vcs_base_and_type() {
+  if hg root 2>/dev/null ; then
+    VCS_TYPE=hg
+  elif git rev-parse --show-toplevel 2>/dev/null ; then
+    VCS_TYPE=git
+  else
+    echo /dev/null
+    VCS_TYPE=unknown
+  fi
+}
+
+REPOBASE=$(_determine_vcs_base_and_type)
+KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
 BB_ADMINS="${KEYRINGDIR}/blackbox-admins.txt"
 BB_FILES="${KEYRINGDIR}/blackbox-files.txt"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
-
-# Exit with error if the environment is not right.
-function fail_if_bad_environment() {
-  # Current checked:
-  #   Nothing.
-
-  :
-
-  # TODO: Consider: cd $(git rev-parse --show-toplevel)
-  # And: hg root
-
-  ## Are we in the base directory.
-  #if [[ ! $(pwd) =~ \/puppet$ ]]; then
-  #  echo 'ERROR: Please run this script from the base directory.'
-  #  echo 'Exiting...'
-  #  exit 1
-  #fi
-}
 
 # Exit with error if a file exists.
 function fail_if_exists() {
@@ -183,19 +189,9 @@ function enumerate_subdirs() {
   done <"$listfile" | sort -u
 }
 
-# Are we in git, hg, or other repo?
+# Are we in git, hg, or unknown repo?
 function which_vcs() {
-  if [[ -d .git ]]; then
-    echo git
-  elif [[ -d .hg ]]; then
-    echo hg
-  elif git rev-parse --git-dir > /dev/null 2>&1 ; then
-    echo git
-  elif hg status >/dev/null 2>&1 ; then
-    echo hg
-  else
-    echo other
-  fi
+  echo "$REPO_TYPE"
 }
 
 # Is this file in the current repo?
