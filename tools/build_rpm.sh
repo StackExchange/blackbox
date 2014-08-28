@@ -41,17 +41,19 @@ rm -rf "$OUTPUTDIR"
 mkdir -p "$OUTPUTDIR/installroot"
 
 # Copy the files into place:
-cat """$@""" | while read -a arr ; do
+cat """$@""" | grep -v '^$' | while read -a arr ; do
   PERM="${arr[0]}"
+  DEST="${arr[1]}"
+  SRC="${arr[2]}"
+  echo ========== "$PERM $DEST"
   case $PERM in
     \#*)  continue ;;   # Skip comments.
     exec) PERM=0755 ;;
     read) PERM=0744 ;;
     *) ;;
   esac
-  DST="$OUTPUTDIR/installroot/${arr[1]}"
-  SRC="${arr[2]}"
-  install -D -T -b -m "$PERM" -T "$SRC" "$DST"
+  FULLDEST="$OUTPUTDIR/installroot/${arr[1]}"
+  install -D -T -b -m "$PERM" -T "$SRC" "$FULLDEST"
 done
 
 # Build the RPM:

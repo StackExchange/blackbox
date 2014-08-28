@@ -7,7 +7,7 @@ all:
 	@echo '  make install           (incomplete)
 
 packages:
-	PKGRELEASE="$${PKGRELEASE}" $(BIN)/build_rpm.sh blackbox tools/manifest.txt
+	PKGRELEASE="$${PKGRELEASE}" $(BIN)/build_rpm.sh stack_blackbox tools/rpm_filelist.txt
 
 install:
 	@echo 'To install, copy the files from bin to somewhere in your PATH.'

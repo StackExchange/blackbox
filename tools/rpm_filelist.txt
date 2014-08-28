@@ -6,3 +6,4 @@ exec /usr/blackbox/bin/blackbox_postdeploy        bin/blackbox_postdeploy.sh
 exec /usr/blackbox/bin/blackbox_register_new_file bin/blackbox_register_new_file.sh
 exec /usr/blackbox/bin/blackbox_update_all_files  bin/blackbox_update_all_files.sh
 exec /usr/blackbox/bin/blackbox_start             bin/start
+read /etc/profile.d/usrblackbox.sh                tools/profile.d-usrblackbox.sh
