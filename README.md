@@ -1,16 +1,19 @@
 BlackBox
 ========
 
-Safely store secrets in Git/Hg for use by Puppet.
-
-
+Safely store secrets in Git/Hg.  These commands make it easy
+for you to GPG encrypt specific files in a repo so they are
+"encrypted at rest" in your repository. However, the scripts
+make it easy to decrypt them when you need to view or edit them,
+and decrypt them for for use in production. Originally written
+for Puppet, now works with any Git or Mercurial repository.
 
 
 Overview
 ========
 
 The goal is to have secret bits (passwords, private keys, and such) in your VCS repo but encrypted so that
-it is safe.  On the puppet masters they sit on disk unencrypted but only readable by Puppet Master.
+it is safe.  On the puppet masters they sit on disk unencrypted but are readlabe (decrypted) for use by the Puppet Master (or whoever needs full access).
 
 How does this work?
 ===================
