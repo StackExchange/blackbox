@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # blackbox_register_new_file.sh -- Enroll a new file in the blackbox system.
@@ -7,6 +7,8 @@
 # system.  It will be kept in the repo as an encrypted file.  On deployment
 # to systems that need the plaintext (unencrypted) versions, run
 # blackbox_postdeploy.sh to decrypt all the files.
+
+# TODO(tlim): Add the unencrypted file to .gitignore
 
 . _blackbox_common.sh
 
@@ -36,17 +38,15 @@ shred_file "$unencrypted_file"
 
 VCSCMD=$(which_vcs)
 if $SECRETSEXPOSED ; then
-  rm_from_vcs "$unencrypted_file"
-  $VCSCMD add "$encrypted_file"
-  # NOTE(tlim): Because we use $VCSCMD as a command, we can only use commands
-  # that work for both git and hg.
+  vcs_remove "$unencrypted_file"
+  vcs_add "$encrypted_file"
   COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"
 else
   COMMIT_FILES="$BB_FILES $encrypted_file"
 fi
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
-$VCSCMD add $BB_FILES $encrypted_file
-$VCSCMD commit -m"registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
+vcs_add $BB_FILES $encrypted_file
+vcs_commit "registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
 echo "    $VCSCMD push"

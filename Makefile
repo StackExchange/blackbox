@@ -33,3 +33,8 @@ lock:
 
 unlock:
 	sudo yum versionlock clear
+
+test:
+	echo "You don't want to run this."
+	exit 1
+	pkill gpg-agent ; rm -rf /tmp/tmp.* ; export PATH=/home/tlimoncelli/gitwork/blackbox/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin ; cd ~/gitwork/blackbox;tools/confidence_test.sh;ls -lad /home/tlimoncelli/.gnupg || true

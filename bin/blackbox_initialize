@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_initialize -- Enable blackbox for a GIT or HG repo.
+#
+#
+# Example:
+#    blackbox_initialize
+#
+
+. _blackbox_common.sh
+
+_determine_vcs_base_and_type  # Sets VCS_TYPE
+
+if [[ $1 != 'yes' ]]; then
+  read -p "Enable blackbox for this $VCS_TYPE repo? (yes/no) " ans
+  if [[ $ans = 'no' || $ans = 'n' || $ans = '' ]]; then
+    echo 'Exiting...'
+    exit 1
+  fi
+fi
+
+echo cd "$REPOBASE"
+cd "$REPOBASE"
+
+# Update .gitignore or .hgignore
+
+IGNOREFILE=".${VCS_TYPE}ignore"
+if ! grep -sx >/dev/null 'pubring.gpg~' "$IGNOREFILE" ; then
+  echo 'pubring.gpg~' >>"$IGNOREFILE"
+fi
+if ! grep -sx >/dev/null 'secring.gpg' "$IGNOREFILE" ; then
+  echo 'secring.gpg' >>"$IGNOREFILE"
+fi
+
+# Make directories
+mkdir -p "${KEYRINGDIR}"
+vcs_add "${KEYRINGDIR}"
+touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+vcs_add "$IGNOREFILE" "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+
+# Make a suggestion:
+echo
+echo
+echo 'NEXT STEP: You need to manually check these in:'
+echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' keyrings "$IGNOREFILE"

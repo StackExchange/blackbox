@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_removeadmin -- Remove an admin to the system
+#  NOTE: Does not remove admin from the keyring.
+#
+
+# Example:
+#    blackbox_removeadmin tal@example.com
+#
+
+. _blackbox_common.sh
+. _stack_lib.sh
+
+fail_if_not_in_repo
+
+KEYNAME="$1"
+: ${KEYNAME:?ERROR: First argument must be a keyname (email address)} ;
+
+# Remove the email address from the BB_ADMINS file.
+make_self_deleting_tempfile bbtemp
+cp "$BB_ADMINS" "$bbtemp"
+fgrep -v -x "$KEYNAME" <"$bbtemp" >"$BB_ADMINS"
+
+# Make a suggestion:
+echo
+echo
+echo 'NEXT STEP: Check these into the repo.  Probably with a command like...'
+echo $VCS_TYPE commit -m\'REMOVED ADMIN: $KEYNAME\' "$BLACKBOXDATA/$BB_ADMINS_FILE"

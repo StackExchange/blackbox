@@ -50,7 +50,6 @@ What does this look like to the typical sysadmin?
 
 ``bin/blackbox_edit_end FILENAME``
 
-
 *  Commit the changes.
 
 ```
@@ -123,51 +122,31 @@ To join the list of people that can edit the file requires three steps; You crea
 
 ### Step 1: YOU create a GPG key pair on a secure machine and add to public keychain.
 
-
 ```
-KEYNAME=$USER@$DOMAINNAME
-# For example...
-KEYNAME=myusername@example.com
 gpg --gen-key
 ```
 
 Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphrase.
 
-When GPG is generating entropy, consider running this on the machine in another window:
-
 ```
-dd if=/dev/sda of=/dev/null
+blackbox_addadmin KEYNAME
 ```
-
-Add your public key to the public key-ring.
-
+...where "KEYNAME" is the email address listed in the gpg key you created previously. For example:
 ```
-gpg --export -a $KEYNAME >~/.gnupg/pubkey.txt
-wc -l ~/.gnupg/pubkey.txt
+blackbox_addadmin tal@example.com
 ```
 
-The output of "wc" should be non-zero (usually it is 30 or more)
-
-Add your keyname to the list of keys:
-
+When the command completes successfully, instructions on how to
+commit these changes will be output.  Run the command as give.
 ```
-cd keyrings/live
-gpg --homedir=. --import ~/.gnupg/pubkey.txt
-cd ../..
-blackbox_addadmin $KEYNAME
+NEXT STEP: Check these into the repo.  Probably with a command like...
+git commit -m'NEW ADMIN: tal@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 ```
 
-Check all these updates into the VCS:
-
+Role accounts: If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter:
 ```
-git add pubring.gpg trustdb.gpg blackbox-admins.txt
-git commit -m"Adding my gpg key" pubring.gpg trustdb.gpg blackbox-admins.txt
-
-or
-
-hg commit -m"Adding my gpg key" pubring.gpg trustdb.gpg blackbox-admins.txt
+blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir
 ```
-
 
 ### Step 2: SOMEONE ELSE adds you to the system.
 
@@ -175,22 +154,24 @@ Ask someone that already has access to re-encrypt the data files. This gives you
 
 ```
 gpg --import keyrings/live/pubring.gpg
-bin/blackbox_update_all_files
+blackbox_update_all_files
 ```
 
 Push the re-encrypted files:
 
 ```
+git commit -a
 git push
 
 or
 
+hg commit
 hg push
 ```
 
 ### Step 3: YOU test.
 
-Make sure you can decrypt a file.  (NOTE: It is a good idea to keep a dummy file in VCS just for new people to practice on.)
+Make sure you can decrypt a file.  (Suggestion: Keep a dummy file in VCS just for new people to practice on.)
 
 First Time Setup
 ===========================
@@ -200,7 +181,7 @@ Overview:
 To add "blackbox" to a git repo, you'll need to do the following:
 
   1. Create some directories
-  2. For each user, have them createa GPG key and add it to the key ring.
+  2. For each user, have them create a GPG key and add it to the key ring.
   3. For any automated user (one that must be able to decrypt without a passphrase), create a GPG key and create a subkey with an empty passphrase.
   4. Add
 

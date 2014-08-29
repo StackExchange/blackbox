@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # blackbox_postdeploy.sh -- Decrypt all blackbox files.

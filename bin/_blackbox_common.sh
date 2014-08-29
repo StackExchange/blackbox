@@ -11,7 +11,7 @@
 : ${BLACKBOXDATA:=keyrings/live} ;   # If BLACKBOXDATA not set, set it.
 
 set -e
-
+ 
 # Outputs a string that is the base directory of this VCS repo.
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
 # or 'unknown'.
@@ -28,8 +28,10 @@ function _determine_vcs_base_and_type() {
 
 REPOBASE=$(_determine_vcs_base_and_type)
 KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
-BB_ADMINS="${KEYRINGDIR}/blackbox-admins.txt"
-BB_FILES="${KEYRINGDIR}/blackbox-files.txt"
+BB_ADMINS_FILE="blackbox-admins.txt"
+BB_ADMINS="${KEYRINGDIR}/${BB_ADMINS_FILE}"
+BB_FILES_FILE="blackbox-files.txt"
+BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
 
@@ -46,6 +48,16 @@ function fail_if_exists() {
 function fail_if_not_exists() {
   if [[ ! -f "$1" ]]; then
     echo ERROR: "$1" not found.  "$2"
+    echo Exiting...
+    exit 1
+  fi
+}
+
+# Exit we we aren't in a VCS repo.
+function fail_if_not_in_repo() {
+  _determine_vcs_base_and_type
+  if [[ $VCS_TYPE = "unknown" ]]; then
+    echo "ERROR: This must be run in a VCS repo such as git or hg."
     echo Exiting...
     exit 1
   fi
@@ -191,15 +203,18 @@ function enumerate_subdirs() {
 
 # Are we in git, hg, or unknown repo?
 function which_vcs() {
-  echo "$REPO_TYPE"
+  if [[ $VCS_TYPE = '' ]]; then
+    _determine_vcs_base_and_type >/dev/null
+  fi
+  echo "$VCS_TYPE"
 }
+
 
 # Is this file in the current repo?
 function is_in_vcs() {
   is_in_$(which_vcs) """$@"""
 }
-
-# Is this file in mercurial?
+# Mercurial
 function is_in_hg() {
   local filename
   filename="$1"
@@ -210,8 +225,7 @@ function is_in_hg() {
     echo false
   fi
 }
-
-# Is this file in git?
+# Git:
 function is_in_git() {
   local filename
   filename="$1"
@@ -223,18 +237,46 @@ function is_in_git() {
   fi
 }
 
+
+# Add a file to the repo (but don't commit it).
+function vcs_add() {
+  vcs_add_$(which_vcs) """$@"""
+}
+# Mercurial
+function vcs_add_hg() {
+  hg add """$@"""
+}
+# Git
+function vcs_add_git() {
+  git add """$@"""
+}
+
+# Commit a file to the repo
+function vcs_commit() {
+  vcs_commit_$(which_vcs) """$@"""
+}
+# Mercurial
+function vcs_commit_hg() {
+  hg commit -m"""$@"""
+}
+# Git
+function vcs_commit_git() {
+  git commit -m"""$@"""
+}
+
+
+# TODO(tlim): Rename these vcs_rm_file* to be in sync with the others.
+
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
-function rm_from_vcs() {
-  rm_from_$(which_vcs) """$@"""
+function vcs_remove() {
+  vcs_remove$(which_vcs) """$@"""
 }
-
-# rm from mercurial.
-function rm_from_hg() {
+# Mercurial
+function vcs_remove_hg() {
   hg rm -A """$@"""
 }
-
-# rm from git.
-function rm_from_git() {
+# Git
+function vcs_remove_git() {
   git rm --ignore-unmatch -f -- """$@"""
 }

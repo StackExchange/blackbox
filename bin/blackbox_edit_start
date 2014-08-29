@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # blackbox_edit_start.sh -- Decrypt a file for editing.
