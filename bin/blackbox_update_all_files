@@ -49,7 +49,7 @@ done
 
 fail_if_keychain_has_secrets
 
-echo '========== COMMITING TO HG:'
+echo '========== COMMITING TO VCS:'
 vcs_commit 'Re-encrypted keys' $(awk <$BB_FILES '{ print $1 ".gpg" }' )
 
 VCSCMD=$(which_vcs)
