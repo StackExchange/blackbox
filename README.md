@@ -12,8 +12,7 @@ for Puppet, now works with any Git or Mercurial repository.
 Overview
 ========
 
-The goal is to have secret bits (passwords, private keys, and such) in your VCS repo but encrypted so that
-it is safe.  On the puppet masters they sit on disk unencrypted but are readlabe (decrypted) for use by the Puppet Master (or whoever needs full access).
+The goal is to have secret bits (passwords, private keys, and such) in your VCS repo but encrypted so that it is safe.  On the puppet masters they sit on disk unencrypted but are readable (decrypted) for use by the Puppet Master (or whoever needs full access).
 
 How does this work?
 ===================
