@@ -1,7 +1,8 @@
 BlackBox
 ========
 
-Safely store secrets in Git/Hg.  These commands make it easy
+Safely store secrets in a VCS repo (i.e. Git or Mercurial). These
+commands make it easy
 for you to GPG encrypt specific files in a repo so they are
 "encrypted at rest" in your repository. However, the scripts
 make it easy to decrypt them when you need to view or edit them,
@@ -12,81 +13,137 @@ for Puppet, now works with any Git or Mercurial repository.
 Overview
 ========
 
-The goal is to have secret bits (passwords, private keys, and such) in your VCS repo but encrypted so that it is safe.  On the puppet masters they sit on disk unencrypted but are readable (decrypted) for use by the Puppet Master (or whoever needs full access).
+Suppose you have a VCS repository (i.e. a Git or Mercurial repo)
+and certain files contain secrets such as passwords or SSL private
+keys.  Often people just store such files "and hope that nobody finds
+them in the repo".  That's not safe
 
-How does this work?
-===================
+With BlackBox, those files are stored encrypted using Gnu Privacy Guard
+(GPG).  Access to the VCS repo without also having the right GPG keys
+makes it worthless to have the files.  As long as you keep your GPG keys
+safe, you don't have to worry about storing your VCS repo on an untrusted
+server.  Heck, even if you trust your server, now you don't have to trust
+the people that do backups of that server, or the people that handle the
+backup tapes!
 
-**Private keys (and anything that is the entire file):**  
+Rather than 1 GPG passphrase for all the files, each person with access
+has their own GPG keys in the system.  Any file can be decrypted by
+anyone with their GPG key.  This way, if one person leaves the company,
+you don't have to communicate a new password to everyone with access.
+Simply disable the one key that should no longer have access.
+The process for doing this is as easy as running 2 commands (1 to
+disable their key, 1 to re-encrypt all files.)
 
-Files are kept in git/hg encrypted (foo.txt is stored as foo.txt.gpg).
+Automated processes often need access to all the decrypted files.
+This is easy too.  For example, suppose Git is being used for Puppet
+files.  The master needs access to the decrypted version of all the
+files.  Simply set up a GPG key for the Puppet master (or the role
+account that pushes new files to the Puppet master) and have that
+user run `blackbox_postdeploy` after any files are updated.
 
-After deploying an update to your Puppet Master, the master runs a script that decrypts them.  The sit unencrypted on the master, which should already be locked down.
+Getting started is easy.  Just `cd` into a Git or Mercurial repository
+and run `blackbox_initialize`.  After that, if a file is to be
+encrypted, run `blackbox_register_new_file` and you are done.  Add
+and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
+To view and/or edit a file, run `blackbox_edit_start`. Run
+`blackbox_edit_end` when you want to "put it back in the box."
 
-**Passwords (and any short string):**
-Passwords are kept in hieradata/blackbox.yaml.gpg, which is decrypted to become hieradata/blackbox.yaml.  This data can be read by hiera.  This file is encrypted/decrypted just like any other blackbox file.
 
-**Key management:**
-The Puppet Masters have GPG keys with no passphrase so that they can decrypt the file unattended.  That means having root access on a puppet master gives you the ability to find out all our secrets.  That is ok because if you have root access to the puppet master, you own the world anyway.
+Why is this important?
+============================
 
-The secret files are encrypted such that any one key on a list of keys can decrypt them.  That is, when encrypting it is is "encrypted for multiple users".  Each person that should have acecss to the secrets should have a key and be on the key list.  There should also be a key for account that deploys new code to the Puppet master.
+OBVIOUSLY we don't want secret things like SSL private keys
+and passwords to be leaked.
+
+NOT SO OBVIOUSLY when we store "secrets" in a VCS repo like Git or
+Mercurial, suddenly we are less able to share our code with other
+people.  Communciation between subteams of an organization is hurt.
+You can't collaborate as well.  Either you find yourself emailing
+individual files around (yuck!), making a special repo with just
+the files need by your collaborator (yuck!), or just deciding that
+collaboration isn't that important (yuck!!!).
+
+Being able to be open an transparent about our code... with the
+exception of a few specific files... is key to the kind of
+collaboration that DevOps and modern IT practitioniers
+need to do.
+
+
+How is the encryption done?
+============================
+
+GPG has many different ways to encrypt a file.  BlackBox uses
+the mode that lets you specify a list of keys that can decrypt
+the messsage.
+
+If you have 5 people ("admins") that should be able to access
+the secrets, each creates a GPG key and adds their public key
+to the keychain.  The GPG command used to encrypt the file lists
+all 5 key names, and therefore any 1 key can decrypt the file.
+
+To remove someone's access, remove that admin's key name (i.e. email
+address) from the list of admins and re-encrypt all the files.
+They can still read the .gpg file (assuming they have access
+to the repository) but they can't decrypt it any more.
+
+*What if they kept a copy of the old repo before you removed
+access?*  Yes, they can decrypt old versions of the file. This
+is why when an admin leaves the team, you should change all
+your passwords, SSL certs, and so on.  You should have been
+doing that before BlackBox, right?
+
+*Why don't you use symmetric keys?*  In other words, why mess
+with all this GPG key stuff and instead why don't we just encrypt
+all the files with a single passphrase.  Yes, GPG supports that,
+but then we are managing a shared password, which is fraught with problems.
+If someone "leaves the team" we would have to communicate to everyone
+a new password. Now we just have to remove their key.  This scales
+better.
+
+*How do automated processed decrypt without asking for a password?*
+GPG requires a passphrase on a private key.  However it permits
+the creation of subkeys that have no passphrase.  For automated
+processes, create a subkey that is only stored on the machine
+that needs to decrypt the files. For example, at Stack Exchange,
+when our Continuous Integration (CI) system pushes
+a code change to our Puppet masters, they run `blackbox_postdeploy`
+to decrypt all the files.  The user that runs this code has a subkey
+that doesn't require a passphrase. Since we have many masters,
+each has its own key.  And, yes, this means our Puppet Masters
+have to be very secure.  However, they were already secure because,
+like, dude... if you can break into someone's puppet master you own
+their network.
+
+*If you use Puppet, why didn't you just use hiera-eyaml?*
+There are 4 reasons:
+
+  1. This works works with any Git or Mercurial repo, even if you aren't using Puppet.
+  2. hiera-eyaml decrypts "on demand" which means your Puppet Master now uses a lot of CPU to decrypt keys every time it is contacted. It slows down your master, which, in my case, is already slow enough.
+  3. This works with binary files, without having to ASCIIify them and paste them into a YAML file.  Have you tried to do this with a cert that is 10K long and changes every few weeks?  Ick.
+  4. hiera-eyaml didn't exist when I wrote this.
+
 
 What does this look like to the typical sysadmin?
 ================================
 
-*  If you need to, start the GPG Agent:
-
-``eval $(gpg-agent --daemon)``
-
-*  Decrypt the file so it is editable:
-
-``bin/blackbox_edit_start FILENAME``
-
-(You will need to enter your GPG passphrase.)
-
-*  Edit FILENAME as you desire.
-
-``vim FILENAME``
-
-*  Re-encrypt the file:
-
-``bin/blackbox_edit_end FILENAME``
-
-*  Commit the changes.
-
-```
-git commit -a
-# or
-hg commit
-```
-
+*  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
+*  Decrypt the file so it is editable: `blackbox_edit_start FILENAME` (You will need to enter your GPG passphrase.)
+*  Edit FILENAME as you desire: `vim FILENAME`
+*  Re-encrypt the file: `blackbox_edit_end FILENAME`
+*  Commit the changes.  `git commit -a` or `hg commit`
 
 This content is released under the MIT License.  See the LICENSE.txt file.
 
 How to use the secrets with Puppet?
 ================================
 
-### Small strings:
-
-Small strings, such as passwords and API keys, are stored in a hiera yaml file.  You can access them using the hiera() function.
-
-Puppet example for a single password:
-
-```
-$the_password = hiera('module::test_password', 'fail')
-file {'/tmp/debug-blackbox.txt':
-    content => $the_password,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0600',
-}
-```
-
 ### Entire files:
 
-Entire files, such as SSL certs and private keys, are treated just like files.
+Entire files, such as SSL certs and private keys, are treated just like 
+regular files.  You decrypt them any time you push a new release
+to the puppet master.
 
-Puppet example for an encrypted file:
+Puppet example for an encrypted file: `secret_file.key.gpg`
 
 ```
 file { '/etc/my_little_secret.key':
@@ -99,17 +156,50 @@ file { '/etc/my_little_secret.key':
 ```
 
 
+### Small strings:
+
+Small strings, such as passwords and API keys, are stored in a hiera
+yaml file, which you encrypt with `blackbox_register_new_file`. For
+example, we use a file called `blackbox.yaml`.  You can access them
+using the hiera() function.
+
+*Setup:* Configure `hiera.yaml` by adding "blackbox" to the search hierarchy:
+```
+:hierarchy:
+  - ...
+  - blackbox
+  - ...
+```
+
+In blackbox.yaml specify:
+```
+---
+module::test_password: "my secret password"
+```
+
+In your Puppet Code, access the password as you would any hiera data:
+```
+$the_password = hiera('module::test_password', 'fail')
+
+file {'/tmp/debug-blackbox.txt':
+    content => $the_password,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0600',
+}
+```
+
+The variable `$the_password` will contain "my secret password" and
+can be used anywhere strings are used.
+
+
 How to enroll a new file into the system?
 ============================
 
-*  If you need to, start the GPG Agent:
-
-``eval $(gpg-agent --daemon)``
-
-* Add the file to the system:
-
+*  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
+*  Add the file to the system:
 ```
-bin/blackbox_register_new_file path/to/file.name.key
+blackbox_register_new_file path/to/file.name.key
 ```
 
 How to indoctrinate a new user into the system?
@@ -182,43 +272,23 @@ Overview:
 
 To add "blackbox" to a git repo, you'll need to do the following:
 
-  1. Create some directories
-  2. For each user, have them create a GPG key and add it to the key ring.
-  3. For any automated user (one that must be able to decrypt without a passphrase), create a GPG key and create a subkey with an empty passphrase.
-  4. Add
+  1. Run the initialize script.  This adds a few files to your repo in a directory called "keyrings".
+  2. For the first user, create a GPG key and add it to the key ring.
+  3. Encrypt the files you want to be "secret".
+  4. For any automated user (one that must be able to decrypt without a passphrase), create a GPG key and create a subkey with an empty passphrase.
 
-###  Create some directories
+###  Run the initialize script.
 
-You'll want to include blackbox's binaries in your PATH:
+You'll want to include blackbox's "bin" directory in your PATH:
 ```
 export PATH=$PATH:/the/path/to/blackbox/bin
 ```
 
-In the git repo you plan on using blackbox, add these two lines to .gitignore
 
-```
-pubring.gpg~
-secring.gpg
-```
-
-Create this directory.  It is where the pubkeys will be stored:
-```
-mkdir -p keyrings/live
-```
-
-And commit the change:
-
-```
-git add keyrings
-git add .gitignore
-git commit -m'Update .gitignore' .gitignore keyrings
-```
-
-
-### For each user, have them create a GPG key and add it to the key ring.
+### For the first user, create a GPG key and add it to the key ring.
 
 Follow the instructions for "How to indoctrinate a new user into
-the system?".  For the first user, you only have to do Step 1.
+the system?".  Only do Step 1.
 
 Once that is done, is a good idea to test the system by making sure
 a file can be added to the system (see "How to enroll a new file
@@ -264,7 +334,7 @@ Since the subkey is very powerful, it should be created on a very
 secure machine.
 
 There's another catch.  The role account probably can't check files
-into Git.  It probably only has read-only access to the repo. That's
+into Git/Mercurial.  It probably only has read-only access to the repo. That's
 a good security policy.  This means that the role account can't
 be used to upload the subkey public bits into the repo.
 
@@ -274,7 +344,8 @@ the repo.  Also from this account we will export the parts
 that the role account needs, copy them to where the role account
 can access them, and import them as the role account.
 
-ProTip: If asked to generate entropy, consider running this on the same machine in another window:`sudo dd if=/dev/sda of=/dev/null`
+ProTip: If asked to generate entropy, consider running this on the
+same machine in another window: `sudo dd if=/dev/sda of=/dev/null`
 
 For the rest of this doc, you'll need to make the following substittions:
 
@@ -306,8 +377,6 @@ the host, you will be able to know which key is which.
 In this doc, we'll refer to username@FQDN as $KEYNAME
 
 Save the passphrase somewhere safe!
-
-ProTip: If asked to generate entropy, consider running this on the same machine in another window:`sudo dd if=/dev/sda of=/dev/null`
 
 Create a sub-key that has no password:
 
