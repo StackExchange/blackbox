@@ -83,7 +83,7 @@ cat >"$gpgconfig" <<EOF
 Key-Type: default
 Subkey-Type: default
 Name-Real: Alice Example
-Name-Comment: with weak passphrase
+Name-Comment: my password is the lowercase letter a
 Name-Email: alice@example.com
 Expire-Date: 0
 Passphrase: a
@@ -121,7 +121,7 @@ cat >"$gpgconfig" <<EOF
 Key-Type: default
 Subkey-Type: default
 Name-Real: Bob Example
-Name-Comment: with weak passphrase
+Name-Comment: my password is the lowercase letter b
 Name-Email: bob@example.com
 Expire-Date: 0
 Passphrase: b
@@ -207,6 +207,17 @@ blackbox_edit_start secret.txt
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "beb0b0fd5701afb6f891de372abd35ed"
+
+PHASE 'Bob exposes a secret in the repo.'
+echo 'this is my exposed secret' >mistake.txt
+git add mistake.txt
+git commit -m'Oops I am committing a secret to the repo.' mistake.txt
+
+PHASE 'Bob corrects it by registering it.'
+blackbox_register_new_file mistake.txt
+assert_file_missing mistake.txt
+assert_file_exists mistake.txt.gpg
+# NOTE: It is still in the history. That should be corrected someday.
 
 # TODO(tlim): Add test to make sure that now alice can NOT decrypt.
 
