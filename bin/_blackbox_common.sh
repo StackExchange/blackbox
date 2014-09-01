@@ -154,12 +154,12 @@ function decrypt_file_overwrite() {
   unencrypted="$2"
 
   if [[ -f "$unencrypted" ]]; then
-    old_hash=$(md5sum < "$unencrypted"| awk '{ print $1 }')
+    old_hash=$(md5sum_file "$unencrypted")
   else
     old_hash=unmatchable
   fi
   gpg --yes -q --decrypt -o "$unencrypted" "$encrypted"
-  new_hash=$(md5sum < "$unencrypted"| awk '{ print $1 }')
+  new_hash=$(md5sum_file "$unencrypted")
   if [[ $old_hash != $new_hash ]]; then
     echo "========== EXTRACTED $unencrypted"
   fi
@@ -181,6 +181,22 @@ function shred_file() {
   fi
 
   $CMD $OPT "$name"
+}
+
+function md5sum_file() {
+  # Portably generate the MD5 hash of file $1.
+  case $(uname -s) in
+    Darwin )
+      md5 -r "$1" | awk '{ print $1 }'
+      ;;
+    Linux )
+      md5sum "$1" | awk '{ print $1 }'
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
 }
 
 # $1 is the name of a file that contains a list of files.
