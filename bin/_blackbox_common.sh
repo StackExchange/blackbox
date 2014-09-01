@@ -270,7 +270,7 @@ function vcs_commit_git() {
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
 function vcs_remove() {
-  vcs_remove$(which_vcs) """$@"""
+  vcs_remove_$(which_vcs) """$@"""
 }
 # Mercurial
 function vcs_remove_hg() {
