@@ -30,10 +30,21 @@ function assert_file_exists() {
 function assert_file_md5hash() {
   local file="$1"
   local wanted="$2"
-  local found=$(md5sum <"$file" | cut -d' ' -f1 )
   assert_file_exists "$file"
+  local found=$(md5sum <"$file" | cut -d' ' -f1 )
   if [[ "$wanted" != "$found" ]]; then
-    echo "ASSERT FAILED: $file hash wanted=$desired found=$found"
+    echo "ASSERT FAILED: $file hash wanted=$wanted found=$found"
+    exit 1
+  fi
+}
+function assert_file_group() {
+  local file="$1"
+  local wanted="$2"
+  assert_file_exists "$file"
+  local found=$(ls -l "$file" | awk '{ print $4 }')
+  # NB(tlim): We could do this with 'stat' but it would break on BSD-style OSs.
+  if [[ "$wanted" != "$found" ]]; then
+    echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
     exit 1
   fi
 }
@@ -168,11 +179,27 @@ PHASE 'Bob makes sure he has all new keys.'
 
 gpg --import keyrings/live/pubring.gpg
 
-PHASE 'Bob postdeploys.'
+# Pick a GID to use:
+TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv $(id -u) | head -n 1)
+TEST_GID_NAME=$(getent group "$TEST_GID_NUM" | cut -d: -f1)
+DEFAULT_GID_NAME=$(getent group $(id -u) | cut -d: -f1)
+echo TEST_GID_NUM=$TEST_GID_NUM
+echo TEST_GID_NAME=$TEST_GID_NAME
+echo DEFAULT_GID_NAME=$DEFAULT_GID_NAME
+
+PHASE 'Bob postdeploys... default.'
 blackbox_postdeploy
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
+assert_file_group secret.txt "$DEFAULT_GID_NAME"
+
+PHASE 'Bob postdeploys... with a GID.'
+blackbox_postdeploy $TEST_GID_NUM
+assert_file_exists secret.txt
+assert_file_exists secret.txt.gpg
+assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
+assert_file_group secret.txt "$TEST_GID_NAME"
 
 PHASE 'Bob cleans up the secret.'
 rm secret.txt

@@ -4,15 +4,33 @@
 # blackbox_postdeploy.sh -- Decrypt all blackbox files.
 #
 
+# Usage:
+#   blackbox_postdeploy.sh [GROUP]
+#       GROUP is optional.  If supplied, the resulting files
+#       are chgrp'ed to that group.
+
 # Since this is often run in a security-critical situation, we
 # force /usr/bin and /bin to the front of the PATH.
 export PATH=/usr/bin:/bin:"$PATH"
 
 . _blackbox_common.sh
 
-# If we aren't in a repo, assume /etc/puppet.
-if [[ "$REPOBASE" = "/dev/null" ]]; then
-  REPOBASE=/etc/puppet
+if [[ "$1" == "" ]]; then
+  FILE_GROUP=""
+else
+  FILE_GROUP="$1"
+fi
+
+# If BASEDIR is not set, use REPOBASE.
+if [[ "$BASEDIR" = "" ]]; then
+  BASEDIR="$REPOBASE"
+fi
+
+if [[ "$BASEDIR" = "/dev/null" ]]; then
+  echo 'WARNING: Not in a VCS repo.  Not changing directory.'
+else
+  echo "CDing to $BASEDIR"
+  cd "$BASEDIR"
 fi
 
 prepare_keychain
@@ -23,5 +41,8 @@ while read unencrypted_file; do
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
   chmod g+r,o-rwx "$unencrypted_file"
+  if [[ ! -z "$FILE_GROUP" ]]; then
+    chgrp $FILE_GROUP "$unencrypted_file"
+  fi
 done <"$BB_FILES"
 echo '========== Decrypting new/changed files: DONE'
