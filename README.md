@@ -347,7 +347,7 @@ can access them, and import them as the role account.
 ProTip: If asked to generate entropy, consider running this on the
 same machine in another window: `sudo dd if=/dev/sda of=/dev/null`
 
-For the rest of this doc, you'll need to make the following substittions:
+For the rest of this doc, you'll need to make the following substitutions:
 
   - ROLEUSER: svc_deployacct or whatever your role account's name is.
   - NEWMASTER: the machine this role account exists on.
