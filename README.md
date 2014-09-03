@@ -1,17 +1,14 @@
-[Note to HackNews readers! Thanks for [all the comments](https://news.ycombinator.com/item?id=8264496)!  Some replies: Per-subfolder access control coming soon.  Don't confuse "git" with "the cloud"... you should encrypt secrets even if they are on your own private git/mercurial server unless you trust everyone with root access and access to your backup tapes.]
-
 BlackBox
 ========
 
 Safely store secrets in a VCS repo (i.e. Git or Mercurial). These
 commands make it easy
-for you to GPG encrypt specific files in a repo so they are
+for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are
 "encrypted at rest" in your repository. However, the scripts
 make it easy to decrypt them when you need to view or edit them,
-and decrypt them for for use in production. Originally written
-for Puppet, now works with any Git or Mercurial repository.
+and decrypt them for use in production. Originally written
+for Puppet, BlackBox now works with any Git or Mercurial repository.
 
-A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
 Overview
 ========
@@ -19,10 +16,10 @@ Overview
 Suppose you have a VCS repository (i.e. a Git or Mercurial repo)
 and certain files contain secrets such as passwords or SSL private
 keys.  Often people just store such files "and hope that nobody finds
-them in the repo".  That's not safe
+them in the repo".  That's not safe.
 
-With BlackBox, those files are stored encrypted using Gnu Privacy Guard
-(GPG).  Access to the VCS repo without also having the right GPG keys
+With BlackBox, those files are stored encrypted using GPG. Access to 
+the VCS repo without also having the right GPG keys
 makes it worthless to have the files.  As long as you keep your GPG keys
 safe, you don't have to worry about storing your VCS repo on an untrusted
 server.  Heck, even if you trust your server, now you don't have to trust
@@ -63,11 +60,11 @@ Mercurial, suddenly we are less able to share our code with other
 people.  Communciation between subteams of an organization is hurt.
 You can't collaborate as well.  Either you find yourself emailing
 individual files around (yuck!), making a special repo with just
-the files need by your collaborator (yuck!), or just deciding that
+the files needed by your collaborators (yuck!), or just deciding that
 collaboration isn't that important (yuck!!!).
 
-Being able to be open an transparent about our code... with the
-exception of a few specific files... is key to the kind of
+Being able to be open and transparent about our code, with the
+exception of a few specific files, is key to the kind of
 collaboration that DevOps and modern IT practitioniers
 need to do.
 
@@ -103,8 +100,8 @@ If someone "leaves the team" we would have to communicate to everyone
 a new password. Now we just have to remove their key.  This scales
 better.
 
-*How do automated processed decrypt without asking for a password?*
-GPG requires a passphrase on a private key.  However it permits
+*How do automated processes decrypt without asking for a password?*
+GPG requires a passphrase on a private key.  However, it permits
 the creation of subkeys that have no passphrase.  For automated
 processes, create a subkey that is only stored on the machine
 that needs to decrypt the files. For example, at Stack Exchange,
