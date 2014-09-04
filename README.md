@@ -1,4 +1,4 @@
-[Note to HackNews readers! Thanks for [all the comments](https://news.ycombinator.com/item?id=8264496)!  Some replies: Per-subfolder access control coming soon.  Don't confuse "git" with "the cloud"... you should encrypt secrets even if they are on your own private git/mercurial server unless you trust everyone with root access and access to your backup tapes.]
+[Note to HackerNews readers! Thanks for [all the comments](https://news.ycombinator.com/item?id=8264496)!  Some replies: Per-subfolder access control coming soon.  Don't confuse "git" with "the cloud"... you should encrypt secrets even if they are on your own private git/mercurial server unless you trust everyone with root access and access to your backup tapes.]
 
 BlackBox
 ========
