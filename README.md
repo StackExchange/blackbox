@@ -139,6 +139,10 @@ What does this look like to the typical sysadmin?
 *  Re-encrypt the file: `blackbox_edit_end FILENAME`
 *  Commit the changes.  `git commit -a` or `hg commit`
 
+Alternatively, you can call `blackbox_edit FILENAME`, and it'll decrypt the file
+in a temp file and call `$EDITOR` on it, re-encrypting again after the editor
+is closed.
+
 This content is released under the MIT License.  See the LICENSE.txt file.
 
 How to use the secrets with Puppet?
