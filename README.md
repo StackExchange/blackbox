@@ -272,12 +272,44 @@ hg push
 
 Make sure you can decrypt a file.  (Suggestion: Keep a dummy file in VCS just for new people to practice on.)
 
-First Time Setup
+How to remove a user from the system?
+============================
+
+Simply run `blackbox_removeadmin` with their keyname then re-encrypt:
+
+Example:
+```
+blackbox_removeadmin olduser@example.com
+blackbox_update_all_files
+```
+
+When the command completes, you will be given a reminder to check in the change and push it.
+
+Note that their keys will still be in the key ring, but they will
+go unused.  If you'd like to clean up the keyring, use the normal
+GPG commands and check in the file.
+
+```
+gpg --homedir=keyrings/live --list-keys
+gpg --homedir=keyrings/live --delete-key olduser@example.com
+git commit -m'Cleaned olduser@example.com from keyring'  keyrings/live/*
+```
+
+The key ring only has public keys. There are no secret keys to delete.
+
+Remember that this person did have access to all the secrets at one
+time. They could have made a copy.  Therefore, to be completely
+secure, you should change all passwords, generate new SSL keys, and
+so on just like when anyone that had privileged access leaves an
+organization.
+
+
+First Time Setup (enabling Blackbox for a repo)
 ===========================
 
 Overview:
 
-To add "blackbox" to a git repo, you'll need to do the following:
+To add "blackbox" to a git or mercurial repo, you'll need to do the following:
 
   1. Run the initialize script.  This adds a few files to your repo in a directory called "keyrings".
   2. For the first user, create a GPG key and add it to the key ring.
@@ -327,7 +359,10 @@ Push these changes to the repo.  Make sure another user can
 check out and change the contents of the file.
 
 
-### For any automated user create a key and subkey.
+### Create a key and subkey for any automated users
+
+i.e. This is how a Puppet Master can have access to the unencrypted data.
+
 
 An automated user (a "role account") is one that that must be able
 to decrypt without a passphrase.  In general you'll want to do this
@@ -487,3 +522,13 @@ rm -rf /tmp/NEWMASTER
 ```
 
 Also shred any other temporary files you may have made.
+
+
+Alternatives
+============
+
+Here are other open source packages that do something similar to Blackbox.
+
+  * Pass: http://www.zx2c4.com/projects/password-store/
+  * Transcrypt: https://github.com/elasticdog/transcrypt
+  * git-crypt:  https://www.agwa.name/projects/git-crypt/
