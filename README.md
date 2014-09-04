@@ -19,7 +19,7 @@ Overview
 Suppose you have a VCS repository (i.e. a Git or Mercurial repo)
 and certain files contain secrets such as passwords or SSL private
 keys.  Often people just store such files "and hope that nobody finds
-them in the repo".  That's not safe
+them in the repo".  That's not safe.
 
 With BlackBox, those files are stored encrypted using Gnu Privacy Guard
 (GPG).  Access to the VCS repo without also having the right GPG keys
