@@ -1,3 +1,5 @@
+[Note to HackNews readers! Thanks for all the comments! Some replies: Per-subfolder access control coming soon. Don't confuse "git" with "the cloud"... you should encrypt secrets even if they are on your own private git/mercurial server unless you trust everyone with root access and access to your backup tapes.]
+
 BlackBox
 ========
 
@@ -9,6 +11,7 @@ make it easy to decrypt them when you need to view or edit them,
 and decrypt them for use in production. Originally written
 for Puppet, BlackBox now works with any Git or Mercurial repository.
 
+A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
 Overview
 ========
