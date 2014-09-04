@@ -24,4 +24,11 @@ for param in """$@""" ; do
   prepare_keychain
   decrypt_file "$encrypted_file" "$unencrypted_file"
   $EDITOR $unencrypted_file
+
+  encrypt_file "$unencrypted_file" "$encrypted_file"
+  shred_file "$unencrypted_file"
+  
+  echo "========== UPDATED ${encrypted_file}"
+  echo "Likely next step:"
+  echo "    git commit -m\"${encrypted_file} updated\" $encrypted_file"
 done
