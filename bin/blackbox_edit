@@ -4,6 +4,7 @@
 # blackbox_edit.sh -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
 
+set -e
 . _blackbox_common.sh
 
 for param in """$@""" ; do

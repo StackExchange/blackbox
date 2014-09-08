@@ -1,6 +1,7 @@
 # Library functions for bash scripts at Stack Exchange.
 
 # Usage:
+#   set -e
 #   . _stack_lib.sh
 
 # ----- Utility Functions -----

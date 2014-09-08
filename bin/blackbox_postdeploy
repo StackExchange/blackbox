@@ -13,6 +13,7 @@
 # force /usr/bin and /bin to the front of the PATH.
 export PATH=/usr/bin:/bin:"$PATH"
 
+set -e
 . _blackbox_common.sh
 
 if [[ "$1" == "" ]]; then

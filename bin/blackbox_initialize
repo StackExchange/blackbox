@@ -8,6 +8,7 @@
 #    blackbox_initialize
 #
 
+set -e
 . _blackbox_common.sh
 
 _determine_vcs_base_and_type  # Sets VCS_TYPE

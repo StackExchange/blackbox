@@ -4,6 +4,7 @@
 # blackbox_edit_end.sh -- Re-encrypt file after edits.
 #
 
+set -e
 . _blackbox_common.sh
 
 if [[ -z $GPG_AGENT_INFO ]]; then

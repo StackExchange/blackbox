@@ -5,12 +5,12 @@
 #
 
 # Usage:
+#
+#   set -e
 #   . _blackbox_common.sh
 
 # Where in the VCS repo should the blackbox data be found?
 : ${BLACKBOXDATA:=keyrings/live} ;   # If BLACKBOXDATA not set, set it.
-
-set -e
  
 # Outputs a string that is the base directory of this VCS repo.
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',

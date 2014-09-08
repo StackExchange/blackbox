@@ -4,6 +4,7 @@
 # blackbox_edit_start.sh -- Decrypt a file for editing.
 #
 
+set -e
 . _blackbox_common.sh
 
 for param in """$@""" ; do

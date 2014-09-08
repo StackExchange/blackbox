@@ -10,6 +10,7 @@
 
 # TODO(tlim): Add the unencrypted file to .gitignore
 
+set -e
 . _blackbox_common.sh
 
 unencrypted_file=$(get_unencrypted_filename "$1")
