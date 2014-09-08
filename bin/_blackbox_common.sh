@@ -16,14 +16,17 @@ set -e
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
 # or 'unknown'.
 function _determine_vcs_base_and_type() {
-  if hg root 2>/dev/null ; then
-    VCS_TYPE=hg
-  elif git rev-parse --show-toplevel 2>/dev/null ; then
+  if git rev-parse --show-toplevel 2>/dev/null ; then
     VCS_TYPE=git
+  elif hg root 2>/dev/null ; then
+    # NOTE: hg has to be tested last because it always "succeeds".
+    VCS_TYPE=hg
   else
     echo /dev/null
     VCS_TYPE=unknown
   fi
+  # FIXME: Verify this function by checking for .hg or .git
+  # after determining what we believe to be the answer.
 }
 
 REPOBASE=$(_determine_vcs_base_and_type)
@@ -65,7 +68,15 @@ function fail_if_not_in_repo() {
 
 # Exit with error if filename is not registered on blackbox list.
 function fail_if_not_on_cryptlist() {
-  if ! grep -s -q "$name" "$BB_FILES" ; then
+  # Assumes $1 does NOT have the .gpg extension
+  local name
+  name="$1"
+
+#echo name=$name
+#echo BB_FILES=$BB_FILES
+#echo fgrep -s -q "$name" "$BB_FILES" \; echo '$?'
+
+  if ! grep -x -s -q "$name" "$BB_FILES" ; then
     echo 'ERROR: Please run this script from the base directory.'
     echo 'Exiting...'
     exit 1
