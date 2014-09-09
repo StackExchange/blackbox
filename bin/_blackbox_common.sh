@@ -25,6 +25,7 @@ function _determine_vcs_base_and_type() {
     echo /dev/null
     VCS_TYPE=unknown
   fi
+  export VCS_TYPE
   # FIXME: Verify this function by checking for .hg or .git
   # after determining what we believe to be the answer.
 }
@@ -37,6 +38,13 @@ BB_FILES_FILE="blackbox-files.txt"
 BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
+
+# Return error if not on cryptlist.
+function is_on_cryptlist() {
+  # Assumes $1 does NOT have the .gpg extension
+  local rname=$(vcs_relative_path "$1")
+  grep -F -x -s -q "$rname" "$BB_FILES"
+}
 
 # Exit with error if a file exists.
 function fail_if_exists() {
@@ -69,15 +77,12 @@ function fail_if_not_in_repo() {
 # Exit with error if filename is not registered on blackbox list.
 function fail_if_not_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
-  local name
-  name="$1"
 
-#echo name=$name
-#echo BB_FILES=$BB_FILES
-#echo fgrep -s -q "$name" "$BB_FILES" \; echo '$?'
+  local name="$1"
 
-  if ! grep -x -s -q "$name" "$BB_FILES" ; then
-    echo 'ERROR: Please run this script from the base directory.'
+  if ! is_on_cryptlist "$name" ; then
+    echo "ERROR: $name not found in $BB_FILES"
+    echo "PWD="$(/bin/pwd)
     echo 'Exiting...'
     exit 1
   fi
@@ -114,8 +119,7 @@ function prepare_keychain() {
 function add_filename_to_cryptlist() {
   # If the name is already on the list, this is a no-op.
   # However no matter what the datestamp is updated.
-  local name
-  name="$1"
+  local name=$(vcs_relative_path "$1")
 
   if grep -s -q "$name" "$BB_FILES" ; then
     echo ========== File is registered. No need to add to list.
@@ -289,6 +293,13 @@ function vcs_commit_hg() {
 # Git
 function vcs_commit_git() {
   git commit -m"""$@"""
+}
+
+# Output the path of a file relative to the repo base
+function vcs_relative_path() {
+  # Usage: vcs_relative_path file
+  local name="$1"
+  python -c 'import os ; print os.path.relpath("'$(pwd -P)'/'"$name"'", "'"$REPOBASE"'")'
 }
 
 

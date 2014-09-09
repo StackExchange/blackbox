@@ -7,11 +7,11 @@ export PATH=/home/tlimoncelli/gitwork/blackbox/bin:/usr/lib64/qt-3.3/bin:/usr/lo
 set -e
 
 function PHASE() {
-  echo '===================='
-  echo '===================='
-  echo '=========' """$@"""
-  echo '===================='
-  echo '===================='
+  echo '********************'
+  echo '********************'
+  echo '*********' """$@"""
+  echo '********************'
+  echo '********************'
 }
 
 function assert_file_missing() {
@@ -24,6 +24,10 @@ function assert_file_missing() {
 function assert_file_exists() {
   if [[ ! -e "$1" ]]; then
     echo "ASSERT FAILED: ${1} should exist."
+    echo "PWD="$(/bin/pwd -P)
+    #echo "LS START"
+    #ls -la
+    #echo "LS END"
     exit 1
   fi
 }
@@ -245,6 +249,22 @@ blackbox_register_new_file mistake.txt
 assert_file_missing mistake.txt
 assert_file_exists mistake.txt.gpg
 # NOTE: It is still in the history. That should be corrected someday.
+
+PHASE 'Bob enrolls my/path/to/relsecrets.txt.'
+mkdir my my/path my/path/to
+echo 'New secret' > my/path/to/relsecrets.txt
+cd my/path/to
+blackbox_register_new_file relsecrets.txt
+assert_file_missing relsecrets.txt
+assert_file_exists relsecrets.txt.gpg
+
+PHASE 'Bob decrypts relsecrets.txt.'
+cd ..
+blackbox_edit_start to/relsecrets.txt
+assert_file_exists to/relsecrets.txt
+assert_file_exists to/relsecrets.txt.gpg
+assert_file_md5hash to/relsecrets.txt "c47f9c3c8ce03d895b883ac22384cb67"
+cd ../..
 
 # TODO(tlim): Add test to make sure that now alice can NOT decrypt.
 
