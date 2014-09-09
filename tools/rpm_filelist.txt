@@ -8,5 +8,4 @@ exec /usr/blackbox/bin/blackbox_initialize        bin/blackbox_initialize
 exec /usr/blackbox/bin/blackbox_postdeploy        bin/blackbox_postdeploy
 exec /usr/blackbox/bin/blackbox_register_new_file bin/blackbox_register_new_file
 exec /usr/blackbox/bin/blackbox_removeadmin       bin/blackbox_removeadmin
-exec /usr/blackbox/bin/blackbox_start             bin/blackbox_start
 exec /usr/blackbox/bin/blackbox_update_all_files  bin/blackbox_update_all_files
