@@ -401,7 +401,7 @@ For the rest of this doc, you'll need to make the following substitutions:
 
 NOTE: This should be more automated.  Patches welcome.
 
-On SECUREHOST, create thew puppet master's keys:
+On SECUREHOST, create the puppet master's keys:
 
 ```
 $ mkdir /tmp/NEWMASTER
@@ -508,7 +508,7 @@ On NEWMASTER, import the keys and decrypt the files:
 sudo -u svc_sadeploy bash   # Become the role account.
 gpg --import /etc/puppet/keyrings/live/pubring.gpg
 export PATH=$PATH:/path/to/blackbox/bin
-blackbox_postinstall
+blackbox_postdeploy
 sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
 ```
 
