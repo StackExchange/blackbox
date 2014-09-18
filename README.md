@@ -401,7 +401,7 @@ For the rest of this doc, you'll need to make the following substitutions:
 
 NOTE: This should be more automated.  Patches welcome.
 
-On SECUREHOST, create thew puppet master's keys:
+On SECUREHOST, create the puppet master's keys:
 
 ```
 $ mkdir /tmp/NEWMASTER
@@ -449,7 +449,7 @@ Command> save
 Now securely export this directory to NEWMASTER:
 
 ```
-$ gpg --homedir . --export -a svc_sadeploy >/tmp/NEWMACHINE/pubkey.txt
+$ gpg --homedir . --export -a svc_sadeploy >/tmp/NEWMASTER/pubkey.txt
 $ tar cvf /tmp/keys.tar .
 $ rsync -avP /tmp/keys.tar NEWMASTER:/tmp/.
 ```
@@ -467,7 +467,7 @@ Back on SECUREHOST, import the pubkey into the repository.
 
 ```
 $ cd keyrings/live
-$ gpg --homedir . --import /tmp/NEWMACHINE/pubkey.txt
+$ gpg --homedir . --import /tmp/NEWMASTER/pubkey.txt
 ```
 -->
 
@@ -508,7 +508,7 @@ On NEWMASTER, import the keys and decrypt the files:
 sudo -u svc_sadeploy bash   # Become the role account.
 gpg --import /etc/puppet/keyrings/live/pubring.gpg
 export PATH=$PATH:/path/to/blackbox/bin
-blackbox_postinstall
+blackbox_postdeploy
 sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
 ```
 
