@@ -20,6 +20,6 @@ for param in """$@""" ; do
     esac
   fi
   blackbox_edit_start "$param"
-  $EDITOR $unencrypted_file
+  $EDITOR $(get_unencrypted_filename $param)
   blackbox_edit_end "$param"
 done
