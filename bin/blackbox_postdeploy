@@ -41,7 +41,7 @@ echo '========== Decrypting new/changed files: START'
 while read unencrypted_file; do
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
-  chmod g+r,o-rwx "$unencrypted_file"
+  chmod g+r "$unencrypted_file"
   if [[ ! -z "$FILE_GROUP" ]]; then
     chgrp $FILE_GROUP "$unencrypted_file"
   fi
