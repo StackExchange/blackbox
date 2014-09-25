@@ -475,7 +475,7 @@ Back on SECUREHOST, add the new email address to keyrings/live/blackbox-admins.t
 
 ```
 cd /path/to/the/repo
-blackbox_addadmin $KEYNAME
+blackbox_addadmin $KEYNAME /tmp/NEWMASTER
 ```
 
 Verify that secring.gpg is a zero-length file. If it isn't, you have
