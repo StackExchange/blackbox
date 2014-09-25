@@ -144,7 +144,7 @@ function encrypt_file() {
   encrypted="$2"
 
   echo "========== Encrypting: $unencrypted"
-  gpg --yes --trust-model=always --homedir keyrings/live/ --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted"
+  gpg --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted"
   echo '========== Encrypting: DONE'
 }
 
