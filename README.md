@@ -496,7 +496,6 @@ git commit -m"Adding key for KEYNAME" pubring.gpg trustdb.gpg blackbox-admins.tx
 Regenerate all encrypted files with the new key:
 
 ```
-gpg --import keyrings/live/pubring.gpg
 blackbox_update_all_files
 git status
 git commit -m"updated encryption" -a

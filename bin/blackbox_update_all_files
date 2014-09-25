@@ -15,6 +15,7 @@ if [[ -z $GPG_AGENT_INFO ]]; then
 fi
 
 disclose_admins
+prepare_keychain
 
 echo '========== ENCRYPTED FILES TO BE RE-ENCRYPTED:'
 awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
