@@ -299,7 +299,7 @@ function vcs_commit_git() {
 function vcs_relative_path() {
   # Usage: vcs_relative_path file
   local name="$1"
-  python -c 'import os ; print os.path.relpath("'$(pwd -P)'/'"$name"'", "'"$REPOBASE"'")'
+  python -c 'import os ; print(os.path.relpath("'$(pwd -P)'/'"$name"'", "'"$REPOBASE"'"))'
 }
 
 
