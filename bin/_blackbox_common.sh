@@ -38,6 +38,7 @@ BB_FILES_FILE="blackbox-files.txt"
 BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
+: ${DECRYPT_UMASK:=o=} ;
 
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
@@ -152,11 +153,16 @@ function encrypt_file() {
 function decrypt_file() {
   local encrypted
   local unencrypted
+  local old_umask
   encrypted="$1"
   unencrypted="$2"
 
   echo "========== EXTRACTING $unencrypted"
+
+  old_umask=$(umask)
+  umask $DECRYPT_UMASK
   gpg -q --decrypt -o "$unencrypted" "$encrypted"
+  umask $old_umask
 }
 
 # Decrypt .gpg file, overwriting unencrypted file if it exists.
@@ -165,6 +171,7 @@ function decrypt_file_overwrite() {
   local unencrypted
   local old_hash
   local new_hash
+  local old_umask
   encrypted="$1"
   unencrypted="$2"
 
@@ -173,7 +180,12 @@ function decrypt_file_overwrite() {
   else
     old_hash=unmatchable
   fi
+
+  old_umask=$(umask)
+  umask $DECRYPT_UMASK
   gpg --yes -q --decrypt -o "$unencrypted" "$encrypted"
+  umask $old_umask
+
   new_hash=$(md5sum_file "$unencrypted")
   if [[ $old_hash != $new_hash ]]; then
     echo "========== EXTRACTED $unencrypted"
