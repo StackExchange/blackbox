@@ -202,12 +202,16 @@ function shred_file() {
   if which shred >/dev/null ; then
     CMD=shred
     OPT=-u
+  elif which srm >/dev/null ; then
+    #NOTE: srm by default uses 35-pass Gutmann algorithm
+    CMD=srm
+    OPT=-f
   else
     CMD=rm
     OPT=-f
   fi
 
-  $CMD $OPT "$name"
+  $CMD $OPT -- "$name"
 }
 
 function md5sum_file() {
@@ -324,7 +328,7 @@ function vcs_remove() {
 }
 # Mercurial
 function vcs_remove_hg() {
-  hg rm -A """$@"""
+  hg rm -A -- """$@"""
 }
 # Git
 function vcs_remove_git() {
