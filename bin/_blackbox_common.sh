@@ -202,6 +202,10 @@ function shred_file() {
   if which shred >/dev/null ; then
     CMD=shred
     OPT=-u
+  elif which srm >/dev/null ; then
+    #NOTE: srm by default uses 35-pass Gutmann algorithm
+    CMD=srm
+    OPT=-f
   else
     CMD=rm
     OPT=-f
