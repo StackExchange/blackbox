@@ -327,6 +327,8 @@ You'll want to include blackbox's "bin" directory in your PATH:
 export PATH=$PATH:/the/path/to/blackbox/bin
 ```
 
+If you're using antigen, adding `antigen bundle StackExchange/blackbox` to
+your .zshrc will download this repository and add it to your $PATH.
 
 ### For the first user, create a GPG key and add it to the key ring.
 
