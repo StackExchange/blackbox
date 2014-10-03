@@ -325,6 +325,7 @@ To add "blackbox" to a git or mercurial repo, you'll need to do the following:
 You'll want to include blackbox's "bin" directory in your PATH:
 ```
 export PATH=$PATH:/the/path/to/blackbox/bin
+blackbox_initialize
 ```
 
 If you're using antigen, adding `antigen bundle StackExchange/blackbox` to
