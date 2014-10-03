@@ -211,7 +211,7 @@ function shred_file() {
     OPT=-f
   fi
 
-  $CMD $OPT "$name"
+  $CMD $OPT -- "$name"
 }
 
 function md5sum_file() {
@@ -328,7 +328,7 @@ function vcs_remove() {
 }
 # Mercurial
 function vcs_remove_hg() {
-  hg rm -A """$@"""
+  hg rm -A -- """$@"""
 }
 # Git
 function vcs_remove_git() {
