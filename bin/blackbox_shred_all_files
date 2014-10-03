@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_shred_all_files -- shred all decrypted versions of encrypted files
+#
+
+set -e
+. _blackbox_common.sh
+
+echo '========== ENCRYPTED FILES THAT WERE UNLOCKED:'
+awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
+
+echo '========== FILES THAT WILL BE SHREDDED:'
+for i in $(<$BB_FILES) ; do
+  unencrypted_file=$(get_unencrypted_filename "$i")
+  encrypted_file=$(get_encrypted_filename "$i")
+  if [[ -f "$unencrypted_file" ]]; then
+    shred_file "$unencrypted_file"
+  fi
+done
+
+echo '========== DONE.'
