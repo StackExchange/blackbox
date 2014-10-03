@@ -11,7 +11,6 @@ echo '========== ENCRYPTED FILES THAT WERE UNLOCKED:'
 awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
 
 echo '========== FILES THAT WILL BE SHREDDED:'
-need_warning=false
 for i in $(<$BB_FILES) ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
   encrypted_file=$(get_encrypted_filename "$i")

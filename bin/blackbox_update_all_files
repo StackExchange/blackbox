@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_edit_end.sh -- Re-encrypt file after edits.
+# blackbox_update_all_files -- Re-encrypt file after edits.
 #
 
 set -e
