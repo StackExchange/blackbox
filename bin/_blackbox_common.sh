@@ -214,22 +214,6 @@ function shred_file() {
   $CMD $OPT -- "$name"
 }
 
-function md5sum_file() {
-  # Portably generate the MD5 hash of file $1.
-  case $(uname -s) in
-    Darwin )
-      md5 -r "$1" | awk '{ print $1 }'
-      ;;
-    Linux )
-      md5sum "$1" | awk '{ print $1 }'
-      ;;
-    * )
-      echo 'ERROR: Unknown OS. Exiting.'
-      exit 1
-      ;;
-  esac
-}
-
 # $1 is the name of a file that contains a list of files.
 # For each filename, output the individual subdirectories
 # leading up to that file. i.e. one one/two one/two/three
@@ -247,6 +231,41 @@ function enumerate_subdirs() {
     done
   done <"$listfile" | sort -u
 }
+
+# Output the path of a file relative to the repo base
+function vcs_relative_path() {
+  # Usage: vcs_relative_path file
+  local name="$1"
+  python -c 'import os ; print(os.path.relpath("'$(pwd -P)'/'"$name"'", "'"$REPOBASE"'"))'
+}
+
+#
+# Portability Section:
+#
+
+#
+# Abstract the difference between Linux and Mac OS X:
+#
+
+function md5sum_file() {
+  # Portably generate the MD5 hash of file $1.
+  case $(uname -s) in
+    Darwin )
+      md5 -r "$1" | awk '{ print $1 }'
+      ;;
+    Linux )
+      md5sum "$1" | awk '{ print $1 }'
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
+}
+
+#
+# Abstract the difference between git and hg:
+#
 
 # Are we in git, hg, or unknown repo?
 function which_vcs() {
@@ -298,6 +317,7 @@ function vcs_add_git() {
   git add """$@"""
 }
 
+
 # Commit a file to the repo
 function vcs_commit() {
   vcs_commit_$(which_vcs) """$@"""
@@ -311,15 +331,6 @@ function vcs_commit_git() {
   git commit -m"""$@"""
 }
 
-# Output the path of a file relative to the repo base
-function vcs_relative_path() {
-  # Usage: vcs_relative_path file
-  local name="$1"
-  python -c 'import os ; print(os.path.relpath("'$(pwd -P)'/'"$name"'", "'"$REPOBASE"'"))'
-}
-
-
-# TODO(tlim): Rename these vcs_rm_file* to be in sync with the others.
 
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
