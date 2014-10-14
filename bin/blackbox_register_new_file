@@ -8,10 +8,11 @@
 # to systems that need the plaintext (unencrypted) versions, run
 # blackbox_postdeploy.sh to decrypt all the files.
 
-# TODO(tlim): Add the unencrypted file to .gitignore
+# TODO(tlim): Add the unencrypted file to .hgignore
 
 set -e
 . _blackbox_common.sh
+_determine_vcs_base_and_type
 
 unencrypted_file=$(get_unencrypted_filename "$1")
 encrypted_file=$(get_encrypted_filename "$1")
@@ -45,6 +46,19 @@ if $SECRETSEXPOSED ; then
 else
   COMMIT_FILES="$BB_FILES $encrypted_file"
 fi
+
+# TODO(tlim): This should be moved to _blackbox_common.sh in a
+# VCS-independent way.
+IGNOREFILE=".${VCS_TYPE}ignore"
+if [[ $VCS_TYPE = 'git' ]]; then
+  ignored_file="$(echo "$unencrypted_file" | sed 's/^\([!#]\)/\\\1/')"
+  if ! grep -Fsx >/dev/null "$ignored_file" "$IGNOREFILE"; then
+    echo "$ignored_file" >>"$IGNOREFILE"
+    COMMIT_FILES="$COMMIT_FILES $IGNOREFILE"
+  fi
+  vcs_add "$IGNOREFILE"
+fi
+
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
 vcs_add $BB_FILES $encrypted_file
 vcs_commit "registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
