@@ -298,6 +298,13 @@ assert_file_missing '#andpounds.txt'
 assert_file_exists '#andpounds.txt'.gpg
 assert_line_exists '\#andpounds.txt' .gitignore
 
+PHASE 'Bob enrolls stars*bars?.txt'
+echo A very commented file >'stars*bars?.txt'
+blackbox_register_new_file 'stars*bars?.txt'
+assert_file_missing 'stars*bars?.txt'
+assert_file_exists 'stars*bars?.txt'.gpg
+assert_line_exists 'stars\*bars\?.txt' .gitignore
+
 # TODO(tlim): Add test to make sure that now alice can NOT decrypt.
 
 #
