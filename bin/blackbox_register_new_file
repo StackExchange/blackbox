@@ -47,6 +47,8 @@ else
   COMMIT_FILES="$BB_FILES $encrypted_file"
 fi
 
+# TODO(tlim): This should be moved to _blackbox_common.sh in a
+# VCS-independent way.
 IGNOREFILE=".${VCS_TYPE}ignore"
 if [[ $VCS_TYPE = 'git' ]]; then
   ignored_file="$(echo "$unencrypted_file" | sed 's/^\([!#]\)/\\\1/')"
