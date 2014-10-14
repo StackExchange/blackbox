@@ -63,6 +63,7 @@ cd "$OUTPUTDIR" && fpm -s dir -t rpm \
   -n "${PACKAGENAME}" \
   --version "${PKGVERSION}" \
   --iteration "${PKGRELEASE}" \
+  --description 'Safely store secrets in Git/Hg repos using GPG encryption' \
   -C "$OUTPUTDIR/installroot" \
   .
 
