@@ -37,8 +37,7 @@ unlock:
 test:
 	echo "You don't want to run this."
 	exit 1
-	pkill gpg-agent ; rm -rf /tmp/tmp.* ; \
-		export PATH=/home/tlimoncelli/gitwork/blackbox/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin ; \
-		cd ~/gitwork/blackbox ; \
-		tools/confidence_test.sh ; \
-		if [[ -e ~/.gnupg ]]; then echo ERROR: '~/.gnupg' should not exist ; false ; fi
+	pkill gpg-agent ; rm -rf /tmp/tmp.*
+	export PATH=~/gitwork/blackbox/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin ; \
+		cd ~/gitwork/blackbox && tools/confidence_test.sh
+	@if [[ -e ~/.gnupg ]]; then echo ERROR: '~/.gnupg' should not exist. If it does, this means test test suite may be poluting your actual .gnupg configuration. ; false ; fi
