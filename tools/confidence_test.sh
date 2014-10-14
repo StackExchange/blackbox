@@ -52,6 +52,30 @@ function assert_file_group() {
     exit 1
   fi
 }
+function assert_line_not_exists() {
+  local target="$1"
+  local file="$2"
+  assert_file_exists "$file"
+  if grep -F -x -s -q >/dev/null "$target" "$file" ; then
+    echo "ASSERT FAILED: line '$target' should not exist in file $file"
+    echo ==== file contents: START "$file"
+    cat "$file"
+    echo ==== file contents: END "$file"
+    exit 1
+  fi
+}
+function assert_line_exists() {
+  local target="$1"
+  local file="$2"
+  assert_file_exists "$file"
+  if ! grep -F -x -s -q >/dev/null "$target" "$file" ; then
+    echo "ASSERT FAILED: line '$target' should not exist in file $file"
+    echo ==== file contents: START "$file"
+    cat "$file"
+    echo ==== file contents: END "$file"
+    exit 1
+  fi
+}
 
 make_tempdir test_repository
 cd "$test_repository"
@@ -210,13 +234,7 @@ rm secret.txt
 
 PHASE 'Bob removes alice.'
 blackbox_removeadmin alice@example.com
-if grep -xs >dev/null 'alice@example.com' keyrings/live/blackbox-admins.txt ; then
-  echo "ASSERT FAILED: alice@example.com should be removed from keyrings/live/blackbox-admins.txt"
-  echo ==== file start
-  cat keyrings/live/blackbox-admins.txt
-  echo ==== file end
-  exit 1
-fi
+assert_line_not_exists 'alice@example.com' keyrings/live/blackbox-admins.txt
 
 PHASE 'Bob reencrypts files so alice can not access them.'
 blackbox_update_all_files
@@ -266,6 +284,20 @@ assert_file_exists to/relsecrets.txt.gpg
 assert_file_md5hash to/relsecrets.txt "c47f9c3c8ce03d895b883ac22384cb67"
 cd ../..
 
+PHASE 'Bob enrolls !important!.txt'
+echo A very important file >'!important!.txt'
+blackbox_register_new_file '!important!.txt'
+assert_file_missing '!important!.txt'
+assert_file_exists '!important!.txt'.gpg
+assert_line_exists '\!important!.txt' .gitignore
+
+PHASE 'Bob enrolls #andpounds.txt'
+echo A very commented file >'#andpounds.txt'
+blackbox_register_new_file '#andpounds.txt'
+assert_file_missing '#andpounds.txt'
+assert_file_exists '#andpounds.txt'.gpg
+assert_line_exists '\#andpounds.txt' .gitignore
+
 # TODO(tlim): Add test to make sure that now alice can NOT decrypt.
 
 #
@@ -277,7 +309,7 @@ if [[ -e $HOME/.gnupg ]]; then
   exit 1
 fi
 
-find * -ls
+find .git?* * -type f -ls
 echo cd "$test_repository"
 echo rm "$test_repository"
 echo DONE.

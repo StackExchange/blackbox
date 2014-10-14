@@ -49,10 +49,12 @@ fi
 
 IGNOREFILE=".${VCS_TYPE}ignore"
 if [[ $VCS_TYPE = 'git' ]]; then
-    if ! grep -Fsx >/dev/null "$unencrypted_file" "$IGNOREFILE"; then
-        echo "$unencrypted_file" >>"$IGNOREFILE"
-        COMMIT_FILES="$COMMIT_FILES $IGNOREFILE"
-    fi
+  ignored_file="$(echo "$unencrypted_file" | sed 's/^\([!#]\)/\\\1/')"
+  if ! grep -Fsx >/dev/null "$ignored_file" "$IGNOREFILE"; then
+    echo "$ignored_file" >>"$IGNOREFILE"
+    COMMIT_FILES="$COMMIT_FILES $IGNOREFILE"
+  fi
+  vcs_add "$IGNOREFILE"
 fi
 
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
