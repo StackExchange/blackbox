@@ -213,6 +213,15 @@ How to enroll a new file into the system?
 blackbox_register_new_file path/to/file.name.key
 ```
 
+How to remove a file from the system?
+============================
+
+This is a manual process. It happens quite rarely.
+
+1 Remove the file ``keyrings/live/blackbox-files.txt``
+2 Remove references from ``.gitignore`` or ``.hgignore``
+3 Use ``git rm`` or ``hg rm`` as expected.
+
 How to indoctrinate a new user into the system?
 ============================
 
@@ -366,7 +375,8 @@ Push these changes to the repo.  Make sure another user can
 check out and change the contents of the file.
 
 
-### Create a key and subkey for any automated users
+Create a key and subkey for any automated users
+===========================
 
 i.e. This is how a Puppet Master can have access to the unencrypted data.
 
