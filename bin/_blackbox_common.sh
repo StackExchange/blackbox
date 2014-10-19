@@ -19,7 +19,22 @@ function _determine_vcs_base_and_type() {
   if git rev-parse --show-toplevel 2>/dev/null ; then
     VCS_TYPE=git
   elif [ -d ".svn" ] ; then
-    echo `pwd`
+    #find topmost dir with .svn sub-dir
+    parent=""
+    grandparent="."
+    mydir=`pwd`
+    while [ -d "$grandparent/.svn" ]; do
+      parent=$grandparent
+      grandparent="$parent/.."
+    done
+
+    if [ ! -z "$parent" ]; then
+      cd $parent
+      echo `pwd`
+    else
+      exit 1
+    fi
+    cd $mydir
     VCS_TYPE=svn
   elif hg root 2>/dev/null ; then
     # NOTE: hg has to be tested last because it always "succeeds".
