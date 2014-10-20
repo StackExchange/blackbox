@@ -7,7 +7,7 @@ git/mercurial server unless you trust everyone with root access and access to yo
 BlackBox
 ========
 
-Safely store secrets in a VCS repo (i.e. Git or Mercurial). These
+Safely store secrets in a VCS repo (i.e. Git, Mercurial, or Subversion). These
 commands make it easy
 for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are
 "encrypted at rest" in your repository. However, the scripts
@@ -52,8 +52,13 @@ Getting started is easy.  Just `cd` into a Git or Mercurial repository
 and run `blackbox_initialize`.  After that, if a file is to be
 encrypted, run `blackbox_register_new_file` and you are done.  Add
 and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
-To view and/or edit a file, run `blackbox_edit_start`. Run
-`blackbox_edit_end` when you want to "put it back in the box."
+To view and/or edit a file, run `blackbox_edit`; this will decrypt the
+file and open with whatever is specified by your $EDITOR environment
+variable.  When you close the editor the file will automatically be 
+encrypted again and the temporary plaintext file will be shredded.  If
+you need to leave the file decrypted while you update you can use the
+`blackbox_edit_start` to decrypt the file and  `blackbox_edit_end` when 
+you want to "put it back in the box."
 
 
 Why is this important?
