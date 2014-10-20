@@ -48,9 +48,9 @@ files.  Simply set up a GPG key for the Puppet master (or the role
 account that pushes new files to the Puppet master) and have that
 user run `blackbox_postdeploy` after any files are updated.
 
-Getting started is easy.  Just `cd` into a Git or Mercurial repository
-and run `blackbox_initialize`.  After that, if a file is to be
-encrypted, run `blackbox_register_new_file` and you are done.  Add
+Getting started is easy.  Just `cd` into a Git, Mercurial or Subversion
+repository and run `blackbox_initialize`.  After that, if a file is to 
+be encrypted, run `blackbox_register_new_file` and you are done.  Add
 and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
 To view and/or edit a file, run `blackbox_edit`; this will decrypt the
 file and open with whatever is specified by your $EDITOR environment
