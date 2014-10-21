@@ -7,7 +7,8 @@ set -e
 . _blackbox_common.sh
 
 for param in """$@""" ; do
-  if ! is_on_cryptlist "$param" ; then
+  unencrypted_file=$(get_unencrypted_filename "$param")
+  if  [[! is_on_cryptlist "$param" ]] && [[! is_on_cryptlist "$unencrypted_file" ]] ; then
     read -p "Encrypt file $param? (y/n) " ans
     case "$ans" in
       y* | Y*)

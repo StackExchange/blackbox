@@ -14,10 +14,28 @@
  
 # Outputs a string that is the base directory of this VCS repo.
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
-# or 'unknown'.
+# 'svn' or 'unknown'.
 function _determine_vcs_base_and_type() {
   if git rev-parse --show-toplevel 2>/dev/null ; then
     VCS_TYPE=git
+  elif [ -d ".svn" ] ; then
+    #find topmost dir with .svn sub-dir
+    parent=""
+    grandparent="."
+    mydir=`pwd`
+    while [ -d "$grandparent/.svn" ]; do
+      parent=$grandparent
+      grandparent="$parent/.."
+    done
+
+    if [ ! -z "$parent" ]; then
+      cd $parent
+      echo `pwd`
+    else
+      exit 1
+    fi
+    cd $mydir
+    VCS_TYPE=svn
   elif hg root 2>/dev/null ; then
     # NOTE: hg has to be tested last because it always "succeeds".
     VCS_TYPE=hg
@@ -69,7 +87,7 @@ function fail_if_not_exists() {
 function fail_if_not_in_repo() {
   _determine_vcs_base_and_type
   if [[ $VCS_TYPE = "unknown" ]]; then
-    echo "ERROR: This must be run in a VCS repo such as git or hg."
+    echo "ERROR: This must be run in a VCS repo: git, hg, or svn."
     echo Exiting...
     exit 1
   fi
@@ -302,6 +320,17 @@ function is_in_git() {
     echo false
   fi
 }
+# Subversion
+function is_in_svn() {
+  local filename
+  filename="$1"
+
+  if svn list "$filename" ; then
+    echo true
+  else
+    echo false
+  fi 
+}
 
 
 # Add a file to the repo (but don't commit it).
@@ -315,6 +344,10 @@ function vcs_add_hg() {
 # Git
 function vcs_add_git() {
   git add """$@"""
+}
+# Subversion
+function vcs_add_svn() {
+  svn add --parents """$@"""
 }
 
 
@@ -330,6 +363,11 @@ function vcs_commit_hg() {
 function vcs_commit_git() {
   git commit -m"""$@"""
 }
+# Subversion
+function vcs_commit_svn() {
+  svn commit -m"""$@"""
+}
+
 
 
 # Remove file from repo, even if it was deleted locally already.
@@ -344,4 +382,8 @@ function vcs_remove_hg() {
 # Git
 function vcs_remove_git() {
   git rm --ignore-unmatch -f -- """$@"""
+}
+# Subversion
+function vcs_remove_svn() {
+  svn delete """$@"""
 }
