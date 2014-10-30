@@ -3,6 +3,14 @@
 #
 # blackbox_shred_all_files -- shred all decrypted versions of encrypted files
 #
+# Shred: To securely delete a file.
+#
+# Typical uses:
+#   After running blackbox_edit_start, deciding not to edit the file.
+#   A developer that wants to securely clean up a workspace before deleting it.
+#   An automated process that doesn't want to leave
+#       plaintext (unencrypted) files laying around.
+#
 # NOTE: The output lists files that were decrypted and are being
 # shredded.  For example, if you have many encrypted files but none
 # have been decrypted for editing, you will see an empty list.
