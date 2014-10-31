@@ -274,6 +274,9 @@ function md5sum_file() {
     Linux )
       md5sum "$1" | awk '{ print $1 }'
       ;;
+    CYGWIN* )
+      md5sum "$1" | awk '{ print $1 }'
+      ;;
     * )
       echo 'ERROR: Unknown OS. Exiting.'
       exit 1
