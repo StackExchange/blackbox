@@ -80,6 +80,41 @@ exception of a few specific files, is key to the kind of
 collaboration that DevOps and modern IT practitioniers
 need to do.
 
+Compatibility:
+============================
+
+Blackbox automatically determines which VCS you are using
+and does the right thing.  It has a plug-in architecture
+to make it easy to extend to work with other systems.
+It has been tested to work with many operating systems.
+
+
+* Version Control systems
+  * `git` -- The Git
+  * `hg` -- Mercurial
+  * `svn` -- SubVersion (Thanks, Ben Drasin!)
+* Operating system
+  * CentOS
+  * MacOS X
+  * Cygwin (Thanks, Ben Drasin!)
+
+To add or fix support for a VCS system, look for code at the end
+of `bin/_blackbox_common.sh`
+
+To add or fix support for a new operating system, look for the case
+statements in `bin/_blackbox_common.sh` and `bin/_stack_lib.sh` and
+maybe `tools/confidence_test.sh`
+
+Note: Cywin support requires the following packages:
+
+  * Normal operation:
+    * gnupg
+    * git or mercurial or subversion (as appropriate)
+  * Development (if you will be adding code and want to run the confidence test)
+    * procps
+    * make
+    * git (the confidence test currently only tests git)
+
 
 How is the encryption done?
 ============================
@@ -135,7 +170,7 @@ There are 4 reasons:
   4. hiera-eyaml didn't exist when I wrote this.
 
 
-What does this look like to the typical sysadmin?
+What does this look like to the typical user?
 ================================
 
 *  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
@@ -544,6 +579,29 @@ rm -rf /tmp/NEWMASTER
 ```
 
 Also shred any other temporary files you may have made.
+
+
+Help out: Submit bugs, pull requests and ideas:
+============
+
+I welcome code changes, questions, bug reports and feedback!
+
+  * Submit code: https://github.com/StackExchange/blackbox
+  * Report bugs/questions: https://github.com/StackExchange/blackbox/issues
+
+Tip for submitting code:
+
+After you make a change, please re-run the confidence tests.  This
+runs through various procedures and checks the results.
+
+To run the tests:
+
+```
+make confidence
+```
+
+Note: The tests currently assume "git" and have been tested
+on CentOS and Cygwin.
 
 
 Alternatives
