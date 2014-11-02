@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PATH=/home/tlimoncelli/gitwork/blackbox/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+export PATH="$HOME/gitwork/blackbox/bin":/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
 . _stack_lib.sh
 
@@ -45,6 +45,14 @@ function assert_file_group() {
   local file="$1"
   local wanted="$2"
   assert_file_exists "$file"
+
+  case $(uname -s) in
+    CYGWIN* )
+      echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."
+      return 0
+      ;;
+  esac
+
   local found=$(ls -l "$file" | awk '{ print $4 }')
   # NB(tlim): We could do this with 'stat' but it would break on BSD-style OSs.
   if [[ "$wanted" != "$found" ]]; then
@@ -119,8 +127,8 @@ PHASE 'She creates a GPG key...'
 make_self_deleting_tempfile gpgconfig
 cat >"$gpgconfig" <<EOF
 %echo Generating a basic OpenPGP key
-Key-Type: default
-Subkey-Type: default
+Key-Type: RSA
+Subkey-Type: RSA
 Name-Real: Alice Example
 Name-Comment: my password is the lowercase letter a
 Name-Email: alice@example.com
@@ -157,8 +165,8 @@ PHASE 'Bob creates a gpg key.'
 
 cat >"$gpgconfig" <<EOF
 %echo Generating a basic OpenPGP key
-Key-Type: default
-Subkey-Type: default
+Key-Type: RSA
+Subkey-Type: RSA
 Name-Real: Bob Example
 Name-Comment: my password is the lowercase letter b
 Name-Email: bob@example.com
