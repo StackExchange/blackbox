@@ -19,6 +19,8 @@ fail_if_keychain_has_secrets
 encrypt_file "$unencrypted_file" "$encrypted_file"
 shred_file "$unencrypted_file"
 
+_determine_vcs_base_and_type
+
 echo "========== UPDATED ${encrypted_file}"
 echo "Likely next step:"
-echo "    git commit -m\"${encrypted_file} updated\" $encrypted_file"
+echo "    $VCS_TYPE commit -m\"${encrypted_file} updated\" $encrypted_file"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PATH=/home/tlimoncelli/gitwork/blackbox/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+export PATH="$HOME/gitwork/blackbox/bin":/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
 . _stack_lib.sh
 
@@ -45,10 +45,42 @@ function assert_file_group() {
   local file="$1"
   local wanted="$2"
   assert_file_exists "$file"
+
+  case $(uname -s) in
+    CYGWIN* )
+      echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."
+      return 0
+      ;;
+  esac
+
   local found=$(ls -l "$file" | awk '{ print $4 }')
   # NB(tlim): We could do this with 'stat' but it would break on BSD-style OSs.
   if [[ "$wanted" != "$found" ]]; then
     echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
+    exit 1
+  fi
+}
+function assert_line_not_exists() {
+  local target="$1"
+  local file="$2"
+  assert_file_exists "$file"
+  if grep -F -x -s -q >/dev/null "$target" "$file" ; then
+    echo "ASSERT FAILED: line '$target' should not exist in file $file"
+    echo ==== file contents: START "$file"
+    cat "$file"
+    echo ==== file contents: END "$file"
+    exit 1
+  fi
+}
+function assert_line_exists() {
+  local target="$1"
+  local file="$2"
+  assert_file_exists "$file"
+  if ! grep -F -x -s -q >/dev/null "$target" "$file" ; then
+    echo "ASSERT FAILED: line '$target' should not exist in file $file"
+    echo ==== file contents: START "$file"
+    cat "$file"
+    echo ==== file contents: END "$file"
     exit 1
   fi
 }
@@ -95,8 +127,8 @@ PHASE 'She creates a GPG key...'
 make_self_deleting_tempfile gpgconfig
 cat >"$gpgconfig" <<EOF
 %echo Generating a basic OpenPGP key
-Key-Type: default
-Subkey-Type: default
+Key-Type: RSA
+Subkey-Type: RSA
 Name-Real: Alice Example
 Name-Comment: my password is the lowercase letter a
 Name-Email: alice@example.com
@@ -133,8 +165,8 @@ PHASE 'Bob creates a gpg key.'
 
 cat >"$gpgconfig" <<EOF
 %echo Generating a basic OpenPGP key
-Key-Type: default
-Subkey-Type: default
+Key-Type: RSA
+Subkey-Type: RSA
 Name-Real: Bob Example
 Name-Comment: my password is the lowercase letter b
 Name-Email: bob@example.com
@@ -210,13 +242,7 @@ rm secret.txt
 
 PHASE 'Bob removes alice.'
 blackbox_removeadmin alice@example.com
-if grep -xs >dev/null 'alice@example.com' keyrings/live/blackbox-admins.txt ; then
-  echo "ASSERT FAILED: alice@example.com should be removed from keyrings/live/blackbox-admins.txt"
-  echo ==== file start
-  cat keyrings/live/blackbox-admins.txt
-  echo ==== file end
-  exit 1
-fi
+assert_line_not_exists 'alice@example.com' keyrings/live/blackbox-admins.txt
 
 PHASE 'Bob reencrypts files so alice can not access them.'
 blackbox_update_all_files
@@ -266,6 +292,27 @@ assert_file_exists to/relsecrets.txt.gpg
 assert_file_md5hash to/relsecrets.txt "c47f9c3c8ce03d895b883ac22384cb67"
 cd ../..
 
+PHASE 'Bob enrolls !important!.txt'
+echo A very important file >'!important!.txt'
+blackbox_register_new_file '!important!.txt'
+assert_file_missing '!important!.txt'
+assert_file_exists '!important!.txt'.gpg
+assert_line_exists '\!important!.txt' .gitignore
+
+PHASE 'Bob enrolls #andpounds.txt'
+echo A very commented file >'#andpounds.txt'
+blackbox_register_new_file '#andpounds.txt'
+assert_file_missing '#andpounds.txt'
+assert_file_exists '#andpounds.txt'.gpg
+assert_line_exists '\#andpounds.txt' .gitignore
+
+PHASE 'Bob enrolls stars*bars?.txt'
+echo A very commented file >'stars*bars?.txt'
+blackbox_register_new_file 'stars*bars?.txt'
+assert_file_missing 'stars*bars?.txt'
+assert_file_exists 'stars*bars?.txt'.gpg
+assert_line_exists 'stars\*bars\?.txt' .gitignore
+
 # TODO(tlim): Add test to make sure that now alice can NOT decrypt.
 
 #
@@ -277,7 +324,7 @@ if [[ -e $HOME/.gnupg ]]; then
   exit 1
 fi
 
-find * -ls
+find .git?* * -type f -ls
 echo cd "$test_repository"
 echo rm "$test_repository"
 echo DONE.

@@ -7,7 +7,7 @@ git/mercurial server unless you trust everyone with root access and access to yo
 BlackBox
 ========
 
-Safely store secrets in a VCS repo (i.e. Git or Mercurial). These
+Safely store secrets in a VCS repo (i.e. Git, Mercurial, or Subversion). These
 commands make it easy
 for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are
 "encrypted at rest" in your repository. However, the scripts
@@ -48,12 +48,17 @@ files.  Simply set up a GPG key for the Puppet master (or the role
 account that pushes new files to the Puppet master) and have that
 user run `blackbox_postdeploy` after any files are updated.
 
-Getting started is easy.  Just `cd` into a Git or Mercurial repository
-and run `blackbox_initialize`.  After that, if a file is to be
-encrypted, run `blackbox_register_new_file` and you are done.  Add
+Getting started is easy.  Just `cd` into a Git, Mercurial or Subversion
+repository and run `blackbox_initialize`.  After that, if a file is to 
+be encrypted, run `blackbox_register_new_file` and you are done.  Add
 and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
-To view and/or edit a file, run `blackbox_edit_start`. Run
-`blackbox_edit_end` when you want to "put it back in the box."
+To view and/or edit a file, run `blackbox_edit`; this will decrypt the
+file and open with whatever is specified by your $EDITOR environment
+variable.  When you close the editor the file will automatically be 
+encrypted again and the temporary plaintext file will be shredded.  If
+you need to leave the file decrypted while you update you can use the
+`blackbox_edit_start` to decrypt the file and  `blackbox_edit_end` when 
+you want to "put it back in the box."
 
 
 Why is this important?
@@ -74,6 +79,41 @@ Being able to be open and transparent about our code, with the
 exception of a few specific files, is key to the kind of
 collaboration that DevOps and modern IT practitioniers
 need to do.
+
+Compatibility:
+============================
+
+Blackbox automatically determines which VCS you are using
+and does the right thing.  It has a plug-in architecture
+to make it easy to extend to work with other systems.
+It has been tested to work with many operating systems.
+
+
+* Version Control systems
+  * `git` -- The Git
+  * `hg` -- Mercurial
+  * `svn` -- SubVersion (Thanks, Ben Drasin!)
+* Operating system
+  * CentOS
+  * MacOS X
+  * Cygwin (Thanks, Ben Drasin!)
+
+To add or fix support for a VCS system, look for code at the end
+of `bin/_blackbox_common.sh`
+
+To add or fix support for a new operating system, look for the case
+statements in `bin/_blackbox_common.sh` and `bin/_stack_lib.sh` and
+maybe `tools/confidence_test.sh`
+
+Note: Cywin support requires the following packages:
+
+  * Normal operation:
+    * gnupg
+    * git or mercurial or subversion (as appropriate)
+  * Development (if you will be adding code and want to run the confidence test)
+    * procps
+    * make
+    * git (the confidence test currently only tests git)
 
 
 How is the encryption done?
@@ -130,7 +170,7 @@ There are 4 reasons:
   4. hiera-eyaml didn't exist when I wrote this.
 
 
-What does this look like to the typical sysadmin?
+What does this look like to the typical user?
 ================================
 
 *  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
@@ -212,6 +252,15 @@ How to enroll a new file into the system?
 ```
 blackbox_register_new_file path/to/file.name.key
 ```
+
+How to remove a file from the system?
+============================
+
+This is a manual process. It happens quite rarely.
+
+1 Remove the file ``keyrings/live/blackbox-files.txt``
+2 Remove references from ``.gitignore`` or ``.hgignore``
+3 Use ``git rm`` or ``hg rm`` as expected.
 
 How to indoctrinate a new user into the system?
 ============================
@@ -325,8 +374,11 @@ To add "blackbox" to a git or mercurial repo, you'll need to do the following:
 You'll want to include blackbox's "bin" directory in your PATH:
 ```
 export PATH=$PATH:/the/path/to/blackbox/bin
+blackbox_initialize
 ```
 
+If you're using antigen, adding `antigen bundle StackExchange/blackbox` to
+your .zshrc will download this repository and add it to your $PATH.
 
 ### For the first user, create a GPG key and add it to the key ring.
 
@@ -363,7 +415,8 @@ Push these changes to the repo.  Make sure another user can
 check out and change the contents of the file.
 
 
-### Create a key and subkey for any automated users
+Create a key and subkey for any automated users
+===========================
 
 i.e. This is how a Puppet Master can have access to the unencrypted data.
 
@@ -526,6 +579,29 @@ rm -rf /tmp/NEWMASTER
 ```
 
 Also shred any other temporary files you may have made.
+
+
+Help out: Submit bugs, pull requests and ideas:
+============
+
+I welcome code changes, questions, bug reports and feedback!
+
+  * Submit code: https://github.com/StackExchange/blackbox
+  * Report bugs/questions: https://github.com/StackExchange/blackbox/issues
+
+Tip for submitting code:
+
+After you make a change, please re-run the confidence tests.  This
+runs through various procedures and checks the results.
+
+To run the tests:
+
+```
+make confidence
+```
+
+Note: The tests currently assume "git" and have been tested
+on CentOS and Cygwin.
 
 
 Alternatives

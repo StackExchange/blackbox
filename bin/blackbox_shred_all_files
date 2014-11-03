@@ -3,19 +3,27 @@
 #
 # blackbox_shred_all_files -- shred all decrypted versions of encrypted files
 #
+# Shred: To securely delete a file.
+#
+# Typical uses:
+#   After running blackbox_edit_start, deciding not to edit the file.
+#   A developer that wants to securely clean up a workspace before deleting it.
+#   An automated process that doesn't want to leave
+#       plaintext (unencrypted) files laying around.
+#
+# NOTE: The output lists files that were decrypted and are being
+# shredded.  For example, if you have many encrypted files but none
+# have been decrypted for editing, you will see an empty list.
 
 set -e
 . _blackbox_common.sh
 
-echo '========== ENCRYPTED FILES THAT WERE UNLOCKED:'
-awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
-
-echo '========== FILES THAT WILL BE SHREDDED:'
+echo '========== FILES BEING SHREDDED:'
 for i in $(<$BB_FILES) ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
   encrypted_file=$(get_encrypted_filename "$i")
   if [[ -f "$unencrypted_file" ]]; then
-    echo "$unencrypted_file"
+    echo "    $unencrypted_file"
     shred_file "$unencrypted_file"
   fi
 done

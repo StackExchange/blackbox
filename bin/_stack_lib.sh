@@ -60,6 +60,9 @@ function make_self_deleting_tempfile() {
     Linux )
       name=$(mktemp)
       ;;
+    CYGWIN* )
+      name=$(mktemp)
+      ;;
     * )
       echo 'ERROR: Unknown OS. Exiting.'
       exit 1
@@ -80,6 +83,9 @@ function make_tempdir() {
       name=$(mktemp -d -t _stacklib_ )
       ;;
     Linux )
+      name=$(mktemp -d)
+      ;;
+    CYGWIN* )
       name=$(mktemp -d)
       ;;
     * )
