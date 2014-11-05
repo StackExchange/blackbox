@@ -38,12 +38,13 @@ prepare_keychain
 
 # Decrypt:
 echo '========== Decrypting new/changed files: START'
-while read unencrypted_file; do
+exec 99<"$BB_FILES"
+while read -u 99 unencrypted_file; do
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
   chmod g+r "$unencrypted_file"
   if [[ ! -z "$FILE_GROUP" ]]; then
     chgrp $FILE_GROUP "$unencrypted_file"
   fi
-done <"$BB_FILES"
+done
 echo '========== Decrypting new/changed files: DONE'
