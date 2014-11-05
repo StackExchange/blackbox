@@ -14,7 +14,7 @@ set -e
 _determine_vcs_base_and_type  # Sets VCS_TYPE
 
 if [[ $1 != 'yes' ]]; then
-  read -p "Enable blackbox for this $VCS_TYPE repo? (yes/no) " ans
+  read -r -p "Enable blackbox for this $VCS_TYPE repo? (yes/no) " ans
   if [[ $ans = 'no' || $ans = 'n' || $ans = '' ]]; then
     echo 'Exiting...'
     exit 1

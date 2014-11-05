@@ -11,7 +11,7 @@ if [[ -z $GPG_AGENT_INFO ]]; then
   echo 'WARNING: You probably want to run gpg-agent as'
   echo 'you will be asked for your passphrase many times.'
   echo 'Example: $ eval $(gpg-agent --daemon)'
-  read -p 'Press CTRL-C now to stop. ENTER to continue: '
+  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
 fi
 
 disclose_admins
@@ -33,7 +33,7 @@ done
 if $need_warning ; then
   echo
   echo 'WARNING: This will overwrite any unencrypted files laying about.'
-  read -p 'Press CTRL-C now to stop. ENTER to continue: '
+  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
 else
   echo 'All OK.'
 fi
