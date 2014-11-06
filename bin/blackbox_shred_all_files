@@ -18,6 +18,8 @@
 set -e
 . _blackbox_common.sh
 
+change_to_root
+
 echo '========== FILES BEING SHREDDED:'
 for i in $(<$BB_FILES) ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
