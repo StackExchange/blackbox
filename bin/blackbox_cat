@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_cat.sh -- Decrypt a file, cat it, shred it
+#
+set -e
+. _blackbox_common.sh
+
+for param in """$@""" ; do
+  unencrypted_file=$(get_unencrypted_filename "$param")
+  blackbox_edit_start "$param"
+  cat $unencrypted_file
+  shred_file "$unencrypted_file"
+done
