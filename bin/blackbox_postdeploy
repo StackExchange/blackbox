@@ -22,18 +22,7 @@ else
   FILE_GROUP="$1"
 fi
 
-# If BASEDIR is not set, use REPOBASE.
-if [[ "$BASEDIR" = "" ]]; then
-  BASEDIR="$REPOBASE"
-fi
-
-if [[ "$BASEDIR" = "/dev/null" ]]; then
-  echo 'WARNING: Not in a VCS repo.  Not changing directory.'
-else
-  echo "CDing to $BASEDIR"
-  cd "$BASEDIR"
-fi
-
+change_to_root
 prepare_keychain
 
 # Decrypt:

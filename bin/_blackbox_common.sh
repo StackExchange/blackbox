@@ -390,3 +390,17 @@ function vcs_remove_git() {
 function vcs_remove_svn() {
   svn delete """$@"""
 }
+
+function change_to_root() {
+    # If BASEDIR is not set, use REPOBASE.
+    if [[ "$BASEDIR" = "" ]]; then
+      BASEDIR="$REPOBASE"
+    fi
+
+    if [[ "$BASEDIR" = "/dev/null" ]]; then
+      echo 'WARNING: Not in a VCS repo.  Not changing directory.'
+    else
+      echo "CDing to $BASEDIR"
+      cd "$BASEDIR"
+    fi
+}
