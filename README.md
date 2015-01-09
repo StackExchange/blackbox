@@ -1,9 +1,3 @@
-(Note to HackerNews readers: Thanks for all the [comments](https://news.ycombinator.com/item?id=8264496)!
-Some replies: Per-subfolder access control coming soon.
-Don't confuse "git" with "the cloud"...
-you should encrypt secrets even if they are on your own private
-git/mercurial server unless you trust everyone with root access and access to your backup tapes.)
-
 BlackBox
 ========
 
@@ -33,7 +27,7 @@ server.  Heck, even if you trust your server, now you don't have to trust
 the people that do backups of that server, or the people that handle the
 backup tapes!
 
-Rather than 1 GPG passphrase for all the files, each person with access
+Rather than one GPG passphrase for all the files, each person with access
 has their own GPG keys in the system.  Any file can be decrypted by
 anyone with their GPG key.  This way, if one person leaves the company,
 you don't have to communicate a new password to everyone with access.
@@ -73,9 +67,9 @@ people.  Communciation between subteams of an organization is hurt.
 You can't collaborate as well.  Either you find yourself emailing
 individual files around (yuck!), making a special repo with just
 the files needed by your collaborators (yuck!), or just deciding that
-collaboration isn't that important (yuck!!!).
+collaboration isn't worth all that effort (yuck!!!).
 
-Being able to be open and transparent about our code, with the
+The ability to be open and transparent about our code, with the
 exception of a few specific files, is key to the kind of
 collaboration that DevOps and modern IT practitioniers
 need to do.
@@ -87,7 +81,6 @@ Blackbox automatically determines which VCS you are using
 and does the right thing.  It has a plug-in architecture
 to make it easy to extend to work with other systems.
 It has been tested to work with many operating systems.
-
 
 * Version Control systems
   * `git` -- The Git
@@ -174,16 +167,17 @@ What does this look like to the typical user?
 ================================
 
 *  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
-*  Decrypt the file so it is editable: `blackbox_edit_start FILENAME` (You will need to enter your GPG passphrase.)
+*  Decrypt the file so it is editable: `blackbox_edit FILENAME`
+*  (You will need to enter your GPG passphrase.)
 *  Edit FILENAME as you desire: `vim FILENAME`
 *  Re-encrypt the file: `blackbox_edit_end FILENAME`
 *  Commit the changes.  `git commit -a` or `hg commit`
 
-Alternatively, you can call `blackbox_edit FILENAME`, and it'll decrypt the file
+Wait... it can be even easier than than!
+Run `blackbox_edit FILENAME`, and it'll decrypt the file
 in a temp file and call `$EDITOR` on it, re-encrypting again after the editor
 is closed.
 
-This content is released under the MIT License.  See the LICENSE.txt file.
 
 How to use the secrets with Puppet?
 ================================
@@ -215,6 +209,7 @@ example, we use a file called `blackbox.yaml`.  You can access them
 using the hiera() function.
 
 *Setup:* Configure `hiera.yaml` by adding "blackbox" to the search hierarchy:
+
 ```
 :hierarchy:
   - ...
@@ -223,12 +218,14 @@ using the hiera() function.
 ```
 
 In blackbox.yaml specify:
+
 ```
 ---
 module::test_password: "my secret password"
 ```
 
 In your Puppet Code, access the password as you would any hiera data:
+
 ```
 $the_password = hiera('module::test_password', 'fail')
 
@@ -258,9 +255,9 @@ How to remove a file from the system?
 
 This is a manual process. It happens quite rarely.
 
-1 Remove the file ``keyrings/live/blackbox-files.txt``
-2 Remove references from ``.gitignore`` or ``.hgignore``
-3 Use ``git rm`` or ``hg rm`` as expected.
+1. Remove the file ``keyrings/live/blackbox-files.txt``
+2. Remove references from ``.gitignore`` or ``.hgignore``
+3. Use ``git rm`` or ``hg rm`` as expected.
 
 How to indoctrinate a new user into the system?
 ============================
@@ -283,19 +280,23 @@ Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphras
 ```
 blackbox_addadmin KEYNAME
 ```
+
 ...where "KEYNAME" is the email address listed in the gpg key you created previously. For example:
+
 ```
 blackbox_addadmin tal@example.com
 ```
 
 When the command completes successfully, instructions on how to
 commit these changes will be output.  Run the command as give.
+
 ```
 NEXT STEP: Check these into the repo.  Probably with a command like...
 git commit -m'NEW ADMIN: tal@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 ```
 
 Role accounts: If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter:
+
 ```
 blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir
 ```
@@ -331,6 +332,7 @@ How to remove a user from the system?
 Simply run `blackbox_removeadmin` with their keyname then re-encrypt:
 
 Example:
+
 ```
 blackbox_removeadmin olduser@example.com
 blackbox_update_all_files
@@ -372,6 +374,7 @@ To add "blackbox" to a git or mercurial repo, you'll need to do the following:
 ###  Run the initialize script.
 
 You'll want to include blackbox's "bin" directory in your PATH:
+
 ```
 export PATH=$PATH:/the/path/to/blackbox/bin
 blackbox_initialize
@@ -415,8 +418,8 @@ Push these changes to the repo.  Make sure another user can
 check out and change the contents of the file.
 
 
-Create a key and subkey for any automated users
-===========================
+Set up automated users or "role accounts"
+=========================================
 
 i.e. This is how a Puppet Master can have access to the unencrypted data.
 
@@ -452,7 +455,7 @@ For the rest of this doc, you'll need to make the following substitutions:
   - NEWMASTER: the machine this role account exists on.
   - SECUREHOST: The machine you use to create the keys. 
 
-NOTE: This should be more automated.  Patches welcome.
+NOTE: This should be more automated/scripted.  Patches welcome.
 
 On SECUREHOST, create the puppet master's keys:
 
@@ -607,8 +610,12 @@ on CentOS and Cygwin.
 Alternatives
 ============
 
-Here are other open source packages that do something similar to Blackbox.
+Here are other open source packages that do something similar to Blackbox. If you like them better than Blackbox, please use them.
 
   * Pass: http://www.zx2c4.com/projects/password-store/
   * Transcrypt: https://github.com/elasticdog/transcrypt
   * git-crypt:  https://www.agwa.name/projects/git-crypt/
+
+License
+=======
+This content is released under the MIT License.  See the LICENSE.txt file.
