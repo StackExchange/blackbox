@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-export PATH="$HOME/gitwork/blackbox/bin":/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
+export PATH=${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
 . _stack_lib.sh
 
