@@ -4,7 +4,8 @@
 # blackbox_cat.sh -- Decrypt a file, cat it, shred it
 #
 set -e
-. _blackbox_common.sh
+blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source ${blackbox_home}/_blackbox_common.sh
 
 for param in """$@""" ; do
   shreddable=0
