@@ -14,6 +14,8 @@ If you are packaging Blackbox for distribution, you should track the *tag produc
 
 Marking the software to be "stable":
 
+Step 1. Tag it.
+
 ```
 git pull
 git tag -d stable
@@ -21,6 +23,10 @@ git push origin :stable
 git tag stable
 git push origin tag stable
 ```
+
+Step 2. Mark your calendar 1 week from today to check
+to see if this should be promoted to production.
+
 
 # Production Releases
 
