@@ -9,7 +9,7 @@ source ${blackbox_home}/_blackbox_common.sh
 
 for param in """$@""" ; do
   unencrypted_file=$(get_unencrypted_filename "$param")
-  if  [[ ! is_on_cryptlist "$param" ]] && [[ ! is_on_cryptlist "$unencrypted_file" ]] ; then
+  if  ! is_on_cryptlist "$param" && ! is_on_cryptlist "$unencrypted_file" ; then
     read -r -p "Encrypt file $param? (y/n) " ans
     case "$ans" in
       y* | Y*)
