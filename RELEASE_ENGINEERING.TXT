@@ -1,0 +1,39 @@
+# Branches and Tags:
+
+There are 3 branches/tags:
+
+* **HEAD:** The cutting edge of development.
+* **tag stable:** Stable enough for use by most people.
+* **tag production:** Burned in long enough that we are confident it can be widely adopted.
+
+If you are packaging Blackbox for distribution, you should track the *tag production*.  You might also want to provide a separate package that tracks *tag stable:* for early adopters.
+
+# Build Tasks
+
+# Stable Releases
+
+Marking the software to be "stable":
+
+```
+git pull
+git tag -d stable
+git push origin :stable
+git tag stable
+git push origin tag stable
+```
+
+# Production Releases
+
+If no bugs have been reported a full week after a stable tag has been pushed, mark the release to be "production".
+
+```
+git fetch
+git checkout stable
+git tag -d production
+git push origin :production
+git tag production
+git push origin tag production
+R="v1.$(date +%Y%m%d)"
+git tag "$R"
+git push origin tag "$R
+```
