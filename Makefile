@@ -6,7 +6,7 @@ PKGNAME=stack_blackbox
 all:
 	@echo 'Menu:'
 	@echo '  make packages          Make RPM packages'
-	@echo '  make install           (incomplete)
+	@echo '  make install           (incomplete)'
 
 install:
 	@echo 'To install, copy the files from bin to somewhere in your PATH.'
