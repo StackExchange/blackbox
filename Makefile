@@ -1,5 +1,4 @@
 SHELL=/bin/sh
-BIN=tools
 
 PKGNAME=stack_blackbox
 
@@ -20,7 +19,7 @@ packages: packages-rpm
 #
 
 packages-rpm:
-	PKGRELEASE="$${PKGRELEASE}" $(BIN)/build_rpm.sh stack_blackbox tools/rpm_filelist.txt
+	cd tools && PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_rpm_fpmdir stack_blackbox mk_rpm_fpmdir.blackbox.txt
 
 packages-rpm-debug:
 	@echo BUILD:
