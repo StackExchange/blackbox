@@ -17,16 +17,22 @@ packages: packages-rpm
 #
 # MacPorts builds
 #
+# To test:
+# rm -rf /tmp/foo ; mkdir -p /tmp/foo;make packages-macports DESTDIR=/tmp/foo;find /tmp/foo -ls
 
 # Make mk_macports.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
 tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
-	sed -e 's@/usr/blackbox/bin/@bin/@g' -e 's@/etc/profile.d@etc/profile.d@g' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
+	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
+
+check-destdir:
+ifndef DESTDIR
+  $(error DESTDIR is undefined)
+endif
 
 # MacPorts expects to run: make packages-macports DESTDIR=${destroot}
-packages-macports: tools/mk_macports.vcs_blackbox.txt
-	mkdir -p $(DESTDIR)/etc/profile.d
+packages-macports: tools/mk_macports.vcs_blackbox.txt check-destdir
 	mkdir -p $(DESTDIR)/bin
-	cd tools && ./mk_macports vcs_blackbox mk_macports.vcs_blackbox.txt
+	cd tools && ./mk_macports mk_macports.vcs_blackbox.txt
 
 #
 # RPM builds

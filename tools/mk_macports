@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 # Install files into MacPorts DESTDIR
 
@@ -14,10 +14,8 @@
 
 set -e
 
-# Parameters for this RPM:
+# Fail if DESTDIR is not set.
 DESTDIR="${DESTDIR?"Envvar DESTDIR must be set to destination dir."}"
-
-# -- Now the real work can be done.
 
 # Copy the files into place:
 cat """$@""" | while read -a arr ; do
@@ -30,9 +28,5 @@ cat """$@""" | while read -a arr ; do
   esac
   DST="$DESTDIR/${arr[1]}"
   SRC="${arr[2]}"
-  if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
-    ( cd $(dirname "$SRC" ) && go build -a -v ) 
-  fi
-  echo install -m "$PERM" "$SRC" "$DST"
   install -m "$PERM" "$SRC" "$DST"
 done

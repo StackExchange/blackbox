@@ -1,4 +1,3 @@
-read etc/profile.d/usrblackbox.sh               profile.d-usrblackbox.sh
 exec bin/_blackbox_common.sh       ../bin/_blackbox_common.sh
 exec bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec bin/blackbox_addadmin         ../bin/blackbox_addadmin
