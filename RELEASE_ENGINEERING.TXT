@@ -41,5 +41,5 @@ git tag production
 git push origin tag production
 R="v1.$(date +%Y%m%d)"
 git tag "$R"
-git push origin tag "$R
+git push origin tag "$R"
 ```
