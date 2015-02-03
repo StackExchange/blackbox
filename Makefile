@@ -15,6 +15,20 @@ install:
 packages: packages-rpm
 
 #
+# MacPorts builds
+#
+
+# Make mk_macports.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
+tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
+	sed -e 's@/usr/blackbox/bin/@bin/@g' -e 's@/etc/profile.d@etc/profile.d@g' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
+
+# MacPorts expects to run: make packages-macports DESTDIR=${destroot}
+packages-macports: tools/mk_macports.vcs_blackbox.txt
+	mkdir -p $(DESTDIR)/etc/profile.d
+	mkdir -p $(DESTDIR)/bin
+	cd tools && ./mk_macports vcs_blackbox mk_macports.vcs_blackbox.txt
+
+#
 # RPM builds
 #
 
