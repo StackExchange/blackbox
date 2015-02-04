@@ -24,6 +24,8 @@ shift
 : ${PKGVERSION:=1.0} ;
 # If there is no iteration setting, assume "1":
 : ${PKGRELEASE:=1}
+# If there is no epoch, assume 0
+: ${PKGEPOCH:=0}
 
 # The RPM is output here: (should be a place that can be wiped)
 OUTPUTDIR="${HOME}/rpmbuild-$PACKAGENAME"
@@ -37,6 +39,7 @@ rm -rf "$OUTPUTDIR"
 mkdir -p "$OUTPUTDIR/installroot"
 
 # Copy the files into place:
+set -o pipefail  # Error out if any manifest is not found.
 cat """$@""" | while read -a arr ; do
   PERM="${arr[0]}"
   case $PERM in
@@ -56,12 +59,13 @@ done
 # Build the RPM:
 cd "$OUTPUTDIR" && fpm -s dir -t rpm \
   -a x86_64 \
-  --epoch '0' \
   -n "${PACKAGENAME}" \
+  --epoch "${PKGEPOCH}" \
   --version "${PKGVERSION}" \
   --iteration "${PKGRELEASE}" \
+  ${PKGDESCRIPTION:+ --description="${PKGDESCRIPTION}"} \
+  ${PKGVENDOR:+ --vendor="${PKGVENDOR}"} \
   -C "$OUTPUTDIR/installroot" \
-  --description="$PKGDESCRIPTION" \
   .
 
 # TeamCity templates for RPMS expect to find
