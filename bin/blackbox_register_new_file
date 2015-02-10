@@ -46,6 +46,8 @@ if $SECRETSEXPOSED ; then
   COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"
 else
   COMMIT_FILES="$BB_FILES $encrypted_file"
+  # FIXME(tal): This should be an array so that filenames with
+  # spaces aren't a problem.
 fi
 
 # TODO(tlim): This should be moved to _blackbox_common.sh in a
@@ -61,7 +63,7 @@ if [[ $VCS_TYPE = 'git' ]]; then
 fi
 
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
-vcs_add $BB_FILES $encrypted_file
+vcs_add "$BB_FILES" $encrypted_file
 vcs_commit "registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."

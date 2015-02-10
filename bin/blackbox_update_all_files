@@ -23,7 +23,7 @@ awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
 
 echo '========== FILES IN THE WAY:'
 need_warning=false
-for i in $(<$BB_FILES) ; do
+for i in $(<"$BB_FILES") ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
   encrypted_file=$(get_encrypted_filename "$i")
   if [[ -f "$unencrypted_file" ]]; then
@@ -40,7 +40,7 @@ else
 fi
 
 echo '========== RE-ENCRYPTING FILES:'
-for i in $(<$BB_FILES) ; do
+for i in $(<"$BB_FILES") ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
   encrypted_file=$(get_encrypted_filename "$i")
   echo ========== PROCESSING "$unencrypted_file"
@@ -53,7 +53,7 @@ done
 fail_if_keychain_has_secrets
 
 echo '========== COMMITING TO VCS:'
-vcs_commit 'Re-encrypted keys' $(awk <$BB_FILES '{ print $1 ".gpg" }' )
+vcs_commit 'Re-encrypted keys' $(awk <"$BB_FILES" '{ print $1 ".gpg" }' )
 
 VCSCMD=$(which_vcs)
 echo '========== DONE.'

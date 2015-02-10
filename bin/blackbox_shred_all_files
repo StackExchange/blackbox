@@ -22,7 +22,7 @@ source ${blackbox_home}/_blackbox_common.sh
 change_to_root
 
 echo '========== FILES BEING SHREDDED:'
-for i in $(<$BB_FILES) ; do
+for i in $(<"$BB_FILES") ; do
   unencrypted_file=$(get_unencrypted_filename "$i")
   encrypted_file=$(get_encrypted_filename "$i")
   if [[ -f "$unencrypted_file" ]]; then
