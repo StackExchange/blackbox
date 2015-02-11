@@ -56,7 +56,8 @@ BB_FILES_FILE="blackbox-files.txt"
 BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
-: ${DECRYPT_UMASK:=o=} ;
+: ${DECRYPT_UMASK:=0022} ;
+# : ${DECRYPT_UMASK:=o=} ;
 
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
