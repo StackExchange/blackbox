@@ -4,7 +4,6 @@
 # blackbox_edit.sh -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
 set -e
-[ -z $EDITOR ] && EDITOR="vi"
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${blackbox_home}/_blackbox_common.sh
 
