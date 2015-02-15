@@ -14,7 +14,7 @@
 
 
 # If $EDITOR is not set, set it to "vi":
-: ${EDITOR:-vi} ;
+: ${EDITOR:=vi} ;
 
  
 # Outputs a string that is the base directory of this VCS repo.
