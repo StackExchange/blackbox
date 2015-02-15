@@ -24,5 +24,6 @@ for param in """$@""" ; do
   fi
   blackbox_edit_start "$param"
   $EDITOR $(get_unencrypted_filename $param)
-  rm -f "$param"
+  unencrypted_file=$(get_unencrypted_filename "$param")
+  rm -f "$unencrypted_file"
 done
