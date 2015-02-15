@@ -11,6 +11,11 @@
 
 # Where in the VCS repo should the blackbox data be found?
 : ${BLACKBOXDATA:=keyrings/live} ;   # If BLACKBOXDATA not set, set it.
+
+
+# If $EDITOR is not set, set it to "vi":
+: ${EDITOR:-vi} ;
+
  
 # Outputs a string that is the base directory of this VCS repo.
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
