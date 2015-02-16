@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_update_all_files -- Re-encrypt file after edits.
+# blackbox_update_all_files -- Decrypt then re-encrypt all files. Useful after keys are changed.
 #
 
 set -e
