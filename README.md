@@ -74,6 +74,24 @@ exception of a few specific files, is key to the kind of
 collaboration that DevOps and modern IT practitioniers
 need to do.
 
+Commands:
+============================
+
+
+| Name: | Description: |
+| --- | --- |
+| `blackbox_addadmin` | Add someone to the list of people that can encrypt/decrypt secrets |
+| `blackbox_cat` | Decrypt and view the contents of a file |
+| `blackbox_edit` | Decrypt, run $EDITOR, re-encrypt a file |
+| `blackbox_edit_start` | Decrypt a file so it can be updated |
+| `blackbox_edit_end` | Encrypt a file after blackbox_edit_start was used |
+| `blackbox_initialize` | Enable blackbox for a GIT or HG repo |
+| `blackbox_postdeploy` | Decrypt all managed files |
+| `blackbox_register_new_file` | Encrypt a file for the first time |
+| `blackbox_removeadmin` | Remove someone from the list of people that can encrypt/decrypt secrets |
+| `blackbox_shred_all_files` | Safely delete any decrypted files |
+| `blackbox_update_all_file` | Decrypt then re-encrypt all files. Useful after keys are changed |
+
 Compatibility:
 ============================
 
@@ -87,7 +105,7 @@ It has been tested to work with many operating systems.
   * `hg` -- Mercurial
   * `svn` -- SubVersion (Thanks, Ben Drasin!)
 * Operating system
-  * CentOS
+  * CentOS / RedHat
   * MacOS X
   * Cygwin (Thanks, Ben Drasin!)
 
