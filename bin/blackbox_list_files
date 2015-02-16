@@ -6,8 +6,4 @@
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${blackbox_home}/_blackbox_common.sh
-
-echo -e "\nFiles currently managed my Blackbox:\n"
-cat $BB_FILES
-
-echo
+cat "$BB_FILES"
