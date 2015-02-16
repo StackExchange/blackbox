@@ -11,3 +11,4 @@ exec bin/blackbox_register_new_file ../bin/blackbox_register_new_file
 exec bin/blackbox_removeadmin      ../bin/blackbox_removeadmin
 exec bin/blackbox_shred_all_files  ../bin/blackbox_shred_all_files
 exec bin/blackbox_update_all_files ../bin/blackbox_update_all_files
+exec bin/blackbox_list_files       ../bin/blackbox_list_files

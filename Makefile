@@ -25,9 +25,9 @@ tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
 	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
 
 check-destdir:
-ifndef DESTDIR
-  $(error DESTDIR is undefined)
-endif
+	ifndef DESTDIR
+	  $(error DESTDIR is undefined)
+	endif
 
 # MacPorts expects to run: make packages-macports DESTDIR=${destroot}
 packages-macports: tools/mk_macports.vcs_blackbox.txt check-destdir

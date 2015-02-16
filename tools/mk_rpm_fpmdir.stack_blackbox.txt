@@ -12,3 +12,4 @@ exec /usr/blackbox/bin/blackbox_register_new_file ../bin/blackbox_register_new_f
 exec /usr/blackbox/bin/blackbox_removeadmin      ../bin/blackbox_removeadmin
 exec /usr/blackbox/bin/blackbox_shred_all_files  ../bin/blackbox_shred_all_files
 exec /usr/blackbox/bin/blackbox_update_all_files ../bin/blackbox_update_all_files
+exec /usr/blackbox/bin/blackbox_list_files       ../bin/blackbox_list_files
