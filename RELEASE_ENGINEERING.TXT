@@ -43,3 +43,37 @@ R="v1.$(date +%Y%m%d)"
 git tag "$R"
 git push origin tag "$R"
 ```
+
+# Updating MacPorts
+
+Step 1: Generate the Port file
+
+tools/mk_portfile.sh tools/Portfile.template Portfile 1.20150222
+
+Step 2: Test it locally
+
+sudo vi /opt/local/etc/macports/sources.conf
+  Add this line early in the file:
+  file:///var/tmp/ports
+rm -rf /var/tmp/ports
+mkdir -p /var/tmp/ports/security/vcs_blackbox
+cp Portfile /var/tmp/ports/security/vcs_blackbox
+cd /var/tmp/ports && portindex
+sudo port clean --all vcs_blackbox
+sudo port uninstall vcs_blackbox
+sudo port install vcs_blackbox
+
+Step 3: File a request for an update
+
+* https://trac.macports.org/newticket
+* Summary: `vcs_blackbox @1.20150222 Update to latest upstream`
+* Description: ```
+New upstream of vcs_blackbox.
+github.setup and checksums updated.```
+* Type: `update`
+* Component: `ports`
+* Port: `vcs_blackbox`
+
+Attach the `Portfile` generated in Step 1.
+
+Step 4: Wait for the devs to pick up the change.
