@@ -44,36 +44,76 @@ git tag "$R"
 git push origin tag "$R"
 ```
 
-# Updating MacPorts
+# Updating MacPorts (automatic)
 
-Step 1: Generate the Port file
+Step 1: Generate the Portfile
 
-tools/mk_portfile.sh tools/Portfile.template Portfile 1.20150222
+```
+tools/macports_report_upgrade.sh  1.20150222
+```
 
-Step 2: Test it locally
+This script will generate a file called `Portfile-vcs_blackbox.diff` and instructions on how to submit it as a update request.
 
-sudo vi /opt/local/etc/macports/sources.conf
-  Add this line early in the file:
-  file:///var/tmp/ports
-rm -rf /var/tmp/ports
-mkdir -p /var/tmp/ports/security/vcs_blackbox
-cp Portfile /var/tmp/ports/security/vcs_blackbox
-cd /var/tmp/ports && portindex
-sudo port clean --all vcs_blackbox
-sudo port uninstall vcs_blackbox
-sudo port install vcs_blackbox
+Step 2: Submit the update request.
 
-Step 3: File a request for an update
+Submit the diff file as a bug as instructed. The instructions should look like this:
 
-* https://trac.macports.org/newticket
+* PLEASE OPEN A TICKET WITH THIS INFORMATION:
+    https://trac.macports.org/newticket
 * Summary: `vcs_blackbox @1.20150222 Update to latest upstream`
-* Description: ```
-New upstream of vcs_blackbox.
+* Description: ```New upstream of vcs_blackbox.
 github.setup and checksums updated.```
 * Type: `update`
 * Component: `ports`
 * Port: `vcs_blackbox`
+* Keywords: `maintainer`
+* Attach this file: `Portfile-vcs_blackbox.diff`
 
-Attach the `Portfile` generated in Step 1.
+Step 3: Watch for the update to happen.
 
-Step 4: Wait for the devs to pick up the change.
+# Updating MacPorts (manual)
+
+This is the old, manual, procedure.  If the automated procedure work, these notes may or may not be helpful.
+
+The ultimate result of the script should be a `diff -u Portfile.orig Portfile`.  The new `Portfile` should have these changes:
+
+1. The `github.setup` line should have a new version number.
+2. The `checksums` line(s) should have updated checksums.
+
+How to generate the checksums?
+
+The easiest way is to to make a Portfile with incorrect checksums, then run `sudo port -v checksum vcs_blackbox` to see what they should have been.  Fix the file, and try again.
+
+When the the checksum command works, run `port lint vcs_blackbox` and make sure it has no errors.
+
+Some useful commands:
+
+Change repos in sources.conf:
+```
+sudo vi /opt/local/etc/macports/sources.conf
+  Add this line early in the file:
+  file:///var/tmp/ports
+```
+
+Add a local repo in an automated manner:
+```
+fgrep >/dev/null -x 'file:///var/tmp/ports' /opt/local/etc/macports/sources.conf || sudo sed -i -e '1s@^@file:///var/tmp/ports\'$'\n@' /opt/local/etc/macports/sources.conf
+```
+
+Remove the local repo in an automated manner:
+```
+sudo sed -i -e '\@^file:///var/tmp/ports@d' /opt/local/etc/macports/sources.conf
+```
+
+Test a Portfile:
+``` 
+sudo port uninstall vcs_blackbox
+sudo port clean --all vcs_blackbox
+rm -rf ~/.macports/opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/vcs_blackbox/
+rm -rf /var/tmp/ports
+mkdir -p /var/tmp/ports/security/vcs_blackbox
+cp Portfile /var/tmp/ports/security/vcs_blackbox
+cd /var/tmp/ports && portindex
+sudo port -v checksum vcs_blackbox
+sudo port install vcs_blackbox
+```
