@@ -98,7 +98,7 @@ Commands:
 | `blackbox_register_new_file` | Encrypt a file for the first time |
 | `blackbox_removeadmin` | Remove someone from the list of people that can encrypt/decrypt secrets |
 | `blackbox_shred_all_files` | Safely delete any decrypted files |
-| `blackbox_update_all_file` | Decrypt then re-encrypt all files. Useful after keys are changed |
+| `blackbox_update_all_files` | Decrypt then re-encrypt all files. Useful after keys are changed |
 
 Compatibility:
 ============================
