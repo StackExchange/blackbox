@@ -5,7 +5,7 @@
 #
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
+source "${blackbox_home}/_blackbox_common.sh"
 
 for param in """$@""" ; do
   unencrypted_file=$(get_unencrypted_filename "$param")
@@ -22,6 +22,6 @@ for param in """$@""" ; do
     esac
   fi
   blackbox_edit_start "$param"
-  $EDITOR $(get_unencrypted_filename $param)
+  "$EDITOR" "$(get_unencrypted_filename "$param")"
   blackbox_edit_end "$param"
 done

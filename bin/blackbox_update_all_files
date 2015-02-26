@@ -6,7 +6,7 @@
 
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
+source "${blackbox_home}/_blackbox_common.sh"
 
 if [[ -z $GPG_AGENT_INFO ]]; then
   echo 'WARNING: You probably want to run gpg-agent as'
@@ -31,7 +31,7 @@ for i in $(<"$BB_FILES") ; do
     echo "    $unencrypted_file"
   fi
 done
-if $need_warning ; then
+if "$need_warning" ; then
   echo
   echo 'WARNING: This will overwrite any unencrypted files laying about.'
   read -r -p 'Press CTRL-C now to stop. ENTER to continue: '

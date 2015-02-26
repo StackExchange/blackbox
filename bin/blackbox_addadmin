@@ -16,17 +16,7 @@ source ${blackbox_home}/_stack_lib.sh
 fail_if_not_in_repo
 
 KEYNAME="$1"
-: ${KEYNAME:?ERROR: First argument must be a keyname (email address)} ;
-
-# The second argument, if present, is the directory to find the GPG keys to be imported.
-if [[ "$2" == "" ]]; then
-  GPGEXPORTOPTIONS=""
-else
-  GPGEXPORTOPTIONS=--homedir="${2}"
-fi
-# TODO(tlim): This could probably be done with GNUPGHOME
-# but that affects all commands; we just want it to affect the key export.
-
+: "${KEYNAME:?ERROR: First argument must be a keyname (email address)}" ;
 
 # Add the email address to the BB_ADMINS file.  Remove any duplicates.
 # The file must exist for sort to act as we expect.
@@ -38,7 +28,16 @@ sort  -fdu -o "$BB_ADMINS" <(echo "$1") "$BB_ADMINS"
 
 # Extract it:
 make_self_deleting_tempfile pubkeyfile
-gpg $GPGEXPORTOPTIONS --export -a "$KEYNAME" >"$pubkeyfile"
+
+# The second argument, if present, is the directory to find the GPG keys to be imported.
+if [[ -z $2 ]]; then
+  gpg --export -a "$KEYNAME" >"$pubkeyfile"
+else
+  # TODO(tlim): This could probably be done with GNUPGHOME
+  # but that affects all commands; we just want it to affect the key export.
+  gpg --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
+fi
+
 if [[ $(wc -l < "$pubkeyfile") = 0 ]]; then
   fail_out "GPG key '$KEYNAME' not found.  Please create it with: gpg --gen-key"
   exit 1

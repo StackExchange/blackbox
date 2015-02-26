@@ -15,7 +15,7 @@ export PATH=/usr/bin:/bin:"$PATH"
 
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
+source "${blackbox_home}/_blackbox_common.sh"
 
 if [[ "$1" == "" ]]; then
   FILE_GROUP=""
@@ -33,7 +33,7 @@ while IFS= read <&99 -r unencrypted_file; do
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
   chmod g+r "$unencrypted_file"
   if [[ ! -z "$FILE_GROUP" ]]; then
-    chgrp $FILE_GROUP "$unencrypted_file"
+    chgrp "$FILE_GROUP" "$unencrypted_file"
   fi
 done 99<"$BB_FILES"
 echo '========== Decrypting new/changed files: DONE'
