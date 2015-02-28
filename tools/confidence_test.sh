@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
-export PATH=${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin"
 
 . _stack_lib.sh
 
@@ -13,6 +13,25 @@ function PHASE() {
   echo '*********' """$@"""
   echo '********************'
   echo '********************'
+}
+
+function md5sum_file() {
+  # Portably generate the MD5 hash of file $1.
+  case $(uname -s) in
+    Darwin )
+      md5 -r "$1" | awk '{ print $1 }'
+      ;;
+    Linux )
+      md5sum "$1" | awk '{ print $1 }'
+      ;;
+    CYGWIN* )
+      md5sum "$1" | awk '{ print $1 }'
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
 }
 
 function assert_file_missing() {
@@ -36,7 +55,7 @@ function assert_file_md5hash() {
   local file="$1"
   local wanted="$2"
   assert_file_exists "$file"
-  local found=$(md5sum <"$file" | cut -d' ' -f1 )
+  local found=$(md5sum_file "$file")
   if [[ "$wanted" != "$found" ]]; then
     echo "ASSERT FAILED: $file hash wanted=$wanted found=$found"
     exit 1
@@ -54,7 +73,7 @@ function assert_file_group() {
       ;;
   esac
 
-  local found=$(ls -l "$file" | awk '{ print $4 }')
+  local found=$(ls -lg "$file" | awk '{ print $3 }')
   # NB(tlim): We could do this with 'stat' but it would break on BSD-style OSs.
   if [[ "$wanted" != "$found" ]]; then
     echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
@@ -220,6 +239,7 @@ gpg --import keyrings/live/pubring.gpg
 TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv $(id -u) | head -n 1)
 TEST_GID_NAME=$(getent group "$TEST_GID_NUM" | cut -d: -f1)
 DEFAULT_GID_NAME=$(getent group $(id -u) | cut -d: -f1)
+: ${DEFAULT_GID_NAME:=staff) ;
 echo TEST_GID_NUM=$TEST_GID_NUM
 echo TEST_GID_NAME=$TEST_GID_NAME
 echo DEFAULT_GID_NAME=$DEFAULT_GID_NAME
