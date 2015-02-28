@@ -236,13 +236,14 @@ PHASE 'Bob makes sure he has all new keys.'
 gpg --import keyrings/live/pubring.gpg
 
 # Pick a GID to use:
+# This users's default group:
+DEFAULT_GID_NAME=$(id -gn)
+# Pick a group that is not the default group:
 TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv $(id -u) | head -n 1)
-TEST_GID_NAME=$(getent group "$TEST_GID_NUM" | cut -d: -f1)
-DEFAULT_GID_NAME=$(getent group $(id -u) | cut -d: -f1)
-: ${DEFAULT_GID_NAME:=staff) ;
+TEST_GID_NAME=$(python -c 'import grp; print grp.getgrgid('"$TEST_GID_NUM"').gr_name')
+echo DEFAULT_GID_NAME=$DEFAULT_GID_NAME
 echo TEST_GID_NUM=$TEST_GID_NUM
 echo TEST_GID_NAME=$TEST_GID_NAME
-echo DEFAULT_GID_NAME=$DEFAULT_GID_NAME
 
 PHASE 'Bob postdeploys... default.'
 blackbox_postdeploy
