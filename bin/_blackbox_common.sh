@@ -10,13 +10,13 @@
 #   . _blackbox_common.sh
 
 # Where in the VCS repo should the blackbox data be found?
-: ${BLACKBOXDATA:=keyrings/live} ;   # If BLACKBOXDATA not set, set it.
+: "${BLACKBOXDATA:=keyrings/live}" ;   # If BLACKBOXDATA not set, set it.
 
 
 # If $EDITOR is not set, set it to "vi":
-: ${EDITOR:=vi} ;
+: "${EDITOR:=vi}" ;
 
- 
+
 # Outputs a string that is the base directory of this VCS repo.
 # By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
 # 'svn' or 'unknown'.
@@ -27,19 +27,19 @@ function _determine_vcs_base_and_type() {
     #find topmost dir with .svn sub-dir
     parent=""
     grandparent="."
-    mydir=`pwd`
+    mydir=$(pwd)
     while [ -d "$grandparent/.svn" ]; do
       parent=$grandparent
       grandparent="$parent/.."
     done
 
     if [ ! -z "$parent" ]; then
-      cd $parent
-      echo `pwd`
+      cd "$parent"
+      echo "$(pwd)"
     else
       exit 1
     fi
-    cd $mydir
+    cd "$mydir"
     VCS_TYPE=svn
   elif hg root 2>/dev/null ; then
     # NOTE: hg has to be tested last because it always "succeeds".
@@ -61,7 +61,7 @@ BB_FILES_FILE="blackbox-files.txt"
 BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
 PUBRING="${KEYRINGDIR}/pubring.gpg"
-: ${DECRYPT_UMASK:=0022} ;
+: "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
 # Return error if not on cryptlist.
@@ -184,9 +184,9 @@ function decrypt_file() {
   echo "========== EXTRACTING $unencrypted"
 
   old_umask=$(umask)
-  umask $DECRYPT_UMASK
+  umask "$DECRYPT_UMASK"
   gpg -q --decrypt -o "$unencrypted" "$encrypted"
-  umask $old_umask
+  umask "$old_umask"
 }
 
 # Decrypt .gpg file, overwriting unencrypted file if it exists.
@@ -206,12 +206,12 @@ function decrypt_file_overwrite() {
   fi
 
   old_umask=$(umask)
-  umask $DECRYPT_UMASK
+  umask "$DECRYPT_UMASK"
   gpg --yes -q --decrypt -o "$unencrypted" "$encrypted"
-  umask $old_umask
+  umask "$old_umask"
 
   new_hash=$(md5sum_file "$unencrypted")
-  if [[ $old_hash != $new_hash ]]; then
+  if [[ "$old_hash" != "$new_hash" ]]; then
     echo "========== EXTRACTED $unencrypted"
   fi
 }
@@ -250,8 +250,8 @@ function enumerate_subdirs() {
   while read filename; do
     dir=$(dirname "$filename")
     while [[ $dir != '.' && $dir != '/' ]]; do
-      echo $dir
-      dir=$(dirname $dir)
+      echo "$dir"
+      dir=$(dirname "$dir")
     done
   done <"$listfile" | sort -u
 }
@@ -338,7 +338,7 @@ function is_in_svn() {
     echo true
   else
     echo false
-  fi 
+  fi
 }
 
 

@@ -11,13 +11,13 @@
 
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
-source ${blackbox_home}/_stack_lib.sh
+source "${blackbox_home}/_blackbox_common.sh"
+source "${blackbox_home}/_stack_lib.sh"
 
 fail_if_not_in_repo
 
 KEYNAME="$1"
-: ${KEYNAME:?ERROR: First argument must be a keyname (email address)} ;
+: "${KEYNAME:?ERROR: First argument must be a keyname (email address)}" ;
 
 # Remove the email address from the BB_ADMINS file.
 make_self_deleting_tempfile bbtemp

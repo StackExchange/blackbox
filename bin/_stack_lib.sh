@@ -79,7 +79,7 @@ function make_tempdir() {
 
   case $(uname -s) in
     Darwin )
-      : ${TMPDIR:=/tmp} ;
+      : "${TMPDIR:=/tmp}" ;
       name=$(mktemp -d -t _stacklib_ )
       ;;
     Linux )

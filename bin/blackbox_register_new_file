@@ -12,13 +12,13 @@
 
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
+source "${blackbox_home}/_blackbox_common.sh"
 _determine_vcs_base_and_type
 
 unencrypted_file=$(get_unencrypted_filename "$1")
 encrypted_file=$(get_encrypted_filename "$1")
 
-if [[ $1 == $encrypted_file ]]; then
+if [[ "$1" == "$encrypted_file" ]]; then
   echo ERROR: Please only register unencrypted files.
   exit 1
 fi
@@ -34,13 +34,13 @@ encrypt_file "$unencrypted_file" "$encrypted_file"
 add_filename_to_cryptlist "$unencrypted_file"
 
 # Is the unencrypted file already in HG? (ie. are we correcting a bad situation)
-SECRETSEXPOSED=$(is_in_vcs ${unencrypted_file})
+SECRETSEXPOSED=$(is_in_vcs "${unencrypted_file}")
 echo "========== CREATED: ${encrypted_file}"
 echo "========== UPDATING REPO:"
 shred_file "$unencrypted_file"
 
 VCSCMD=$(which_vcs)
-if $SECRETSEXPOSED ; then
+if "$SECRETSEXPOSED" ; then
   vcs_remove "$unencrypted_file"
   vcs_add "$encrypted_file"
   COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"

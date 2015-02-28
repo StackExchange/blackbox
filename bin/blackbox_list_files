@@ -5,5 +5,5 @@
 #
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ${blackbox_home}/_blackbox_common.sh
+source "${blackbox_home}/_blackbox_common.sh"
 cat "$BB_FILES"
