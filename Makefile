@@ -25,6 +25,10 @@ packages: packages-rpm
 tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
 	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
 
+# Make mk_deb_fpmdir.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
+tools/mk_deb_fpmdir.stack_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
+	sed -e 's@/usr/blackbox/bin/@/usr/bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_deb_fpmdir.stack_blackbox.txt >$@
+
 check-destdir:
 	ifndef DESTDIR
 	  $(error DESTDIR is undefined)
@@ -65,10 +69,10 @@ unlock-rpm:
 # DEB builds
 #
 
-packages-deb:
+packages-deb:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	cd tools && PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_deb_fpmdir stack_blackbox mk_deb_fpmdir.stack_blackbox.txt
 
-packages-deb-debug:
+packages-deb-debug:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	@echo BUILD:
 	@PKGRELEASE=99 make packages-deb
 	@echo ITEMS TO BE PACKAGED:
