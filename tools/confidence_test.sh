@@ -115,7 +115,7 @@ eval $(gpg-agent --homedir "$fake_alice_home" --daemon)
 GPG_AGENT_INFO_ALICE="$GPG_AGENT_INFO"
 
 export GNUPGHOME="$fake_bob_home"
-eval $(gpg-agent --homedir "$fake_alice_home" --daemon)
+eval $(gpg-agent --homedir "$fake_bob_home" --daemon)
 GPG_AGENT_INFO_BOB="$GPG_AGENT_INFO"
 
 function become_alice() {
@@ -127,8 +127,8 @@ function become_alice() {
 }
 
 function become_bob() {
-  export GNUPGHOME="$fake_alice_home"
-  export GPG_AGENT_INFO="$GPG_AGENT_INFO_ALICE"
+  export GNUPGHOME="$fake_bob_home"
+  export GPG_AGENT_INFO="$GPG_AGENT_INFO_BOB"
   git config --global user.name "Bob Example"
   git config --global user.email bob@example.com
 }
