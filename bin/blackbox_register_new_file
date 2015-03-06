@@ -43,11 +43,9 @@ VCSCMD=$(which_vcs)
 if "$SECRETSEXPOSED" ; then
   vcs_remove "$unencrypted_file"
   vcs_add "$encrypted_file"
-  COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"
+  COMMIT_FILES=("$BB_FILES" "$encrypted_file" "$unencrypted_file")
 else
-  COMMIT_FILES="$BB_FILES $encrypted_file"
-  # FIXME(tal): This should be an array so that filenames with
-  # spaces aren't a problem.
+  COMMIT_FILES=("$BB_FILES" "$encrypted_file")
 fi
 
 # TODO(tlim): This should be moved to _blackbox_common.sh in a
@@ -57,14 +55,14 @@ if [[ $VCS_TYPE = 'git' ]]; then
   ignored_file="$(echo "$unencrypted_file" |  sed 's/\([\*\?]\)/\\\1/g' | sed 's/^\([!#]\)/\\\1/')"
   if ! grep -Fsx >/dev/null "$ignored_file" "$IGNOREFILE"; then
     echo "$ignored_file" >>"$IGNOREFILE"
-    COMMIT_FILES="$COMMIT_FILES $IGNOREFILE"
+    COMMIT_FILES+=("$IGNOREFILE")
   fi
   vcs_add "$IGNOREFILE"
 fi
 
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
-vcs_add "$BB_FILES" $encrypted_file
-vcs_commit "registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
+vcs_add "$BB_FILES" "$encrypted_file"
+vcs_commit "registered in blackbox: ${unencrypted_file}" "${COMMIT_FILES[@]}"
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
 echo "    $VCSCMD push"
