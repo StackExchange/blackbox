@@ -77,8 +77,9 @@ need to do.
 Installation Instructions:
 ==========================
 
-  * *The RPM way*: `make packages-rpm` and now you have an RPM you can install.
   * *The MacPorts Way*: `sudo port install vcs_blackbox`
+  * *The RPM way*: `make packages-rpm` and now you have an RPM you can install.
+  * *The Debian/Ubuntu way*: `make packages-deb` and now you have a DEB you can install.
   * *The hard way*: Copy all the files in "bin" to your "bin".
   * *The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
   * *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
