@@ -196,7 +196,7 @@ What does this look like to the typical user?
 ================================
 
 *  If you need to, start the GPG Agent: `eval $(gpg-agent --daemon)`
-*  Decrypt the file so it is editable: `blackbox_edit FILENAME`
+*  Decrypt the file so it is editable: `blackbox_edit_start FILENAME`
 *  (You will need to enter your GPG passphrase.)
 *  Edit FILENAME as you desire: `vim FILENAME`
 *  Re-encrypt the file: `blackbox_edit_end FILENAME`
