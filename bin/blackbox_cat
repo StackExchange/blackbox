@@ -11,7 +11,7 @@ for param in """$@""" ; do
   shreddable=0
   unencrypted_file=$(get_unencrypted_filename "$param")
   if [[ ! -e "$unencrypted_file" ]]; then
-    blackbox_edit_start "$param"
+    "${blackbox_home}/blackbox_edit_start" "$param"
     shreddable=1
   fi
   cat "$unencrypted_file"
