@@ -214,6 +214,7 @@ PHASE 'She enrolls secrets.txt.'
 blackbox_register_new_file secret.txt
 assert_file_missing secret.txt
 assert_file_exists secret.txt.gpg
+assert_line_exists 'secret.txt' .gitignore
 
 PHASE 'She decrypts secrets.txt.'
 blackbox_edit_start secret.txt
@@ -297,6 +298,7 @@ blackbox_register_new_file mistake.txt
 assert_file_missing mistake.txt
 assert_file_exists mistake.txt.gpg
 # NOTE: It is still in the history. That should be corrected someday.
+assert_line_exists 'mistake.txt' .gitignore
 
 PHASE 'Bob enrolls my/path/to/relsecrets.txt.'
 mkdir my my/path my/path/to
@@ -305,6 +307,9 @@ cd my/path/to
 blackbox_register_new_file relsecrets.txt
 assert_file_missing relsecrets.txt
 assert_file_exists relsecrets.txt.gpg
+assert_file_missing .gitignore
+assert_file_exists ../../../.gitignore
+assert_line_exists 'my/path/to/relsecrets.txt' ../../../.gitignore
 
 PHASE 'Bob decrypts relsecrets.txt.'
 cd ..
@@ -355,5 +360,5 @@ fi
 
 find .git?* * -type f -ls
 echo cd "$test_repository"
-echo rm "$test_repository"
+echo rm -rf "$test_repository"
 echo DONE.

@@ -27,7 +27,7 @@ function _determine_vcs_base_and_type() {
     #find topmost dir with .svn sub-dir
     parent=""
     grandparent="."
-    mydir=$(pwd)
+    mydir="$(pwd)"
     while [ -d "$grandparent/.svn" ]; do
       parent=$grandparent
       grandparent="$parent/.."
@@ -35,7 +35,7 @@ function _determine_vcs_base_and_type() {
 
     if [ ! -z "$parent" ]; then
       cd "$parent"
-      echo "$(pwd)"
+      pwd
     else
       exit 1
     fi
@@ -256,6 +256,15 @@ function enumerate_subdirs() {
   done <"$listfile" | sort -u
 }
 
+# chdir to the base of the repo.
+function change_to_vcs_root() {
+  if [[ $REPOBASE = '' ]]; then
+    echo 'ERROR: _determine_vcs_base_and_type failed to set REPOBASE.'
+    exit 1
+  fi
+  cd "$REPOBASE"
+}
+
 # Output the path of a file relative to the repo base
 function vcs_relative_path() {
   # Usage: vcs_relative_path file
@@ -378,7 +387,6 @@ function vcs_commit_svn() {
 }
 
 
-
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
 function vcs_remove() {
@@ -395,18 +403,4 @@ function vcs_remove_git() {
 # Subversion
 function vcs_remove_svn() {
   svn delete """$@"""
-}
-
-function change_to_root() {
-    # If BASEDIR is not set, use REPOBASE.
-    if [[ "$BASEDIR" = "" ]]; then
-      BASEDIR="$REPOBASE"
-    fi
-
-    if [[ "$BASEDIR" = "/dev/null" ]]; then
-      echo 'WARNING: Not in a VCS repo.  Not changing directory.'
-    else
-      echo "CDing to $BASEDIR"
-      cd "$BASEDIR"
-    fi
 }

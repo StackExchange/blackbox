@@ -22,15 +22,14 @@ if [[ $1 != 'yes' ]]; then
   fi
 fi
 
-echo cd "$REPOBASE"
-cd "$REPOBASE"
+change_to_vcs_root
 
 echo VCS_TYPE: $VCS_TYPE
 
 if [[ $VCS_TYPE = "git" || $VCS_TYPE = "hg" ]]; then
   # Update .gitignore or .hgignore
 
-  IGNOREFILE=".${VCS_TYPE}ignore"
+  IGNOREFILE="${REPOBASE}/.${VCS_TYPE}ignore"
   if ! grep -sx >/dev/null 'pubring.gpg~' "$IGNOREFILE" ; then
     echo 'pubring.gpg~' >>"$IGNOREFILE"
   fi

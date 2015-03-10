@@ -23,7 +23,7 @@ else
   FILE_GROUP="$1"
 fi
 
-change_to_root
+change_to_vcs_root
 prepare_keychain
 
 # Decrypt:

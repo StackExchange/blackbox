@@ -50,9 +50,11 @@ fi
 
 # TODO(tlim): This should be moved to _blackbox_common.sh in a
 # VCS-independent way.
-IGNOREFILE=".${VCS_TYPE}ignore"
+IGNOREFILE="${REPOBASE}/.${VCS_TYPE}ignore"
 if [[ $VCS_TYPE = 'git' ]]; then
-  ignored_file="$(echo "$unencrypted_file" |  sed 's/\([\*\?]\)/\\\1/g' | sed 's/^\([!#]\)/\\\1/')"
+  relfile="$(vcs_relative_path "$unencrypted_file")"
+  relfileb="${relfile/\$\//}"
+  ignored_file="$(echo "${relfileb}" |  sed 's/\([\*\?]\)/\\\1/g' | sed 's/^\([!#]\)/\\\1/')"
   if ! grep -Fsx >/dev/null "$ignored_file" "$IGNOREFILE"; then
     echo "$ignored_file" >>"$IGNOREFILE"
     COMMIT_FILES+=("$IGNOREFILE")
