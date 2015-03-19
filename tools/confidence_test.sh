@@ -334,20 +334,78 @@ assert_file_exists '#andpounds.txt'.gpg
 assert_line_exists '\#andpounds.txt' .gitignore
 
 PHASE 'Bob enrolls stars*bars?.txt'
-echo A very commented file >'stars*bars?.txt'
+echo A very wild and questioned file >'stars*bars?.txt'
 blackbox_register_new_file 'stars*bars?.txt'
 assert_file_missing 'stars*bars?.txt'
 assert_file_exists 'stars*bars?.txt'.gpg
 assert_line_exists 'stars\*bars\?.txt' .gitignore
 
-PHASE 'Bob enrolls stars bars.txt'
-echo A very commented file >'stars bars.txt'
-blackbox_register_new_file 'stars bars.txt'
-assert_file_missing 'stars bars.txt'
-assert_file_exists 'stars bars.txt'.gpg
-assert_line_exists 'stars bars.txt' .gitignore
+PHASE 'Bob enrolls space space.txt'
+echo A very spacey file >'space space.txt'
+blackbox_register_new_file 'space space.txt'
+assert_file_missing 'space space.txt'
+assert_file_exists 'space space.txt'.gpg
+assert_line_exists 'space space.txt' .gitignore
 
-# TODO(tlim): Add test to make sure that now alice can NOT decrypt.
+PHASE 'Bob checks out stars*bars?.txt.'
+blackbox_edit_start 'stars*bars?.txt'
+assert_file_exists 'stars*bars?.txt'
+assert_file_exists 'stars*bars?.txt'
+assert_file_md5hash 'stars*bars?.txt' "448e018faade28cede2bf6f33c3c2dfb"
+
+PHASE 'Bob checks out space space.txt.'
+blackbox_edit_start 'space space.txt'
+assert_file_exists 'space space.txt'
+assert_file_exists 'space space.txt'
+assert_file_md5hash 'space space.txt' "de1d4e4a07046f81af5d3c0194b78742"
+
+PHASE 'Bob shreds all exposed files.'
+assert_file_exists 'my/path/to/relsecrets.txt'
+assert_file_exists 'secret.txt'
+blackbox_shred_all_files
+assert_file_missing '!important!.txt'
+assert_file_missing '#andpounds.txt'
+assert_file_missing 'mistake.txt'
+assert_file_missing 'my/path/to/relsecrets.txt'
+assert_file_missing 'secret.txt'
+assert_file_missing 'space space.txt'
+assert_file_missing 'stars*bars?.txt'
+assert_file_exists '!important!.txt.gpg'
+assert_file_exists '#andpounds.txt.gpg'
+assert_file_exists 'mistake.txt.gpg'
+assert_file_exists 'my/path/to/relsecrets.txt.gpg'
+assert_file_exists 'secret.txt.gpg'
+assert_file_exists 'space space.txt.gpg'
+assert_file_exists 'stars*bars?.txt.gpg'
+
+PHASE 'Bob updates all files.'
+blackbox_update_all_files
+assert_file_missing '!important!.txt'
+assert_file_missing '#andpounds.txt'
+assert_file_missing 'mistake.txt'
+assert_file_missing 'my/path/to/relsecrets.txt'
+assert_file_missing 'secret.txt'
+assert_file_missing 'space space.txt'
+assert_file_missing 'stars*bars?.txt'
+assert_file_exists '!important!.txt.gpg'
+assert_file_exists '#andpounds.txt.gpg'
+assert_file_exists 'mistake.txt.gpg'
+assert_file_exists 'my/path/to/relsecrets.txt.gpg'
+assert_file_exists 'secret.txt.gpg'
+assert_file_exists 'space space.txt.gpg'
+assert_file_exists 'stars*bars?.txt.gpg'
+
+PHASE 'Alice returns. She should be locked out'
+become_alice
+PHASE 'Alice tries to decrypt secret.txt. Is blocked.'
+if blackbox_edit_start secret.txt ; then
+  echo 'ERROR: Alice was able to decrypt secret.txt!  She should have been blocked.'
+  exit 1
+else
+  echo 'NOTE: Alice was not able to decrypt secret.txt as expected.'
+fi
+
+# TODO: Create a new directory. "git clone" the repo into it.
 
 #
 # ASSERTIONS
