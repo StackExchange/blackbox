@@ -18,19 +18,23 @@ fi
 disclose_admins
 prepare_keychain
 
+OLDIFS=$IFS
+
 echo '========== ENCRYPTED FILES TO BE RE-ENCRYPTED:'
-awk <"$BB_FILES" '{ print "    " $1 ".gpg" }'
+while IFS= read <&99 -r unencrypted_file; do
+    echo "    $unencrypted_file.gpg"
+done 99<"$BB_FILES"
 
 echo '========== FILES IN THE WAY:'
 need_warning=false
-for i in $(<"$BB_FILES") ; do
-  unencrypted_file=$(get_unencrypted_filename "$i")
-  encrypted_file=$(get_encrypted_filename "$i")
+while IFS= read <&99 -r unencrypted_file; do
+  unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   if [[ -f "$unencrypted_file" ]]; then
     need_warning=true
     echo "    $unencrypted_file"
   fi
-done
+done 99<"$BB_FILES"
 if "$need_warning" ; then
   echo
   echo 'WARNING: This will overwrite any unencrypted files laying about.'
@@ -40,20 +44,25 @@ else
 fi
 
 echo '========== RE-ENCRYPTING FILES:'
-for i in $(<"$BB_FILES") ; do
-  unencrypted_file=$(get_unencrypted_filename "$i")
-  encrypted_file=$(get_encrypted_filename "$i")
-  echo ========== PROCESSING "$unencrypted_file"
+while IFS= read <&99 -r unencrypted_file; do
+  unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
+  echo ========== PROCESSING '"'$unencrypted_file'"'
   fail_if_not_on_cryptlist "$unencrypted_file"
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
   encrypt_file "$unencrypted_file" "$encrypted_file"
   shred_file "$unencrypted_file"
-done
+done 99<"$BB_FILES"
 
 fail_if_keychain_has_secrets
 
 echo '========== COMMITING TO VCS:'
-vcs_commit 'Re-encrypted keys' $(awk <"$BB_FILES" '{ print $1 ".gpg" }' )
+while IFS= read <&99 -r unencrypted_file; do
+    vcs_add "$unencrypted_file.gpg"
+done 99<"$BB_FILES"
+vcs_commit 'Re-encrypted keys'
+
+IFS=$OLDIFS
 
 VCSCMD=$(which_vcs)
 echo '========== DONE.'
