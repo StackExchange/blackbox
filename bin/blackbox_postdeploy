@@ -26,6 +26,8 @@ fi
 change_to_vcs_root
 prepare_keychain
 
+OLDIFS=$IFS
+
 # Decrypt:
 echo '========== Decrypting new/changed files: START'
 while IFS= read <&99 -r unencrypted_file; do
@@ -36,4 +38,7 @@ while IFS= read <&99 -r unencrypted_file; do
     chgrp "$FILE_GROUP" "$unencrypted_file"
   fi
 done 99<"$BB_FILES"
+
+IFS=$OLDIFS
+
 echo '========== Decrypting new/changed files: DONE'
