@@ -21,14 +21,18 @@ source "${blackbox_home}/_blackbox_common.sh"
 
 change_to_vcs_root
 
+OLDIFS=$IFS
+
 echo '========== FILES BEING SHREDDED:'
-for i in $(<"$BB_FILES") ; do
-  unencrypted_file=$(get_unencrypted_filename "$i")
-  encrypted_file=$(get_encrypted_filename "$i")
+while IFS= read <&99 -r unencrypted_file; do
+  unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   if [[ -f "$unencrypted_file" ]]; then
     echo "    $unencrypted_file"
     shred_file "$unencrypted_file"
   fi
-done
+done 99<"$BB_FILES"
+
+IFS=$OLDIFS
 
 echo '========== DONE.'
