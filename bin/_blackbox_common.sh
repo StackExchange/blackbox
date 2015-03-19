@@ -181,7 +181,7 @@ function decrypt_file() {
   encrypted="$1"
   unencrypted="$2"
 
-  echo "========== EXTRACTING $unencrypted"
+  echo '========== EXTRACTING ''"'$unencrypted'"'
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
