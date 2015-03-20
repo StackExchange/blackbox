@@ -17,8 +17,6 @@ fi
 
 prepare_keychain
 
-OLDIFS=$IFS
-
 modified_files=()
 echo '========== DIFFING FILES: START'
 while IFS= read <&99 -r unencrypted_file; do
@@ -37,8 +35,6 @@ done 99<"$BB_FILES"
 echo '========== DIFFING FILES: DONE'
 
 fail_if_keychain_has_secrets
-
-IFS=$OLDIFS
 
 echo '========== DONE.'
 
