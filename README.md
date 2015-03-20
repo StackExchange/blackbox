@@ -93,6 +93,7 @@ Commands:
 | --- | --- |
 | `blackbox_addadmin` | Add someone to the list of people that can encrypt/decrypt secrets |
 | `blackbox_cat` | Decrypt and view the contents of a file |
+| `blackbox_diff` | Diff decrypted files against their original crypted version |
 | `blackbox_edit` | Decrypt, run $EDITOR, re-encrypt a file |
 | `blackbox_edit_start` | Decrypt a file so it can be updated |
 | `blackbox_edit_end` | Encrypt a file after blackbox_edit_start was used |
