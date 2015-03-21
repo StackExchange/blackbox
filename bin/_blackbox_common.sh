@@ -169,7 +169,7 @@ function encrypt_file() {
   encrypted="$2"
 
   echo "========== Encrypting: $unencrypted"
-  gpg --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted"
+  gpg --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted"
   echo '========== Encrypting: DONE'
 }
 
@@ -185,7 +185,7 @@ function decrypt_file() {
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg -q --decrypt -o "$unencrypted" "$encrypted"
+  gpg --use-agent -q --decrypt -o "$unencrypted" "$encrypted"
   umask "$old_umask"
 }
 
@@ -207,7 +207,7 @@ function decrypt_file_overwrite() {
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg --yes -q --decrypt -o "$unencrypted" "$encrypted"
+  gpg --use-agent --yes -q --decrypt -o "$unencrypted" "$encrypted"
   umask "$old_umask"
 
   new_hash=$(md5sum_file "$unencrypted")
