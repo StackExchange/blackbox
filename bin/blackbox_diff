@@ -18,6 +18,7 @@ fi
 prepare_keychain
 
 modified_files=()
+modifications=()
 echo '========== DIFFING FILES: START'
 while IFS= read <&99 -r unencrypted_file; do
   unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
@@ -26,12 +27,16 @@ while IFS= read <&99 -r unencrypted_file; do
   if [[ -f "$unencrypted_file" ]]; then
     out=$(diff -u <(gpg --yes -q --decrypt "$encrypted_file") "$unencrypted_file" || true)
     if [ "$out" != "" ]; then
-      echo ========== PROCESSING '"'$unencrypted_file'"'
-      echo "$out"
       modified_files+=("$unencrypted_file")
+      modifications+=("$out")
     fi
   fi
 done 99<"$BB_FILES"
+modified_files_number=${#modified_files[@]}
+for (( i=0; i<${modified_files_number}; i++ )); do
+  echo ========== PROCESSING '"'${modified_files[$i]}'"'
+  echo -e "${modifications[$i]}\n"
+done
 echo '========== DIFFING FILES: DONE'
 
 fail_if_keychain_has_secrets
