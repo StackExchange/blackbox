@@ -28,7 +28,7 @@ GIT="git log --abbrev-commit --pretty=oneline"
 CURR_COMMIT=`$GIT                  $FILE | head -1 | awk '{print $1}'`
 PREV_COMMIT=`$GIT ${CURR_COMMIT}~1 $FILE | head -1 | awk '{print $1}'`
 # Use colordiff if available
-if [[ -e /usr/local/bin/colordiff || -e /usr/bin/colordiff || -e /bin/colordiff ]]
+if which colordiff > /dev/null 2>&1
   then DIFF="colordiff"
   else DIFF="diff"
 fi
