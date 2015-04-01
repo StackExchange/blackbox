@@ -349,6 +349,17 @@ function is_in_svn() {
     echo false
   fi
 }
+# Perforce
+function is_in_p4() {
+  local filename
+  filename="$1"
+
+  if p4 list "$filename" ; then
+    echo true
+  else
+    echo false
+  fi
+}
 
 
 # Add a file to the repo (but don't commit it).
@@ -366,6 +377,10 @@ function vcs_add_git() {
 # Subversion
 function vcs_add_svn() {
   svn add --parents """$@"""
+}
+# Perfoce
+function vcs_add_p4() {
+  p4 add """$@"""
 }
 
 
@@ -385,6 +400,10 @@ function vcs_commit_git() {
 function vcs_commit_svn() {
   svn commit -m"""$@"""
 }
+# Perforce
+function vcs_commit_p4() {
+  p4 submit -d """$@"""
+}
 
 
 # Remove file from repo, even if it was deleted locally already.
@@ -403,4 +422,8 @@ function vcs_remove_git() {
 # Subversion
 function vcs_remove_svn() {
   svn delete """$@"""
+}
+# Perforce
+function vcs_remove_svn() {
+  p4 delete """$@"""
 }
