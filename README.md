@@ -19,7 +19,7 @@ and certain files contain secrets such as passwords or SSL private
 keys.  Often people just store such files "and hope that nobody finds
 them in the repo".  That's not safe.
 
-With BlackBox, those files are stored encrypted using GPG. Access to 
+With BlackBox, those files are stored encrypted using GPG. Access to
 the VCS repo without also having the right GPG keys
 makes it worthless to have the files.  As long as you keep your GPG keys
 safe, you don't have to worry about storing your VCS repo on an untrusted
@@ -43,15 +43,15 @@ account that pushes new files to the Puppet master) and have that
 user run `blackbox_postdeploy` after any files are updated.
 
 Getting started is easy.  Just `cd` into a Git, Mercurial or Subversion
-repository and run `blackbox_initialize`.  After that, if a file is to 
+repository and run `blackbox_initialize`.  After that, if a file is to
 be encrypted, run `blackbox_register_new_file` and you are done.  Add
 and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
 To view and/or edit a file, run `blackbox_edit`; this will decrypt the
 file and open with whatever is specified by your $EDITOR environment
-variable.  When you close the editor the file will automatically be 
+variable.  When you close the editor the file will automatically be
 encrypted again and the temporary plaintext file will be shredded.  If
 you need to leave the file decrypted while you update you can use the
-`blackbox_edit_start` to decrypt the file and  `blackbox_edit_end` when 
+`blackbox_edit_start` to decrypt the file and  `blackbox_edit_end` when
 you want to "put it back in the box."
 
 
@@ -103,6 +103,7 @@ Commands:
 | `blackbox_removeadmin` | Remove someone from the list of people that can encrypt/decrypt secrets |
 | `blackbox_shred_all_files` | Safely delete any decrypted files |
 | `blackbox_update_all_files` | Decrypt then re-encrypt all files. Useful after keys are changed |
+| `blackbox_whatsnew` | show what has changed in the last commit for a given file |
 
 Compatibility:
 ============================
@@ -214,7 +215,7 @@ How to use the secrets with Puppet?
 
 ### Entire files:
 
-Entire files, such as SSL certs and private keys, are treated just like 
+Entire files, such as SSL certs and private keys, are treated just like
 regular files.  You decrypt them any time you push a new release
 to the puppet master.
 
@@ -433,14 +434,14 @@ blackbox_register_new_file foo.txt
 Decrypt it:
 
 ```
-blackbox_edit_start foo.txt.gpg 
+blackbox_edit_start foo.txt.gpg
 cat foo.txt
 echo This is the new file contents. >foo.txt
 ```
 
 Re-encrypt it:
 ```
-blackbox_edit_end foo.txt.gpg 
+blackbox_edit_end foo.txt.gpg
 ls -l foo.txt*
 ```
 
@@ -483,7 +484,7 @@ For the rest of this doc, you'll need to make the following substitutions:
 
   - ROLEUSER: svc_deployacct or whatever your role account's name is.
   - NEWMASTER: the machine this role account exists on.
-  - SECUREHOST: The machine you use to create the keys. 
+  - SECUREHOST: The machine you use to create the keys.
 
 NOTE: This should be more automated/scripted.  Patches welcome.
 
@@ -493,7 +494,7 @@ On SECUREHOST, create the puppet master's keys:
 $ mkdir /tmp/NEWMASTER
 $ cd /tmp/NEWMASTER
 $ gpg --homedir . --gen-key
-Your selection? 
+Your selection?
    (1) RSA and RSA (default)
 What keysize do you want? (2048) DEFAULT
 Key is valid for? (0) DEFAULT
@@ -522,8 +523,8 @@ gpg> addkey
    (5) Elgamal (encrypt only)
    (6) RSA (encrypt only)
 Your selection? 6
-What keysize do you want? (2048) 
-Key is valid for? (0) 
+What keysize do you want? (2048)
+Key is valid for? (0)
 Command> key 2
 (the new subkey has a "*" next to it)
 Command> passwd
