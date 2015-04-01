@@ -203,7 +203,7 @@ What does this look like to the typical user?
 *  Re-encrypt the file: `blackbox_edit_end FILENAME`
 *  Commit the changes.  `git commit -a` or `hg commit`
 
-Wait... it can be even easier than than!
+Wait... it can be even easier than that!
 Run `blackbox_edit FILENAME`, and it'll decrypt the file
 in a temp file and call `$EDITOR` on it, re-encrypting again after the editor
 is closed.
