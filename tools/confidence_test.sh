@@ -229,6 +229,50 @@ assert_file_missing secret.txt
 assert_file_exists secret.txt.gpg
 
 
+PHASE 'Alice copies files to a non-repo directory. (NO REPO)'
+
+# Copy the repo entirely:
+make_self_deleting_tempdir fake_alice_filedir
+tar cf - . | ( cd "$fake_alice_filedir" && tar xpvf - )
+# Remove the .git directory
+rm -rf "$fake_alice_filedir/.git"
+(
+cd "$fake_alice_filedir"
+assert_file_missing '.git'
+assert_file_exists 'secret.txt.gpg'
+assert_file_missing 'secret.txt'
+blackbox_postdeploy
+assert_file_missing '.git'
+assert_file_exists 'secret.txt.gpg'
+assert_file_exists 'secret.txt'
+assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
+
+PHASE 'Alice shreds these non-repo files. (NO REPO)'
+blackbox_shred_all_files
+assert_file_missing '.git'
+assert_file_exists 'secret.txt.gpg'
+assert_file_missing 'secret.txt'
+
+PHASE 'Alice decrypts secrets.txt (NO REPO).'
+blackbox_edit_start secret.txt
+assert_file_exists secret.txt
+assert_file_exists secret.txt.gpg
+assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
+
+PHASE 'Alice edits secrets.txt. (NO REPO EDIT)'
+echo 'NOREPO EDIT' >secret.txt
+assert_file_md5hash secret.txt "d3e6bbdfc76fae7fd0a921f3408db1d1"
+blackbox_edit_end secret.txt
+assert_file_missing secret.txt
+assert_file_exists secret.txt.gpg
+
+PHASE 'Alice decrypts secrets.txt (NO REPO EDIT).'
+blackbox_edit_start secret.txt
+assert_file_exists secret.txt
+assert_file_exists secret.txt.gpg
+assert_file_md5hash secret.txt "d3e6bbdfc76fae7fd0a921f3408db1d1"
+)
+
 PHASE 'Bob appears.'
 become_bob
 

@@ -45,7 +45,9 @@ function _determine_vcs_base_and_type() {
     # NOTE: hg has to be tested last because it always "succeeds".
     VCS_TYPE=hg
   else
-    echo /dev/null
+    # We aren't in a repo at all.  Assume the cwd is the root
+    # of the tree.
+    echo .
     VCS_TYPE=unknown
   fi
   export VCS_TYPE
@@ -360,6 +362,10 @@ function is_in_p4() {
     echo false
   fi
 }
+# No repo
+function is_in_unknown() {
+  echo true
+}
 
 
 # Add a file to the repo (but don't commit it).
@@ -381,6 +387,10 @@ function vcs_add_svn() {
 # Perfoce
 function vcs_add_p4() {
   p4 add """$@"""
+}
+# No repo
+function vcs_add_unknown() {
+  :
 }
 
 
@@ -404,6 +414,10 @@ function vcs_commit_svn() {
 function vcs_commit_p4() {
   p4 submit -d """$@"""
 }
+# No repo
+function vcs_commit_unknown() {
+  :
+}
 
 
 # Remove file from repo, even if it was deleted locally already.
@@ -424,6 +438,10 @@ function vcs_remove_svn() {
   svn delete """$@"""
 }
 # Perforce
-function vcs_remove_svn() {
+function vcs_remove_p4() {
   p4 delete """$@"""
+}
+# No repo
+function vcs_remove_unknown() {
+  :
 }

@@ -118,6 +118,7 @@ It has been tested to work with many operating systems.
   * `hg` -- Mercurial
   * `svn` -- SubVersion (Thanks, Ben Drasin!)
   * `p4` -- Perforce
+  * none -- The files can be decrypted outside of a repo if the keyrings directory is intact
 * Operating system
   * CentOS / RedHat
   * MacOS X
@@ -614,6 +615,21 @@ rm -rf /tmp/NEWMASTER
 ```
 
 Also shred any other temporary files you may have made.
+
+
+Using Blackbox without a repo
+===========================
+If the files are copied out of a repo they can still be decrypted
+and edited.  Obviously edits, changes to keys, and such will be lost
+if they are made outside the repo. Also note that commands are most
+likely to only work if run from the base directory (i.e. the parent to
+the keyrings directory).
+
+The following commands have been tested outside a repo:
+
+  * `blackbox_postdeploy`
+  * `blackbox_edit_start`
+  * `blackbox_edit_end`
 
 
 Help out: Submit bugs, pull requests and ideas:
