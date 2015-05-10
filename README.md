@@ -63,7 +63,7 @@ and passwords to be leaked.
 
 NOT SO OBVIOUSLY when we store "secrets" in a VCS repo like Git or
 Mercurial, suddenly we are less able to share our code with other
-people.  Communciation between subteams of an organization is hurt.
+people.  Communication between subteams of an organization is hurt.
 You can't collaborate as well.  Either you find yourself emailing
 individual files around (yuck!), making a special repo with just
 the files needed by your collaborators (yuck!), or just deciding that
