@@ -55,7 +55,7 @@ function make_self_deleting_tempfile() {
   case $(uname -s) in
     Darwin )
       : ${TMPDIR:=/tmp} ;
-      name=$(mktemp -t _stacklib_ )
+      name=$(mktemp -t _stacklib_.XXXXXXX )
       ;;
     Linux )
       name=$(mktemp)
