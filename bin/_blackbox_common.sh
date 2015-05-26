@@ -62,7 +62,6 @@ BB_ADMINS="${KEYRINGDIR}/${BB_ADMINS_FILE}"
 BB_FILES_FILE="blackbox-files.txt"
 BB_FILES="${KEYRINGDIR}/${BB_FILES_FILE}"
 SECRING="${KEYRINGDIR}/secring.gpg"
-PUBRING="${KEYRINGDIR}/pubring.gpg"
 : "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
@@ -125,6 +124,14 @@ function fail_if_keychain_has_secrets() {
   fi
 }
 
+function get_pubring_path() {
+  if [[ -f "${KEYRINGDIR}/pubring.gpg" ]]; then
+    echo "${KEYRINGDIR}/pubring.gpg"
+  else
+    echo "${KEYRINGDIR}/pubring.kbx"
+  fi
+}
+
 # Output the unencrypted filename.
 function get_unencrypted_filename() {
   echo $(dirname "$1")/$(basename "$1" .gpg) | sed -e 's#^\./##'
@@ -138,7 +145,7 @@ function get_encrypted_filename() {
 # Prepare keychain for use.
 function prepare_keychain() {
   echo '========== Importing keychain: START'
-  gpg --import "${PUBRING}" 2>&1 | egrep -v 'not changed$'
+  gpg --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$'
   echo '========== Importing keychain: DONE'
 }
 
