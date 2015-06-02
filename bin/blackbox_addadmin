@@ -45,10 +45,11 @@ fi
 
 # Import it:
 gpg --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
-vcs_add "$KEYRINGDIR/pubring.gpg" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
+pubring_path=$(get_pubring_path)
+vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
 
 # Make a suggestion:
 echo
 echo
 echo 'NEXT STEP: You need to manually check these in:'
-echo '     ' $VCS_TYPE commit -m\'NEW ADMIN: $KEYNAME\' "$BLACKBOXDATA/pubring.gpg" "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
+echo '     ' $VCS_TYPE commit -m\'NEW ADMIN: $KEYNAME\' "$BLACKBOXDATA/$(basename ${pubring_path})" "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
