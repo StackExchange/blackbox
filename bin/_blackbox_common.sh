@@ -76,8 +76,8 @@ function is_on_cryptlist() {
 # Exit with error if a file exists.
 function fail_if_exists() {
   if [[ -f "$1" ]]; then
-    echo ERROR: "$1" exists.  "$2"
-    echo Exiting...
+    echo ERROR: "$1" exists.  "$2" >&2
+    echo Exiting... >&2
     exit 1
   fi
 }
@@ -85,8 +85,8 @@ function fail_if_exists() {
 # Exit with error if a file is missing.
 function fail_if_not_exists() {
   if [[ ! -f "$1" ]]; then
-    echo ERROR: "$1" not found.  "$2"
-    echo Exiting...
+    echo ERROR: "$1" not found.  "$2" >&2
+    echo Exiting... >&2
     exit 1
   fi
 }
@@ -95,8 +95,8 @@ function fail_if_not_exists() {
 function fail_if_not_in_repo() {
   _determine_vcs_base_and_type
   if [[ $VCS_TYPE = "unknown" ]]; then
-    echo "ERROR: This must be run in a VCS repo: git, hg, or svn."
-    echo Exiting...
+    echo "ERROR: This must be run in a VCS repo: git, hg, or svn." >&2
+    echo Exiting... >&2
     exit 1
   fi
 }
@@ -108,9 +108,9 @@ function fail_if_not_on_cryptlist() {
   local name="$1"
 
   if ! is_on_cryptlist "$name" ; then
-    echo "ERROR: $name not found in $BB_FILES"
-    echo "PWD="$(/bin/pwd)
-    echo 'Exiting...'
+    echo "ERROR: $name not found in $BB_FILES" >&2
+    echo "PWD="$(/bin/pwd) >&2
+    echo 'Exiting...' >&2
     exit 1
   fi
 }
@@ -118,9 +118,9 @@ function fail_if_not_on_cryptlist() {
 # Exit with error if keychain contains secret keys.
 function fail_if_keychain_has_secrets() {
   if [[ -s ${SECRING} ]]; then
-    echo 'ERROR: The file' "$SECRING" 'should be empty.'
-    echo 'Did someone accidentally add this private key to the ring?'
-    echo 'Exiting...'
+    echo 'ERROR: The file' "$SECRING" 'should be empty.' >&2
+    echo 'Did someone accidentally add this private key to the ring?' >&2
+    echo 'Exiting...' >&2
     exit 1
   fi
 }
@@ -137,9 +137,9 @@ function get_encrypted_filename() {
 
 # Prepare keychain for use.
 function prepare_keychain() {
-  echo '========== Importing keychain: START'
-  gpg --import "${PUBRING}" 2>&1 | egrep -v 'not changed$'
-  echo '========== Importing keychain: DONE'
+  echo '========== Importing keychain: START' >&2
+  gpg --import "${PUBRING}" 2>&1 | egrep -v 'not changed$' >&2
+  echo '========== Importing keychain: DONE' >&2
 }
 
 # Add file to list of encrypted files.
@@ -170,9 +170,9 @@ function encrypt_file() {
   unencrypted="$1"
   encrypted="$2"
 
-  echo "========== Encrypting: $unencrypted"
-  gpg --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted"
-  echo '========== Encrypting: DONE'
+  echo "========== Encrypting: $unencrypted" >&2
+  gpg --use-agent --no-tty --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
+  echo '========== Encrypting: DONE' >&2
 }
 
 # Decrypt .gpg file, asking "yes/no" before overwriting unencrypted file.
@@ -183,11 +183,11 @@ function decrypt_file() {
   encrypted="$1"
   unencrypted="$2"
 
-  echo '========== EXTRACTING ''"'$unencrypted'"'
+  echo '========== EXTRACTING ''"'$unencrypted'"' >&2
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg --use-agent -q --decrypt -o "$unencrypted" "$encrypted"
+  gpg --use-agent --no-tty -q --decrypt -o "$unencrypted" "$encrypted" >&2
   umask "$old_umask"
 }
 
@@ -209,12 +209,12 @@ function decrypt_file_overwrite() {
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg --use-agent --yes -q --decrypt -o "$unencrypted" "$encrypted"
+  gpg --use-agent --no-tty --yes -q --decrypt -o "$unencrypted" "$encrypted" >&2
   umask "$old_umask"
 
   new_hash=$(md5sum_file "$unencrypted")
   if [[ "$old_hash" != "$new_hash" ]]; then
-    echo "========== EXTRACTED $unencrypted"
+    echo "========== EXTRACTED $unencrypted" >&2
   fi
 }
 
