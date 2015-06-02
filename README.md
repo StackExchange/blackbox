@@ -91,19 +91,22 @@ Commands:
 
 | Name: | Description: |
 | --- | --- |
-| `blackbox_addadmin` | Add someone to the list of people that can encrypt/decrypt secrets |
-| `blackbox_cat` | Decrypt and view the contents of a file |
-| `blackbox_diff` | Diff decrypted files against their original crypted version |
 | `blackbox_edit` | Decrypt, run $EDITOR, re-encrypt a file |
 | `blackbox_edit_start` | Decrypt a file so it can be updated |
 | `blackbox_edit_end` | Encrypt a file after blackbox_edit_start was used |
+| `blackbox_cat` | Decrypt and view the contents of a file |
+| `blackbox_diff` | Diff decrypted files against their original crypted version |
 | `blackbox_initialize` | Enable blackbox for a GIT or HG repo |
-| `blackbox_postdeploy` | Decrypt all managed files |
 | `blackbox_register_new_file` | Encrypt a file for the first time |
+| `blackbox_list_files` | List the files maintained by blackbox |
+| `blackbox_decrypt_all_files` | Decrypt all managed files (INTERACTIVE) |
+| `blackbox_postdeploy` | Decrypt all managed files (batch) |
+| `blackbox_addadmin` | Add someone to the list of people that can encrypt/decrypt secrets |
 | `blackbox_removeadmin` | Remove someone from the list of people that can encrypt/decrypt secrets |
 | `blackbox_shred_all_files` | Safely delete any decrypted files |
 | `blackbox_update_all_files` | Decrypt then re-encrypt all files. Useful after keys are changed |
 | `blackbox_whatsnew` | show what has changed in the last commit for a given file |
+
 
 Compatibility:
 ============================

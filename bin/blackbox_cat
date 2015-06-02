@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_cat.sh -- Decrypt a file, cat it, shred it
+# blackbox_cat -- Decrypt a file, cat it, shred it
 #
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
