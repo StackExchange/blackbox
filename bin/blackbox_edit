@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_edit.sh -- Decrypt a file temporarily for edition, then re-encrypts it again
+# blackbox_edit -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )

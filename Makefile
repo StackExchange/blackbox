@@ -16,27 +16,11 @@ install:
 packages: packages-rpm
 
 #
-# MacPorts builds
-#
-# To test:
-# rm -rf /tmp/foo ; mkdir -p /tmp/foo;make packages-macports DESTDIR=/tmp/foo;find /tmp/foo -ls
-
-# Make mk_macports.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
-tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
-	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
-
-# Make mk_deb_fpmdir.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
-tools/mk_deb_fpmdir.stack_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
-	sed -e 's@/usr/blackbox/bin/@/usr/bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_deb_fpmdir.stack_blackbox.txt >$@
-
-# MacPorts expects to run: make packages-macports DESTDIR=${destroot}
-packages-macports: tools/mk_macports.vcs_blackbox.txt
-	mkdir -p $(DESTDIR)/bin
-	cd tools && ./mk_macports mk_macports.vcs_blackbox.txt
-
-#
 # RPM builds
 #
+
+# NOTE: mk_rpm_fpmdir.stack_blackbox.txt is the master list of files.  All
+# other packages should generate their list from it.
 
 packages-rpm:
 	cd tools && PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_rpm_fpmdir stack_blackbox mk_rpm_fpmdir.stack_blackbox.txt
@@ -67,6 +51,10 @@ unlock-rpm:
 packages-deb:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	cd tools && PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_deb_fpmdir stack_blackbox mk_deb_fpmdir.stack_blackbox.txt
 
+# Make mk_deb_fpmdir.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
+tools/mk_deb_fpmdir.stack_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
+	sed -e 's@/usr/blackbox/bin/@/usr/bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_deb_fpmdir.stack_blackbox.txt >$@
+
 packages-deb-debug:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	@echo BUILD:
 	@PKGRELEASE=99 make packages-deb
@@ -79,6 +67,21 @@ local-deb:
 	@PKGRELEASE=1 make packages
 	-@sudo dpkg -e $(PKGNAME)
 	sudo dpkg -i $$(cat ~/rpmbuild-$(PKGNAME)/bin-packages.txt)
+
+#
+# MacPorts builds
+#
+# To test:
+# rm -rf /tmp/foo ; mkdir -p /tmp/foo;make packages-macports DESTDIR=/tmp/foo;find /tmp/foo -ls
+
+# Make mk_macports.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
+tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
+	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
+
+# MacPorts expects to run: make packages-macports DESTDIR=${destroot}
+packages-macports: tools/mk_macports.vcs_blackbox.txt
+	mkdir -p $(DESTDIR)/bin
+	cd tools && ./mk_macports mk_macports.vcs_blackbox.txt
 
 # Add other package types here.
 

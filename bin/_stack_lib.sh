@@ -1,6 +1,9 @@
 # Library functions for bash scripts at Stack Exchange.
 
+# NOTE: This file is open sourced. Do not put Stack-proprietary code here.
+
 # Usage:
+#
 #   set -e
 #   . _stack_lib.sh
 
@@ -46,6 +49,48 @@ function add_on_exit()
     fi
 }
 
+function create_self_deleting_tempfile() {
+  local filename
+
+  case $(uname -s) in
+    Darwin )
+      : ${TMPDIR:=/tmp} ;
+      filename=$(mktemp -t _stacklib_ )
+      ;;
+    Linux )
+      filename=$(mktemp)
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
+
+  add_on_exit rm -f "$filename"
+  echo "$filename"
+}
+
+function create_self_deleting_tempdir() {
+  local filename
+
+  case $(uname -s) in
+    Darwin )
+      : ${TMPDIR:=/tmp} ;
+      filename=$(mktemp -d -t _stacklib_ )
+      ;;
+    Linux )
+      filename=$(mktemp -d)
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
+
+  add_on_exit rm -rf "$filename"
+  echo "$filename"
+}
+
 # Securely and portably create a temporary file that will be deleted
 # on EXIT.  $1 is the variable name to store the result.
 function make_self_deleting_tempfile() {
@@ -55,12 +100,9 @@ function make_self_deleting_tempfile() {
   case $(uname -s) in
     Darwin )
       : ${TMPDIR:=/tmp} ;
-      name=$(mktemp -t _stacklib_.XXXXXXX )
+      name=$(mktemp -t _stacklib_ )
       ;;
     Linux )
-      name=$(mktemp)
-      ;;
-    CYGWIN* )
       name=$(mktemp)
       ;;
     * )
@@ -79,13 +121,10 @@ function make_tempdir() {
 
   case $(uname -s) in
     Darwin )
-      : "${TMPDIR:=/tmp}" ;
+      : ${TMPDIR:=/tmp} ;
       name=$(mktemp -d -t _stacklib_ )
       ;;
     Linux )
-      name=$(mktemp -d)
-      ;;
-    CYGWIN* )
       name=$(mktemp -d)
       ;;
     * )
@@ -99,12 +138,12 @@ function make_tempdir() {
 
 function make_self_deleting_tempdir() {
   local __resultvar="$1"
-  local dirname
+  local dname
 
-  make_tempdir dirname
+  make_tempdir dname
 
-  add_on_exit rm -rf "$dirname"
-  eval $__resultvar="$dirname"
+  add_on_exit rm -rf "$dname"
+  eval $__resultvar="$dname"
 }
 
 function fail_if_not_running_as_root() {

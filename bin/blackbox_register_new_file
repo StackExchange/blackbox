@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_register_new_file.sh -- Enroll a new file in the blackbox system.
+# blackbox_register_new_file -- Enroll a new file in the blackbox system.
 #
 # Takes a previously unencrypted file and enrolls it into the blackbox
 # system.  It will be kept in the repo as an encrypted file.  On deployment
