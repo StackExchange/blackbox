@@ -19,4 +19,4 @@ if [[ -z $GPG_AGENT_INFO ]]; then
   eval $(gpg-agent --daemon)
 fi
 
-exec blackbox_postdeploy.sh "$@"
+exec blackbox_postdeploy "$@"
