@@ -290,7 +290,7 @@ blackbox_register_new_file path/to/file.name.key
 How to remove a file from the system?
 ============================
 
-This is a manual process. It happens quite rarely.
+This happens quite rarely, but we've got it covered:
 ```
 blackbox_deregister_file path/to/file.name.key
 ```
