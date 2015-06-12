@@ -351,7 +351,7 @@ function which_vcs() {
 
 # Is this file in the current repo?
 function is_in_vcs() {
-  is_in_$(which_vcs) """$@"""
+  is_in_$(which_vcs) "$@"
 }
 # Mercurial
 function is_in_hg() {
@@ -405,23 +405,23 @@ function is_in_unknown() {
 
 # Add a file to the repo (but don't commit it).
 function vcs_add() {
-  vcs_add_$(which_vcs) """$@"""
+  vcs_add_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_add_hg() {
-  hg add """$@"""
+  hg add "$@"
 }
 # Git
 function vcs_add_git() {
-  git add """$@"""
+  git add "$@"
 }
 # Subversion
 function vcs_add_svn() {
-  svn add --parents """$@"""
+  svn add --parents "$@"
 }
 # Perfoce
 function vcs_add_p4() {
-  p4 add """$@"""
+  p4 add "$@"
 }
 # No repo
 function vcs_add_unknown() {
@@ -431,23 +431,23 @@ function vcs_add_unknown() {
 
 # Commit a file to the repo
 function vcs_commit() {
-  vcs_commit_$(which_vcs) """$@"""
+  vcs_commit_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_commit_hg() {
-  hg commit -m"""$@"""
+  hg commit -m"$@"
 }
 # Git
 function vcs_commit_git() {
-  git commit -m"""$@"""
+  git commit -m"$@"
 }
 # Subversion
 function vcs_commit_svn() {
-  svn commit -m"""$@"""
+  svn commit -m"$@"
 }
 # Perforce
 function vcs_commit_p4() {
-  p4 submit -d """$@"""
+  p4 submit -d "$@"
 }
 # No repo
 function vcs_commit_unknown() {
@@ -458,23 +458,23 @@ function vcs_commit_unknown() {
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
 function vcs_remove() {
-  vcs_remove_$(which_vcs) """$@"""
+  vcs_remove_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_remove_hg() {
-  hg rm -A -- """$@"""
+  hg rm -A -- "$@"
 }
 # Git
 function vcs_remove_git() {
-  git rm --ignore-unmatch -f -- """$@"""
+  git rm --ignore-unmatch -f -- "$@"
 }
 # Subversion
 function vcs_remove_svn() {
-  svn delete """$@"""
+  svn delete "$@"
 }
 # Perforce
 function vcs_remove_p4() {
-  p4 delete """$@"""
+  p4 delete "$@"
 }
 # No repo
 function vcs_remove_unknown() {

@@ -11,13 +11,13 @@
 
 function debugmsg() {
   # Log to stderr.
-  echo 1>&2 LOG: """$@"""
+  echo 1>&2 LOG: "$@"
   :
 }
 
 function logit() {
   # Log to stderr.
-  echo 1>&2 LOG: """$@"""
+  echo 1>&2 LOG: "$@"
 }
 
 function fail_out() {

@@ -8,7 +8,7 @@ set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "${blackbox_home}/_blackbox_common.sh"
 
-for param in """$@""" ; do
+for param in "$@" ; do
   unencrypted_file=$(get_unencrypted_filename "$param")
   encrypted_file=$(get_encrypted_filename "$param")
   echo >&2 ========== PLAINFILE '"'$unencrypted_file'"'
