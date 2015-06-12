@@ -8,8 +8,6 @@
 # to systems that need the plaintext (unencrypted) versions, run
 # blackbox_postdeploy.sh to decrypt all the files.
 
-# TODO(tlim): Add the unencrypted file to .hgignore
-
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "${blackbox_home}/_blackbox_common.sh"
