@@ -164,6 +164,19 @@ function add_filename_to_cryptlist() {
   fi
 }
 
+# Removes a file from the list of encrypted files
+function remove_filename_from_cryptlist() {
+  # If the name is not already on the list, this is a no-op.
+  local name=$(vcs_relative_path "$1")
+
+  if ! grep -s -q "$name" "$BB_FILES" ; then
+    echo ========== File is not registered. No need to remove from list.
+  else
+    echo ========== Removing file from list.
+    remove_line "$BB_FILES" "$name"
+  fi
+}
+
 # Print out who the current BB ADMINS are:
 function disclose_admins() {
   echo ========== blackbox administrators are:
@@ -279,6 +292,21 @@ function vcs_relative_path() {
   # Usage: vcs_relative_path file
   local name="$1"
   python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
+}
+
+# Removes a line from a text file
+function remove_line() {
+  local tempfile
+
+  tempfile="${1}.blackbox-temp.${RANDOM}.$$"
+
+  # Ensure source file exists
+  touch "$1"
+  grep -Fsxv "$2" "$1" > "$tempfile" || true
+
+  # Using cat+rm instead of cp will preserve permissions/ownership
+  cat "$tempfile" > "$1"
+  rm "$tempfile"
 }
 
 #
@@ -451,4 +479,90 @@ function vcs_remove_p4() {
 # No repo
 function vcs_remove_unknown() {
   :
+}
+
+
+# Ignore a file in a repo.  If it was already ignored, this is a no-op.
+function vcs_ignore() {
+  local file
+  for file in "$@"; do
+    vcs_ignore_$(which_vcs) "$file"
+  done
+}
+# Mercurial
+function vcs_ignore_hg() {
+  vcs_ignore_generic_file "$REPOBASE/.hgignore" "$file"
+}
+# Git
+function vcs_ignore_git() {
+  vcs_ignore_generic_file "$REPOBASE/.gitignore" "$file"
+}
+# Subversion
+function vcs_ignore_svn() {
+  svn propset svn:ignore "$(vcs_relative_path "$file")"
+}
+# Perforce
+function vcs_ignore_p4() {
+  :
+}
+# No repo
+function vcs_ignore_unknown() {
+  :
+}
+# Generic - add line to file
+function vcs_ignore_generic_file() {
+  local file
+  file="$(vcs_relative_path "$2")"
+  file="${file/\$\//}"
+  file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
+  if ! grep -Fsx "$file" "$1" > /dev/null; then
+    echo "$file" >> "$1"
+    vcs_add "$1"
+  fi
+}
+
+
+# Notice (un-ignore) a file in a repo.  If it was not ignored, this is
+# a no-op
+function vcs_notice() {
+  local file
+  for file in "$@"; do
+    vcs_notice_$(which_vcs) "$file"
+  done
+}
+# Mercurial
+function vcs_notice_hg() {
+  vcs_notice_generic_file "$REPOBASE/.hgignore" "$file"
+}
+# Git
+function vcs_notice_git() {
+  vcs_notice_generic_file "$REPOBASE/.gitignore" "$file"
+}
+# Subversion
+function vcs_notice_svn() {
+  svn propdel svn:ignore "$(vcs_relative_path "$file")"
+}
+# Perforce
+function vcs_notice_p4() {
+  :
+}
+# No repo
+function vcs_notice_unknown() {
+  :
+}
+# Generic - remove line to file
+function vcs_notice_generic_file() {
+  local file
+  file="$(vcs_relative_path "$2")"
+  file="${file/\$\//}"
+  file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
+  if grep -Fsx "$file" "$1" > /dev/null; then
+    remove_line "$1" "$file"
+    vcs_add "$1"
+  fi
+  if grep -Fsx "${file:1}" "$1" > /dev/null; then
+    echo "WARNING:  Found a non-absolute ignore match in $1"
+    echo "WARNING:  Confirm the pattern is intended to only exclude $file"
+    echo "WARNING:  If so, manually update the ignore file"
+  fi
 }
