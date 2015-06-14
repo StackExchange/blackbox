@@ -83,6 +83,16 @@ packages-macports: tools/mk_macports.vcs_blackbox.txt
 	mkdir -p $(DESTDIR)/bin
 	cd tools && ./mk_macports mk_macports.vcs_blackbox.txt
 
+# stow is a pretty easy way to manage simple local installs on GNU systems 
+install-stow:
+	mkdir -p /usr/local/stow/blackbox/bin
+	cp bin/* /usr/local/stow/blackbox/bin
+	rm /usr/local/stow/blackbox/bin/Makefile
+	cd /usr/local/stow; stow -R blackbox
+uninstall-stow:
+	cd /usr/local/stow; stow -D blackbox
+	rm -rf /usr/local/stow/blackbox
+
 # Add other package types here.
 
 #
