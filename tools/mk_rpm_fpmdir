@@ -58,7 +58,7 @@ done
 
 # Build the RPM:
 cd "$OUTPUTDIR" && fpm -s dir -t rpm \
-  -a x86_64 \
+  -a all \
   -n "${PACKAGENAME}" \
   --epoch "${PKGEPOCH}" \
   --version "${PKGVERSION}" \

@@ -58,7 +58,7 @@ done
 
 # Build the DEB:
 cd "$OUTPUTDIR" && fpm -s dir -t deb \
-  -a x86_64 \
+  -a all \
   -n "${PACKAGENAME}" \
   --epoch "${PKGEPOCH}" \
   --version "${PKGVERSION}" \
