@@ -68,7 +68,7 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
-  file_contains_line "$(vcs_relative_path "$1")" "$BB_FILES"
+  file_contains_line "$BB_FILES" "$(vcs_relative_path "$1")"
 }
 
 # Exit with error if a file exists.
@@ -309,7 +309,9 @@ function remove_line() {
 
 # Determine if a file contains a given line
 function file_contains_line() {
-  grep -Fxsq "$2" "$1"
+  # $1: the file
+  # $2: the line
+  grep -xsqF "$2" "$1"
 }
 
 #
