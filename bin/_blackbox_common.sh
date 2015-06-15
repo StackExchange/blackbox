@@ -297,7 +297,7 @@ function vcs_relative_path() {
 function remove_line() {
   local tempfile
 
-  tempfile="${1}.blackbox-temp.${RANDOM}.$$"
+  make_self_deleting_tempfile tempfile
 
   # Ensure source file exists
   touch "$1"
@@ -305,7 +305,6 @@ function remove_line() {
 
   # Using cat+rm instead of cp will preserve permissions/ownership
   cat "$tempfile" > "$1"
-  rm "$tempfile"
 }
 
 # Determine if a file contains a given line
