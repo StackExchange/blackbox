@@ -39,15 +39,12 @@ shred_file "$unencrypted_file"
 if "$SECRETSEXPOSED" ; then
   vcs_remove "$unencrypted_file"
   vcs_add "$encrypted_file"
-  COMMIT_FILES=("$BB_FILES" "$encrypted_file" "$unencrypted_file")
-else
-  COMMIT_FILES=("$BB_FILES" "$encrypted_file")
 fi
 
 vcs_ignore "$unencrypted_file"
 echo 'NOTE: "already tracked!" messages are safe to ignore.'
 vcs_add "$BB_FILES" "$encrypted_file"
-vcs_commit "registered in blackbox: ${unencrypted_file}" "${COMMIT_FILES[@]}"
+vcs_commit "registered in blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
 echo "    $(which_vcs) push"
