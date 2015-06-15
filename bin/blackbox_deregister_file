@@ -27,7 +27,6 @@ fail_if_not_exists "$encrypted_file" "Please specify an existing file."
 prepare_keychain
 remove_filename_from_cryptlist "$unencrypted_file"
 vcs_notice "$unencrypted_file"
-git rm "$encrypted_file"
 vcs_remove "$BB_FILES"
 
 vcs_commit "Removing from blackbox: ${unencrypted_file}"
