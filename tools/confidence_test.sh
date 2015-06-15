@@ -97,7 +97,7 @@ function assert_line_exists() {
   local file="$2"
   assert_file_exists "$file"
   if ! grep -F -x -s -q >/dev/null "$target" "$file" ; then
-    echo "ASSERT FAILED: line '$target' should not exist in file $file"
+    echo "ASSERT FAILED: line '$target' should exist in file $file"
     echo ==== file contents: START "$file"
     cat "$file"
     echo ==== file contents: END "$file"
@@ -214,7 +214,7 @@ PHASE 'She enrolls secrets.txt.'
 blackbox_register_new_file secret.txt
 assert_file_missing secret.txt
 assert_file_exists secret.txt.gpg
-assert_line_exists 'secret.txt' .gitignore
+assert_line_exists '/secret.txt' .gitignore
 
 PHASE 'She decrypts secrets.txt.'
 blackbox_edit_start secret.txt
@@ -342,7 +342,7 @@ blackbox_register_new_file mistake.txt
 assert_file_missing mistake.txt
 assert_file_exists mistake.txt.gpg
 # NOTE: It is still in the history. That should be corrected someday.
-assert_line_exists 'mistake.txt' .gitignore
+assert_line_exists '/mistake.txt' .gitignore
 
 PHASE 'Bob enrolls my/path/to/relsecrets.txt.'
 mkdir my my/path my/path/to
@@ -353,7 +353,7 @@ assert_file_missing relsecrets.txt
 assert_file_exists relsecrets.txt.gpg
 assert_file_missing .gitignore
 assert_file_exists ../../../.gitignore
-assert_line_exists 'my/path/to/relsecrets.txt' ../../../.gitignore
+assert_line_exists '/my/path/to/relsecrets.txt' ../../../.gitignore
 
 PHASE 'Bob decrypts relsecrets.txt.'
 cd ..
@@ -368,28 +368,28 @@ echo A very important file >'!important!.txt'
 blackbox_register_new_file '!important!.txt'
 assert_file_missing '!important!.txt'
 assert_file_exists '!important!.txt'.gpg
-assert_line_exists '\!important!.txt' .gitignore
+assert_line_exists '/!important!.txt' .gitignore
 
 PHASE 'Bob enrolls #andpounds.txt'
 echo A very commented file >'#andpounds.txt'
 blackbox_register_new_file '#andpounds.txt'
 assert_file_missing '#andpounds.txt'
 assert_file_exists '#andpounds.txt'.gpg
-assert_line_exists '\#andpounds.txt' .gitignore
+assert_line_exists '/#andpounds.txt' .gitignore
 
 PHASE 'Bob enrolls stars*bars?.txt'
 echo A very wild and questioned file >'stars*bars?.txt'
 blackbox_register_new_file 'stars*bars?.txt'
 assert_file_missing 'stars*bars?.txt'
 assert_file_exists 'stars*bars?.txt'.gpg
-assert_line_exists 'stars\*bars\?.txt' .gitignore
+assert_line_exists '/stars\*bars\?.txt' .gitignore
 
 PHASE 'Bob enrolls space space.txt'
 echo A very spacey file >'space space.txt'
 blackbox_register_new_file 'space space.txt'
 assert_file_missing 'space space.txt'
 assert_file_exists 'space space.txt'.gpg
-assert_line_exists 'space space.txt' .gitignore
+assert_line_exists '/space space.txt' .gitignore
 
 PHASE 'Bob checks out stars*bars?.txt.'
 blackbox_edit_start 'stars*bars?.txt'
@@ -463,4 +463,4 @@ fi
 find .git?* * -type f -ls
 echo cd "$test_repository"
 echo rm -rf "$test_repository"
-echo DONE.
+echo 'SUCCESS! Doing final clean-up then exiting.'
