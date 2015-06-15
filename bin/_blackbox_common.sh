@@ -68,8 +68,7 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
-  local rname=$(vcs_relative_path "$1")
-  grep -F -x -s -q "$rname" "$BB_FILES"
+  file_contains_line "$(vcs_relative_path "$1")" "$BB_FILES"
 }
 
 # Exit with error if a file exists.
@@ -155,12 +154,25 @@ function add_filename_to_cryptlist() {
   # However no matter what the datestamp is updated.
   local name=$(vcs_relative_path "$1")
 
-  if grep -s -q "$name" "$BB_FILES" ; then
-    echo ========== File is registered. No need to add to list.
+  if file_contains_line "$BB_FILES" "$name" ; then
+    echo "========== File is registered. No need to add to list."
   else
-    echo ========== Adding file to list.
+    echo "========== Adding file to list."
     touch "$BB_FILES"
     sort -u -o "$BB_FILES" <(echo "$name") "$BB_FILES"
+  fi
+}
+
+# Removes a file from the list of encrypted files
+function remove_filename_from_cryptlist() {
+  # If the name is not already on the list, this is a no-op.
+  local name=$(vcs_relative_path "$1")
+
+  if ! file_contains_line "$BB_FILES" "$name" ; then
+    echo ========== File is not registered. No need to remove from list.
+  else
+    echo ========== Removing file from list.
+    remove_line "$BB_FILES" "$name"
   fi
 }
 
@@ -281,6 +293,25 @@ function vcs_relative_path() {
   python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
 }
 
+# Removes a line from a text file
+function remove_line() {
+  local tempfile
+
+  make_self_deleting_tempfile tempfile
+
+  # Ensure source file exists
+  touch "$1"
+  grep -Fsxv "$2" "$1" > "$tempfile" || true
+
+  # Using cat+rm instead of cp will preserve permissions/ownership
+  cat "$tempfile" > "$1"
+}
+
+# Determine if a file contains a given line
+function file_contains_line() {
+  grep -Fxsq "$2" "$1"
+}
+
 #
 # Portability Section:
 #
@@ -323,7 +354,7 @@ function which_vcs() {
 
 # Is this file in the current repo?
 function is_in_vcs() {
-  is_in_$(which_vcs) """$@"""
+  is_in_$(which_vcs) "$@"
 }
 # Mercurial
 function is_in_hg() {
@@ -377,23 +408,23 @@ function is_in_unknown() {
 
 # Add a file to the repo (but don't commit it).
 function vcs_add() {
-  vcs_add_$(which_vcs) """$@"""
+  vcs_add_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_add_hg() {
-  hg add """$@"""
+  hg add "$@"
 }
 # Git
 function vcs_add_git() {
-  git add """$@"""
+  git add "$@"
 }
 # Subversion
 function vcs_add_svn() {
-  svn add --parents """$@"""
+  svn add --parents "$@"
 }
 # Perfoce
 function vcs_add_p4() {
-  p4 add """$@"""
+  p4 add "$@"
 }
 # No repo
 function vcs_add_unknown() {
@@ -403,23 +434,23 @@ function vcs_add_unknown() {
 
 # Commit a file to the repo
 function vcs_commit() {
-  vcs_commit_$(which_vcs) """$@"""
+  vcs_commit_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_commit_hg() {
-  hg commit -m"""$@"""
+  hg commit -m"$@"
 }
 # Git
 function vcs_commit_git() {
-  git commit -m"""$@"""
+  git commit -m"$@"
 }
 # Subversion
 function vcs_commit_svn() {
-  svn commit -m"""$@"""
+  svn commit -m"$@"
 }
 # Perforce
 function vcs_commit_p4() {
-  p4 submit -d """$@"""
+  p4 submit -d "$@"
 }
 # No repo
 function vcs_commit_unknown() {
@@ -430,25 +461,111 @@ function vcs_commit_unknown() {
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
 function vcs_remove() {
-  vcs_remove_$(which_vcs) """$@"""
+  vcs_remove_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_remove_hg() {
-  hg rm -A -- """$@"""
+  hg rm -A -- "$@"
 }
 # Git
 function vcs_remove_git() {
-  git rm --ignore-unmatch -f -- """$@"""
+  git rm --ignore-unmatch -f -- "$@"
 }
 # Subversion
 function vcs_remove_svn() {
-  svn delete """$@"""
+  svn delete "$@"
 }
 # Perforce
 function vcs_remove_p4() {
-  p4 delete """$@"""
+  p4 delete "$@"
 }
 # No repo
 function vcs_remove_unknown() {
   :
+}
+
+
+# Ignore a file in a repo.  If it was already ignored, this is a no-op.
+function vcs_ignore() {
+  local file
+  for file in "$@"; do
+    vcs_ignore_$(which_vcs) "$file"
+  done
+}
+# Mercurial
+function vcs_ignore_hg() {
+  vcs_ignore_generic_file "$REPOBASE/.hgignore" "$file"
+}
+# Git
+function vcs_ignore_git() {
+  vcs_ignore_generic_file "$REPOBASE/.gitignore" "$file"
+}
+# Subversion
+function vcs_ignore_svn() {
+  svn propset svn:ignore "$(vcs_relative_path "$file")"
+}
+# Perforce
+function vcs_ignore_p4() {
+  :
+}
+# No repo
+function vcs_ignore_unknown() {
+  :
+}
+# Generic - add line to file
+function vcs_ignore_generic_file() {
+  local file
+  file="$(vcs_relative_path "$2")"
+  file="${file/\$\//}"
+  file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
+  if ! file_contains_line "$1" "$file" ; then
+    echo "$file" >> "$1"
+    vcs_add "$1"
+  fi
+}
+
+
+# Notice (un-ignore) a file in a repo.  If it was not ignored, this is
+# a no-op
+function vcs_notice() {
+  local file
+  for file in "$@"; do
+    vcs_notice_$(which_vcs) "$file"
+  done
+}
+# Mercurial
+function vcs_notice_hg() {
+  vcs_notice_generic_file "$REPOBASE/.hgignore" "$file"
+}
+# Git
+function vcs_notice_git() {
+  vcs_notice_generic_file "$REPOBASE/.gitignore" "$file"
+}
+# Subversion
+function vcs_notice_svn() {
+  svn propdel svn:ignore "$(vcs_relative_path "$file")"
+}
+# Perforce
+function vcs_notice_p4() {
+  :
+}
+# No repo
+function vcs_notice_unknown() {
+  :
+}
+# Generic - remove line to file
+function vcs_notice_generic_file() {
+  local file
+  file="$(vcs_relative_path "$2")"
+  file="${file/\$\//}"
+  file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
+  if file_contains_line "$1" "$file" ; then
+    remove_line "$1" "$file"
+    vcs_add "$1"
+  fi
+  if file_contains_line "$1" "${file:1}" ; then
+    echo "WARNING:  Found a non-absolute ignore match in $1"
+    echo "WARNING:  Confirm the pattern is intended to only exclude $file"
+    echo "WARNING:  If so, manually update the ignore file"
+  fi
 }

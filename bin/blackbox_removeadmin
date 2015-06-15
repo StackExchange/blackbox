@@ -20,9 +20,7 @@ KEYNAME="$1"
 : "${KEYNAME:?ERROR: First argument must be a keyname (email address)}" ;
 
 # Remove the email address from the BB_ADMINS file.
-make_self_deleting_tempfile bbtemp
-cp "$BB_ADMINS" "$bbtemp"
-fgrep -v -x "$KEYNAME" <"$bbtemp" >"$BB_ADMINS"
+remove_line "$BB_ADMINS" "$KEYNAME"
 
 # Make a suggestion:
 echo

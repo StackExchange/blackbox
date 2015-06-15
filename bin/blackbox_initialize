@@ -25,28 +25,7 @@ fi
 change_to_vcs_root
 
 echo VCS_TYPE: $VCS_TYPE
-
-if [[ $VCS_TYPE = "git" || $VCS_TYPE = "hg" ]]; then
-  # Update .gitignore or .hgignore
-
-  IGNOREFILE="${REPOBASE}/.${VCS_TYPE}ignore"
-  if ! grep -sx >/dev/null 'pubring.gpg~' "$IGNOREFILE" ; then
-    echo 'pubring.gpg~' >>"$IGNOREFILE"
-  fi
-  if ! grep -sx >/dev/null 'pubring.kbx~' "$IGNOREFILE" ; then
-    echo 'pubring.kbx~' >>"$IGNOREFILE"
-  fi
-  if ! grep -sx >/dev/null 'secring.gpg' "$IGNOREFILE" ; then
-    echo 'secring.gpg' >>"$IGNOREFILE"
-  fi
-elif [[ $VCS_TYPE = "svn" ]]; then
-  # add file to svn ignore propset
-  IGNOREFILE="";
-  svn propset svn:ignore 'pubring.gpg~
-pubring.kbx~
-secring.gpg' .
-  svn commit -m "ignore file list"
-fi
+vcs_ignore keyrings/live/pubring.gpg~ keyrings/live/pubring.kbx~ keyrings/live/secring.gpg
 
 # Make directories
 mkdir -p "${KEYRINGDIR}"

@@ -98,6 +98,7 @@ Commands:
 | `blackbox_diff` | Diff decrypted files against their original crypted version |
 | `blackbox_initialize` | Enable blackbox for a GIT or HG repo |
 | `blackbox_register_new_file` | Encrypt a file for the first time |
+|  blackbox_deregister_file  | Remove a file from blackbox |
 | `blackbox_list_files` | List the files maintained by blackbox |
 | `blackbox_decrypt_all_files` | Decrypt all managed files (INTERACTIVE) |
 | `blackbox_postdeploy` | Decrypt all managed files (batch) |
@@ -289,11 +290,10 @@ blackbox_register_new_file path/to/file.name.key
 How to remove a file from the system?
 ============================
 
-This is a manual process. It happens quite rarely.
-
-1. Remove the file ``keyrings/live/blackbox-files.txt``
-2. Remove references from ``.gitignore`` or ``.hgignore``
-3. Use ``git rm`` or ``hg rm`` as expected.
+This happens quite rarely, but we've got it covered:
+```
+blackbox_deregister_file path/to/file.name.key
+```
 
 How to indoctrinate a new user into the system?
 ============================
