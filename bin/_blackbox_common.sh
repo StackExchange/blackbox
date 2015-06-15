@@ -68,8 +68,7 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
-  local rname=$(vcs_relative_path "$1")
-  grep -F -x -s -q "$rname" "$BB_FILES"
+  file_contains_line "$(vcs_relative_path "$1")" "$BB_FILES"
 }
 
 # Exit with error if a file exists.
@@ -155,10 +154,10 @@ function add_filename_to_cryptlist() {
   # However no matter what the datestamp is updated.
   local name=$(vcs_relative_path "$1")
 
-  if grep -s -q "$name" "$BB_FILES" ; then
-    echo ========== File is registered. No need to add to list.
+  if file_contains_line "$BB_FILES" "$name" ; then
+    echo "========== File is registered. No need to add to list."
   else
-    echo ========== Adding file to list.
+    echo "========== Adding file to list."
     touch "$BB_FILES"
     sort -u -o "$BB_FILES" <(echo "$name") "$BB_FILES"
   fi
@@ -169,7 +168,7 @@ function remove_filename_from_cryptlist() {
   # If the name is not already on the list, this is a no-op.
   local name=$(vcs_relative_path "$1")
 
-  if ! grep -s -q "$name" "$BB_FILES" ; then
+  if ! file_contains_line "$BB_FILES" "$name" ; then
     echo ========== File is not registered. No need to remove from list.
   else
     echo ========== Removing file from list.
@@ -307,6 +306,11 @@ function remove_line() {
   # Using cat+rm instead of cp will preserve permissions/ownership
   cat "$tempfile" > "$1"
   rm "$tempfile"
+}
+
+# Determine if a file contains a given line
+function file_contains_line() {
+  grep -Fxsq "$2" "$1"
 }
 
 #
@@ -515,7 +519,7 @@ function vcs_ignore_generic_file() {
   file="$(vcs_relative_path "$2")"
   file="${file/\$\//}"
   file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
-  if ! grep -Fsx "$file" "$1" > /dev/null; then
+  if ! file_contains_line "$1" "$file" ; then
     echo "$file" >> "$1"
     vcs_add "$1"
   fi
@@ -556,11 +560,11 @@ function vcs_notice_generic_file() {
   file="$(vcs_relative_path "$2")"
   file="${file/\$\//}"
   file="$(echo "/$file" | sed 's/\([\*\?]\)/\\\1/g')"
-  if grep -Fsx "$file" "$1" > /dev/null; then
+  if file_contains_line "$1" "$file" ; then
     remove_line "$1" "$file"
     vcs_add "$1"
   fi
-  if grep -Fsx "${file:1}" "$1" > /dev/null; then
+  if file_contains_line "$1" "${file:1}" ; then
     echo "WARNING:  Found a non-absolute ignore match in $1"
     echo "WARNING:  Confirm the pattern is intended to only exclude $file"
     echo "WARNING:  If so, manually update the ignore file"
