@@ -60,7 +60,6 @@ while IFS= read <&99 -r unencrypted_file; do
 done 99<"$BB_FILES"
 vcs_commit 'Re-encrypted keys'
 
-VCSCMD=$(which_vcs)
 echo '========== DONE.'
 echo 'Likely next step:'
-echo "    ${VCSCMD} push"
+echo "    $VCS_TYPE push"

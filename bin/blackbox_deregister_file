@@ -9,7 +9,6 @@
 set -e
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "${blackbox_home}/_blackbox_common.sh"
-_determine_vcs_base_and_type
 
 unencrypted_file=$(get_unencrypted_filename "$1")
 encrypted_file=$(get_encrypted_filename "$1")
@@ -32,4 +31,4 @@ vcs_remove "$BB_FILES"
 vcs_commit "Removing from blackbox: ${unencrypted_file}"
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
-echo "    $(which_vcs) push"
+echo "    $VCS_TYPE push"
