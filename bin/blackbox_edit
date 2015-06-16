@@ -4,8 +4,7 @@
 # blackbox_edit -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 for param in "$@" ; do
   unencrypted_file=$(get_unencrypted_filename "$param")
@@ -13,7 +12,7 @@ for param in "$@" ; do
     read -r -p "Encrypt file $param? (y/n) " ans
     case "$ans" in
       y* | Y*)
-        "${blackbox_home}/blackbox_register_new_file" "$param"
+        "${BLACKBOX_HOME}/blackbox_register_new_file" "$param"
         ;;
       *)
         echo 'Skipping...'
@@ -21,7 +20,7 @@ for param in "$@" ; do
         ;;
     esac
   fi
-  "${blackbox_home}/blackbox_edit_start" "$param"
+  "${BLACKBOX_HOME}/blackbox_edit_start" "$param"
   "$EDITOR" "$(get_unencrypted_filename "$param")"
-  "${blackbox_home}/blackbox_edit_end" "$param"
+  "${BLACKBOX_HOME}/blackbox_edit_end" "$param"
 done

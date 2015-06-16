@@ -9,8 +9,7 @@
 #
 
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 _determine_vcs_base_and_type  # Sets VCS_TYPE
 

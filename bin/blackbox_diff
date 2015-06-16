@@ -5,8 +5,7 @@
 #
 
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 if [[ -z $GPG_AGENT_INFO ]]; then
   echo 'WARNING: You probably want to run gpg-agent as'

@@ -16,8 +16,7 @@
 # have been decrypted for editing, you will see an empty list.
 
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 change_to_vcs_root
 
