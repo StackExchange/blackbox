@@ -17,36 +17,45 @@
 : "${EDITOR:=vi}" ;
 
 
-# Set REPOBASE to the top of the repository
-# Set VCS_TYPE to 'git', 'hg', 'svn' or 'unknown'
-if git rev-parse --show-toplevel >/dev/null 2>&1 ; then
-  VCS_TYPE=git
-  REPOBASE=$(git rev-parse --show-toplevel)
-elif [ -d ".svn" ] ; then
-  # Find topmost dir with .svn sub-dir
-  parent=""
-  grandparent="."
-  while [ -d "$grandparent/.svn" ]; do
-    parent=$grandparent
-    grandparent="$parent/.."
-  done
+# Outputs a string that is the base directory of this VCS repo.
+# By side-effect, sets the variable VCS_TYPE to either 'git', 'hg',
+# 'svn' or 'unknown'.
+function _determine_vcs_base_and_type() {
+  if git rev-parse --show-toplevel 2>/dev/null ; then
+    VCS_TYPE=git
+  elif [ -d ".svn" ] ; then
+    #find topmost dir with .svn sub-dir
+    parent=""
+    grandparent="."
+    mydir="$(pwd)"
+    while [ -d "$grandparent/.svn" ]; do
+      parent=$grandparent
+      grandparent="$parent/.."
+    done
 
-  REPOBASE=$(cd "$parent" ; pwd)
-  VCS_TYPE=svn
-elif hg root >/dev/null 2>&1 ; then
-  # NOTE: hg has to be tested last because it always "succeeds".
-  VCS_TYPE=hg
-  REPOBASE=$(hg root 2>/dev/null)
-else
-  # We aren't in a repo at all.  Assume the cwd is the root
-  # of the tree.
-  VCS_TYPE=unknown
-  REPOBASE="$(pwd)"
-fi
-export VCS_TYPE
-# FIXME: Verify this function by checking for .hg or .git
-# after determining what we believe to be the answer.
+    if [ ! -z "$parent" ]; then
+      cd "$parent"
+      pwd
+    else
+      exit 1
+    fi
+    cd "$mydir"
+    VCS_TYPE=svn
+  elif hg root 2>/dev/null ; then
+    # NOTE: hg has to be tested last because it always "succeeds".
+    VCS_TYPE=hg
+  else
+    # We aren't in a repo at all.  Assume the cwd is the root
+    # of the tree.
+    echo .
+    VCS_TYPE=unknown
+  fi
+  export VCS_TYPE
+  # FIXME: Verify this function by checking for .hg or .git
+  # after determining what we believe to be the answer.
+}
 
+REPOBASE=$(_determine_vcs_base_and_type)
 KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
 BB_ADMINS_FILE="blackbox-admins.txt"
 BB_ADMINS="${KEYRINGDIR}/${BB_ADMINS_FILE}"
@@ -82,6 +91,7 @@ function fail_if_not_exists() {
 
 # Exit we we aren't in a VCS repo.
 function fail_if_not_in_repo() {
+  _determine_vcs_base_and_type
   if [[ $VCS_TYPE = "unknown" ]]; then
     echo "ERROR: This must be run in a VCS repo: git, hg, or svn." >&2
     echo Exiting... >&2
@@ -269,6 +279,10 @@ function enumerate_subdirs() {
 
 # chdir to the base of the repo.
 function change_to_vcs_root() {
+  if [[ $REPOBASE = '' ]]; then
+    echo 'ERROR: _determine_vcs_base_and_type failed to set REPOBASE.'
+    exit 1
+  fi
   cd "$REPOBASE"
 }
 
@@ -331,9 +345,18 @@ function md5sum_file() {
 # Abstract the difference between git and hg:
 #
 
+# Are we in git, hg, or unknown repo?
+function which_vcs() {
+  if [[ $VCS_TYPE = '' ]]; then
+    _determine_vcs_base_and_type >/dev/null
+  fi
+  echo "$VCS_TYPE"
+}
+
+
 # Is this file in the current repo?
 function is_in_vcs() {
-  is_in_$VCS_TYPE "$@"
+  is_in_$(which_vcs) "$@"
 }
 # Mercurial
 function is_in_hg() {
@@ -387,7 +410,7 @@ function is_in_unknown() {
 
 # Add a file to the repo (but don't commit it).
 function vcs_add() {
-  vcs_add_$VCS_TYPE "$@"
+  vcs_add_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_add_hg() {
@@ -413,7 +436,7 @@ function vcs_add_unknown() {
 
 # Commit a file to the repo
 function vcs_commit() {
-  vcs_commit_$VCS_TYPE "$@"
+  vcs_commit_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_commit_hg() {
@@ -440,7 +463,7 @@ function vcs_commit_unknown() {
 # Remove file from repo, even if it was deleted locally already.
 # If it doesn't exist yet in the repo, it should be a no-op.
 function vcs_remove() {
-  vcs_remove_$VCS_TYPE "$@"
+  vcs_remove_$(which_vcs) "$@"
 }
 # Mercurial
 function vcs_remove_hg() {
@@ -468,7 +491,7 @@ function vcs_remove_unknown() {
 function vcs_ignore() {
   local file
   for file in "$@"; do
-    vcs_ignore_$VCS_TYPE "$file"
+    vcs_ignore_$(which_vcs) "$file"
   done
 }
 # Mercurial
@@ -509,7 +532,7 @@ function vcs_ignore_generic_file() {
 function vcs_notice() {
   local file
   for file in "$@"; do
-    vcs_notice_$VCS_TYPE "$file"
+    vcs_notice_$(which_vcs) "$file"
   done
 }
 # Mercurial
