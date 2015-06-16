@@ -10,9 +10,7 @@
 #
 
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
-source "${blackbox_home}/_stack_lib.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 fail_if_not_in_repo
 

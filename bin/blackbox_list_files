@@ -4,6 +4,5 @@
 # blackbox_list_files -- List files that black box is tracking
 #
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 cat "$BB_FILES"

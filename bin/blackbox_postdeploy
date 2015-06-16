@@ -14,8 +14,7 @@
 export PATH=/usr/bin:/bin:"$PATH"
 
 set -e
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+source "${0%/*}/_blackbox_common.sh"
 
 if [[ "$1" == "" ]]; then
   FILE_GROUP=""
