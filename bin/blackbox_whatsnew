@@ -4,8 +4,8 @@
 # blackbox_whatsnew - show what has changed in the last commit for a given file
 #
 
-blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${blackbox_home}/_blackbox_common.sh"
+set -e
+source "${0%/*}/_blackbox_common.sh"
 
 if [[ $# -ne 1 ]]
 then
@@ -39,7 +39,7 @@ cat_commit()
   git checkout $COMMIT $FILE
   echo "[$COMMIT] $FILE"
   echo "---------------------"
-  "${blackbox_home}/blackbox_cat" $FILE | sed '/========== PLAINFILE/,/========== EXTRACTING/d'
+  "${BLACKBOX_HOME}/blackbox_cat" $FILE | sed '/========== PLAINFILE/,/========== EXTRACTING/d'
 }
 
 CURR_CONTENT=`cat_commit $CURR_COMMIT`
