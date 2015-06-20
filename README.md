@@ -287,6 +287,17 @@ How to enroll a new file into the system?
 blackbox_register_new_file path/to/file.name.key
 ```
 
+Multiple file names can be specified on the command line:
+
+Example 1: Register 2 files:
+
+    blackbox_register_new_file file1.txt file2.txt
+
+Example 2: Register all the files in `$DIR`:
+
+    find $DIR -type f -not -name '*.gpg' -print0 | xargs -0 blackbox_register_new_file
+
+
 How to remove a file from the system?
 ============================
 
