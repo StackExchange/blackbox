@@ -25,7 +25,7 @@ source "${0%/*}"/_stack_lib.sh
 
 # Set REPOBASE to the top of the repository
 # Set VCS_TYPE to 'git', 'hg', 'svn' or 'unknown'
-if git rev-parse --show-toplevel >/dev/null 2>&1 ; then
+if which >/dev/null 2>/dev/null git && git rev-parse --show-toplevel >/dev/null 2>&1 ; then
   VCS_TYPE=git
   REPOBASE=$(git rev-parse --show-toplevel)
 elif [ -d ".svn" ] ; then
@@ -39,7 +39,7 @@ elif [ -d ".svn" ] ; then
 
   REPOBASE=$(cd "$parent" ; pwd)
   VCS_TYPE=svn
-elif hg root >/dev/null 2>&1 ; then
+elif which >/dev/null 2>/dev/null hg && hg root >/dev/null 2>&1 ; then
   # NOTE: hg has to be tested last because it always "succeeds".
   VCS_TYPE=hg
   REPOBASE=$(hg root 2>/dev/null)
@@ -240,10 +240,10 @@ function shred_file() {
   local OPT
   name="$1"
 
-  if which shred >/dev/null ; then
+  if which shred >/dev/null 2>/dev/null ; then
     CMD=shred
     OPT=-u
-  elif which srm >/dev/null ; then
+  elif which srm >/dev/null 2>/dev/null ; then
     #NOTE: srm by default uses 35-pass Gutmann algorithm
     CMD=srm
     OPT=-f
