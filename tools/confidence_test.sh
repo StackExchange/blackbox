@@ -307,7 +307,7 @@ assert_file_group secret.txt "$TEST_GID_NAME"
 PHASE 'Bob cleans up the secret.'
 rm secret.txt
 
-PHASE 'Bob removes alice.'
+PHASE 'Bob removes Alice.'
 blackbox_removeadmin alice@example.com
 assert_line_not_exists 'alice@example.com' keyrings/live/blackbox-admins.txt
 
@@ -439,7 +439,17 @@ assert_file_exists 'secret.txt.gpg'
 assert_file_exists 'space space.txt.gpg'
 assert_file_exists 'stars*bars?.txt.gpg'
 
+PHASE 'Bob DEregisters mistake.txt'
+touch 'mistake.txt'
+blackbox_deregister_file 'mistake.txt.gpg'
+assert_file_exists 'keyrings/live/blackbox-admins.txt'
+assert_file_exists 'keyrings/live/blackbox-files.txt'
+assert_line_not_exists 'mistake.txt' 'keyrings/live/blackbox-files.txt'
+assert_file_missing 'mistake.txt.gpg'
+assert_file_exists 'mistake.txt'
+
 PHASE 'Alice returns. She should be locked out'
+assert_file_missing 'secret.txt'
 become_alice
 PHASE 'Alice tries to decrypt secret.txt. Is blocked.'
 if blackbox_edit_start secret.txt ; then
@@ -455,10 +465,14 @@ fi
 # ASSERTIONS
 #
 
+echo '========== Verifying .gnupg was not accidentally created.'
+
 if [[ -e $HOME/.gnupg ]]; then
   echo "ASSERT FAILED: $HOME/.gnupg should not exist."
   exit 1
 fi
+
+echo '========== DONE with tests.  Outputing some diagnostics:'
 
 find .git?* * -type f -ls
 echo cd "$test_repository"
