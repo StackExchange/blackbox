@@ -53,4 +53,4 @@ done
 
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
-echo "    $(which_vcs) push"
+echo "    $VCS_TYPE push"
