@@ -447,6 +447,8 @@ assert_file_exists 'keyrings/live/blackbox-files.txt'
 assert_line_not_exists 'mistake.txt' 'keyrings/live/blackbox-files.txt'
 assert_file_missing 'mistake.txt.gpg'
 assert_file_exists 'mistake.txt'
+# Now remove 'mistake.txt' to leave the area clean.
+rm 'mistake.txt'
 
 PHASE 'Bob enrolls multiple files: multi1.txt and multi2.txt'
 echo 'One singular sensation.' >'multi1.txt'
@@ -469,6 +471,19 @@ if blackbox_edit_start secret.txt ; then
 else
   echo 'NOTE: Alice was not able to decrypt secret.txt as expected.'
 fi
+
+PHASE 'Bob returns.  Tries to update all files with a corrupt blackbox-admins.txt'
+become_bob
+# Corrupt the blackbox-admins.txt list:
+echo 'abba@notarealuser.com' >> keyrings/live/blackbox-admins.txt
+# Make sure it fails.
+if blackbox_update_all_files; then
+  echo '!!!!! blackbox_update_all_files should have failed and it did NOT.'
+  exit 1
+fi
+# Cleanup:
+blackbox_removeadmin abba@notarealuser.com
+
 
 # TODO: Create a new directory. "git clone" the repo into it.
 
