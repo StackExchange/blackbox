@@ -448,6 +448,17 @@ assert_line_not_exists 'mistake.txt' 'keyrings/live/blackbox-files.txt'
 assert_file_missing 'mistake.txt.gpg'
 assert_file_exists 'mistake.txt'
 
+PHASE 'Bob enrolls multiple files: multi1.txt and multi2.txt'
+echo 'One singular sensation.' >'multi1.txt'
+echo 'Another singular sensation.' >'multi2.txt'
+blackbox_register_new_file 'multi1.txt' 'multi2.txt'
+assert_file_missing 'multi1.txt'
+assert_file_exists 'multi1.txt'.gpg
+assert_line_exists '/multi1.txt' .gitignore
+assert_file_missing 'multi2.txt'
+assert_file_exists 'multi2.txt'.gpg
+assert_line_exists '/multi2.txt' .gitignore
+
 PHASE 'Alice returns. She should be locked out'
 assert_file_missing 'secret.txt'
 become_alice
