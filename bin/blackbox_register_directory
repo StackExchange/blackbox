@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_register_directory - Designed to take in a
+# list of directories and enroll all non-gpg
+# encrypted files within.
+#
+# Useful for encrypting certificate repositories.
+#
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+for target in ${@}; do
+    find $target -type f -not -iwholename "*.gpg" | xargs ${0%/*}/blackbox_register_multiple_files
+done

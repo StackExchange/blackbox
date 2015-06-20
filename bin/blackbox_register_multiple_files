@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_register_multiple_files -- Enroll a list of files
+# 
+# Wraps around blackbox_register_new_file to enable
+# enrollment of multiple files.  Currently each enrollment
+# is it's own commit, but should probably allow a -batch
+# methodology. On deployment to systems that need the 
+# plaintext (unencrypted) versions, run blackbox_postdeploy.sh 
+# to decrypt all the files.
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+for target in ${@}; do
+    ${0%/*}/blackbox_register_new_file $target
+done
