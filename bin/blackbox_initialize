@@ -28,7 +28,10 @@ vcs_ignore keyrings/live/pubring.gpg~ keyrings/live/pubring.kbx~ keyrings/live/s
 mkdir -p "${KEYRINGDIR}"
 vcs_add "${KEYRINGDIR}"
 touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
-vcs_add "$IGNOREFILE" "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+vcs_add "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+
+IGNOREFILE="$(vcs_ignore_file_path)"
+test -f "$IGNOREFILE" && vcs_add "$IGNOREFILE"
 
 # Make a suggestion:
 echo
