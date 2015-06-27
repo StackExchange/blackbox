@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 #
-# blacbox_decrypt_all_files -- Decrypt all blackbox files (INTERACTIVE).
+# blackbox_decrypt_all_files -- Decrypt all blackbox files (INTERACTIVE).
 #
 
 # Usage:
-#   blacbox_decrypt_all_files [GROUP]
+#   blackbox_decrypt_all_files [GROUP]
 #       GROUP is optional.  If supplied, the resulting files
 #       are chgrp'ed to that group.
 
