@@ -29,20 +29,20 @@ make_self_deleting_tempfile pubkeyfile
 
 # The second argument, if present, is the directory to find the GPG keys to be imported.
 if [[ -z $2 ]]; then
-  gpg --export -a "$KEYNAME" >"$pubkeyfile"
+  $GPG --export -a "$KEYNAME" >"$pubkeyfile"
 else
   # TODO(tlim): This could probably be done with GNUPGHOME
   # but that affects all commands; we just want it to affect the key export.
-  gpg --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
+  $GPG --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
 fi
 
 if [[ $(wc -l < "$pubkeyfile") = 0 ]]; then
-  fail_out "GPG key '$KEYNAME' not found.  Please create it with: gpg --gen-key"
+  fail_out "GPG key '$KEYNAME' not found.  Please create it with: $GPG --gen-key"
   exit 1
 fi
 
 # Import it:
-gpg --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
+$GPG --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
 pubring_path=$(get_pubring_path)
 vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
 

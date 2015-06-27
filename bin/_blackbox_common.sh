@@ -22,6 +22,8 @@ source "${0%/*}"/_stack_lib.sh
 # If $EDITOR is not set, set it to "vi":
 : "${EDITOR:=vi}" ;
 
+# Allow overriding gpg command
+: "${GPG:=gpg}" ;
 
 # Set REPOBASE to the top of the repository
 # Set VCS_TYPE to 'git', 'hg', 'svn' or 'unknown'
@@ -140,7 +142,7 @@ function get_encrypted_filename() {
 # Prepare keychain for use.
 function prepare_keychain() {
   echo '========== Importing keychain: START' >&2
-  gpg --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
+  $GPG --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
   echo '========== Importing keychain: DONE' >&2
 }
 
@@ -186,7 +188,7 @@ function encrypt_file() {
   encrypted="$2"
 
   echo "========== Encrypting: $unencrypted" >&2
-  gpg --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
+  $GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
   echo '========== Encrypting: DONE' >&2
 }
 
@@ -202,7 +204,7 @@ function decrypt_file() {
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg --use-agent -q --decrypt -o "$unencrypted" "$encrypted" >&2
+  $GPG --use-agent -q --decrypt -o "$unencrypted" "$encrypted" >&2
   umask "$old_umask"
 }
 
@@ -224,7 +226,7 @@ function decrypt_file_overwrite() {
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
-  gpg --use-agent --yes -q --decrypt -o "$unencrypted" "$encrypted" >&2
+  $GPG --use-agent --yes -q --decrypt -o "$unencrypted" "$encrypted" >&2
   umask "$old_umask"
 
   new_hash=$(md5sum_file "$unencrypted")
