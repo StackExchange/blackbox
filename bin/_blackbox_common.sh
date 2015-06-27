@@ -471,6 +471,19 @@ function vcs_remove_unknown() {
   :
 }
 
+# Get a path for the ignore file if possible in current vcs
+function vcs_ignore_file_path() {
+  vcs_ignore_file_path_$VCS_TYPE
+}
+# Mercurial
+function vcs_ignore_file_path_hg() {
+  echo "$REPOBASE/.hgignore"
+}
+# Git
+function vcs_ignore_file_path_git() {
+  echo "$REPOBASE/.gitignore"
+}
+
 
 # Ignore a file in a repo.  If it was already ignored, this is a no-op.
 function vcs_ignore() {
@@ -481,11 +494,11 @@ function vcs_ignore() {
 }
 # Mercurial
 function vcs_ignore_hg() {
-  vcs_ignore_generic_file "$REPOBASE/.hgignore" "$file"
+  vcs_ignore_generic_file "$(vcs_ignore_file_path)" "$file"
 }
 # Git
 function vcs_ignore_git() {
-  vcs_ignore_generic_file "$REPOBASE/.gitignore" "$file"
+  vcs_ignore_generic_file "$(vcs_ignore_file_path)" "$file"
 }
 # Subversion
 function vcs_ignore_svn() {
