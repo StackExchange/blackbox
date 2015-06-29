@@ -13,7 +13,7 @@
 source "${0%/*}"/_stack_lib.sh
 
 # Where are we?
-: "${BLACKBOX_HOME:=$(cd "${0%/*}" ; pwd)}" ;
+: "${BLACKBOX_HOME:="$(cd "${0%/*}" ; pwd)"}" ;
 
 # Where in the VCS repo should the blackbox data be found?
 : "${BLACKBOXDATA:=keyrings/live}" ;   # If BLACKBOXDATA not set, set it.
