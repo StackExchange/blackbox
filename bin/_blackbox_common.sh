@@ -95,6 +95,7 @@ function fail_if_not_exists() {
     echo Exiting... >&2
     exit 1
   fi
+}
 
 # Exit we we aren't in a VCS repo.
 function fail_if_not_in_repo() {
