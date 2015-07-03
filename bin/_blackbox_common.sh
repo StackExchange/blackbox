@@ -66,7 +66,7 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 
 # Is this a blackbox repo?
 function is_blackbox_repo() {
-  if [[ -d "$1/keyrings" ]] && [[ -n "$1" ]]; then
+  if [[ -n "$1" ]] && [[ -d "$1/keyrings" ]]; then
     return 0 # Yep, its a repo
   else
     return 1
