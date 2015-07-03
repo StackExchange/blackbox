@@ -309,14 +309,15 @@ function change_to_vcs_root() {
 function enumerate_blackbox_repos() {
   if [[ -z "$1" ]]; then
     echo "enumerate_blackbox_repos: ERROR: No Repo provided to Enumerate"
-  else
-    # https://github.com/koalaman/shellcheck/wiki/Sc2045
-    for dir in $1*/; do
-      if is_blackbox_repo "$dir"; then
-        echo "$dir"
-      fi
-    done
+    exit 1
   fi
+
+  # https://github.com/koalaman/shellcheck/wiki/Sc2045
+  for dir in $1*/; do
+    if is_blackbox_repo "$dir"; then
+      echo "$dir"
+    fi
+  done
 }
 
 # Output the path of a file relative to the repo base
