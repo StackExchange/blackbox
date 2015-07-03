@@ -25,6 +25,12 @@ source "${0%/*}"/_stack_lib.sh
 # Allow overriding gpg command
 : "${GPG:=gpg}" ;
 
+function physical_directory_of() {
+  local d=$(dirname "$1")
+  local f=$(basename "$1")
+  (cd "$d" && echo $(pwd -P)"/$f" )
+}
+
 # Set REPOBASE to the top of the repository
 # Set VCS_TYPE to 'git', 'hg', 'svn' or 'unknown'
 if which >/dev/null 2>/dev/null git && git rev-parse --show-toplevel >/dev/null 2>&1 ; then
@@ -52,6 +58,7 @@ else
   REPOBASE="$(pwd)"
 fi
 export VCS_TYPE
+export REPOBASE=$(physical_directory_of "$REPOBASE")
 # FIXME: Verify this function by checking for .hg or .git
 # after determining what we believe to be the answer.
 
