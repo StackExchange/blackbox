@@ -64,6 +64,15 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 : "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
+# Is this a blackbox repo?
+function is_blackbox_repo() {
+  if [[ -d "$1/keyrings" ]] && [[ -n "$1" ]]; then
+    return 0 # Yep, its a repo
+  else
+    return 1
+  fi
+}
+
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
@@ -86,7 +95,6 @@ function fail_if_not_exists() {
     echo Exiting... >&2
     exit 1
   fi
-}
 
 # Exit we we aren't in a VCS repo.
 function fail_if_not_in_repo() {
@@ -276,10 +284,37 @@ function enumerate_subdirs() {
     done
   done <"$listfile" | sort -u
 }
+ 
 
 # chdir to the base of the repo.
 function change_to_vcs_root() {
-  cd "$REPOBASE"
+  # if vcs_root not explicitly defined, use $REPOBASE
+  if [[ -z "$1" ]]; then
+    cd "$REPOBASE"
+
+  elif is_blackbox_repo "$1"; then
+    cd "$1"
+  
+  else
+    echo 'ERROR: $1 is not a blackbox Repo'
+    exit 1
+  fi
+
+}
+
+# $1 is a string pointing to a directory.  Outputs a
+# list of  valid blackbox repos,relative to $1
+function enumerate_blackbox_repos() {
+  if [[ -z "$1" ]]; then
+    echo "enumerate_blackbox_repos: ERROR: No Repo provided to Enumerate"
+  else
+    # https://github.com/koalaman/shellcheck/wiki/Sc2045
+    for dir in $1*/; do
+      if is_blackbox_repo "$dir"; then
+        echo "$dir"
+      fi
+    done
+  fi
 }
 
 # Output the path of a file relative to the repo base
