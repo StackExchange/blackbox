@@ -140,7 +140,7 @@ function get_pubring_path() {
 
 # Output the unencrypted filename.
 function get_unencrypted_filename() {
-  echo "$(dirname "$1")"/"$(basename "$1" .gpg)" | sed -e 's#^\./##'
+  echo "$(dirname "$1")/$(basename "$1" .gpg)" | sed -e 's#^\./##'
 }
 
 # Output the encrypted filename.
