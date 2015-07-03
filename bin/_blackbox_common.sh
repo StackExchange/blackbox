@@ -159,6 +159,8 @@ function prepare_keychain() {
 function add_filename_to_cryptlist() {
   # If the name is already on the list, this is a no-op.
   # However no matter what the datestamp is updated.
+  
+  # https://github.com/koalaman/shellcheck/wiki/SC2155
   local name
   name=$(vcs_relative_path "$1")
 
@@ -174,6 +176,8 @@ function add_filename_to_cryptlist() {
 # Removes a file from the list of encrypted files
 function remove_filename_from_cryptlist() {
   # If the name is not already on the list, this is a no-op.
+
+  # https://github.com/koalaman/shellcheck/wiki/SC2155
   local name
   name=$(vcs_relative_path "$1")
 
