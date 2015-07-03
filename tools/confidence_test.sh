@@ -64,17 +64,26 @@ function assert_file_md5hash() {
 function assert_file_group() {
   local file="$1"
   local wanted="$2"
+  local found
   assert_file_exists "$file"
 
   case $(uname -s) in
+    Darwin|FreeBSD )
+      found=$(stat -f '%Sg' $file)
+      ;;
+    Linux )
+      found=$(stat -c '%G' $file)
+      ;;
     CYGWIN* )
       echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."
       return 0
       ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
   esac
 
-  local found=$(ls -lg "$file" | awk '{ print $3 }')
-  # NB(tlim): We could do this with 'stat' but it would break on BSD-style OSs.
   if [[ "$wanted" != "$found" ]]; then
     echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
     exit 1
@@ -286,9 +295,9 @@ DEFAULT_GID_NAME=$(id -gn)
 # Pick a group that is not the default group:
 TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv $(id -u) | head -n 1)
 TEST_GID_NAME=$(python -c 'import grp; print grp.getgrgid('"$TEST_GID_NUM"').gr_name')
-echo DEFAULT_GID_NAME=$DEFAULT_GID_NAME
-echo TEST_GID_NUM=$TEST_GID_NUM
-echo TEST_GID_NAME=$TEST_GID_NAME
+echo "DEFAULT_GID_NAME=$DEFAULT_GID_NAME"
+echo "TEST_GID_NUM=$TEST_GID_NUM"
+echo "TEST_GID_NAME=$TEST_GID_NAME"
 
 PHASE 'Bob postdeploys... default.'
 blackbox_postdeploy
