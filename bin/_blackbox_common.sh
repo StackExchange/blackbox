@@ -64,7 +64,8 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 : "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
-# Is this a blackbox repo?
+# Checks if $1 is 0 bytes, and if $1/keyrings
+# is a directory
 function is_blackbox_repo() {
   if [[ -n "$1" ]] && [[ -d "$1/keyrings" ]]; then
     return 0 # Yep, its a repo
