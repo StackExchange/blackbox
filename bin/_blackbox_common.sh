@@ -295,17 +295,13 @@ function enumerate_subdirs() {
 # chdir to the base of the repo.
 function change_to_vcs_root() {
   # if vcs_root not explicitly defined, use $REPOBASE
-  if [[ -z "$1" ]]; then
-    cd "$REPOBASE"
 
-  elif is_blackbox_repo "$1"; then
-    cd "$1"
-  
-  else
-    echo 'ERROR: $1 is not a blackbox Repo'
+  local rbase=${1:-$REPOBASE} # use $1 but if unset use $REPOBASE
+
+  if ! is_blackbox_repo "$rbase"; then
+    echo "ERROR: $rbase is not a blackbox Repo"
     exit 1
   fi
-
 }
 
 # $1 is a string pointing to a directory.  Outputs a
