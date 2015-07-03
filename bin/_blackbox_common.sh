@@ -145,7 +145,7 @@ function get_unencrypted_filename() {
 
 # Output the encrypted filename.
 function get_encrypted_filename() {
-  echo "$(dirname "$1")"/"$(basename "$1" .gpg)".gpg | sed -e 's#^\./##'
+  echo "$(dirname "$1")/$(basename "$1" .gpg).gpg" | sed -e 's#^\./##'
 }
 
 # Prepare keychain for use.
