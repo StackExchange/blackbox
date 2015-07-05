@@ -71,6 +71,16 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 : "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
+# Checks if $1 is 0 bytes, and if $1/keyrings
+# is a directory
+function is_blackbox_repo() {
+  if [[ -n "$1" ]] && [[ -d "$1/keyrings" ]]; then
+    return 0 # Yep, its a repo
+  else
+    return 1
+  fi
+}
+
 # Return error if not on cryptlist.
 function is_on_cryptlist() {
   # Assumes $1 does NOT have the .gpg extension
@@ -112,7 +122,7 @@ function fail_if_not_on_cryptlist() {
 
   if ! is_on_cryptlist "$name" ; then
     echo "ERROR: $name not found in $BB_FILES" >&2
-    echo "PWD="$(/bin/pwd) >&2
+    echo "PWD=$(/bin/pwd)" >&2
     echo 'Exiting...' >&2
     exit 1
   fi
@@ -138,12 +148,12 @@ function get_pubring_path() {
 
 # Output the unencrypted filename.
 function get_unencrypted_filename() {
-  echo $(dirname "$1")/$(basename "$1" .gpg) | sed -e 's#^\./##'
+  echo "$(dirname "$1")/$(basename "$1" .gpg)" | sed -e 's#^\./##'
 }
 
 # Output the encrypted filename.
 function get_encrypted_filename() {
-  echo $(dirname "$1")/$(basename "$1" .gpg).gpg | sed -e 's#^\./##'
+  echo "$(dirname "$1")/$(basename "$1" .gpg).gpg" | sed -e 's#^\./##'
 }
 
 # Prepare keychain for use.
@@ -157,7 +167,10 @@ function prepare_keychain() {
 function add_filename_to_cryptlist() {
   # If the name is already on the list, this is a no-op.
   # However no matter what the datestamp is updated.
-  local name=$(vcs_relative_path "$1")
+  
+  # https://github.com/koalaman/shellcheck/wiki/SC2155
+  local name
+  name=$(vcs_relative_path "$1")
 
   if file_contains_line "$BB_FILES" "$name" ; then
     echo "========== File is registered. No need to add to list."
@@ -171,19 +184,22 @@ function add_filename_to_cryptlist() {
 # Removes a file from the list of encrypted files
 function remove_filename_from_cryptlist() {
   # If the name is not already on the list, this is a no-op.
-  local name=$(vcs_relative_path "$1")
+
+  # https://github.com/koalaman/shellcheck/wiki/SC2155
+  local name
+  name=$(vcs_relative_path "$1")
 
   if ! file_contains_line "$BB_FILES" "$name" ; then
-    echo ========== File is not registered. No need to remove from list.
+    echo "========== File is not registered. No need to remove from list."
   else
-    echo ========== Removing file from list.
+    echo "========== Removing file from list."
     remove_line "$BB_FILES" "$name"
   fi
 }
 
 # Print out who the current BB ADMINS are:
 function disclose_admins() {
-  echo ========== blackbox administrators are:
+  echo "========== blackbox administrators are:"
   cat "$BB_ADMINS"
 }
 
@@ -195,7 +211,7 @@ function encrypt_file() {
   encrypted="$2"
 
   echo "========== Encrypting: $unencrypted" >&2
-  $GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
+  $GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  "$(awk '{ print "-r" $1 }' < "$BB_ADMINS")" "$unencrypted" >&2
   echo '========== Encrypting: DONE' >&2
 }
 
@@ -207,7 +223,7 @@ function decrypt_file() {
   encrypted="$1"
   unencrypted="$2"
 
-  echo '========== EXTRACTING ''"'$unencrypted'"' >&2
+  echo "========== EXTRACTING $unencrypted" >&2
 
   old_umask=$(umask)
   umask "$DECRYPT_UMASK"
@@ -281,10 +297,34 @@ function enumerate_subdirs() {
     done
   done <"$listfile" | sort -u
 }
+ 
 
 # chdir to the base of the repo.
 function change_to_vcs_root() {
-  cd "$REPOBASE"
+  # if vcs_root not explicitly defined, use $REPOBASE
+
+  local rbase=${1:-$REPOBASE} # use $1 but if unset use $REPOBASE
+
+  if ! is_blackbox_repo "$rbase"; then
+    echo "ERROR: $rbase is not a blackbox Repo"
+    exit 1
+  fi
+}
+
+# $1 is a string pointing to a directory.  Outputs a
+# list of  valid blackbox repos,relative to $1
+function enumerate_blackbox_repos() {
+  if [[ -z "$1" ]]; then
+    echo "enumerate_blackbox_repos: ERROR: No Repo provided to Enumerate"
+    exit 1
+  fi
+
+  # https://github.com/koalaman/shellcheck/wiki/Sc2045
+  for dir in $1*/; do
+    if is_blackbox_repo "$dir"; then
+      echo "$dir"
+    fi
+  done
 }
 
 # Output the path of a file relative to the repo base
@@ -432,15 +472,15 @@ function vcs_commit() {
 }
 # Mercurial
 function vcs_commit_hg() {
-  hg commit -m"$@"
+  hg commit -m "$@"
 }
 # Git
 function vcs_commit_git() {
-  git commit -m"$@"
+  git commit -m "$@"
 }
 # Subversion
 function vcs_commit_svn() {
-  svn commit -m"$@"
+  svn commit -m "$@"
 }
 # Perforce
 function vcs_commit_p4() {
