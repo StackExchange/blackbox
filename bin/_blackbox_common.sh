@@ -305,10 +305,8 @@ function change_to_vcs_root() {
 
   local rbase=${1:-$REPOBASE} # use $1 but if unset use $REPOBASE
 
-  if ! is_blackbox_repo "$rbase"; then
-    echo "ERROR: $rbase is not a blackbox Repo"
-    exit 1
-  fi
+  cd "$rbase"
+
 }
 
 # $1 is a string pointing to a directory.  Outputs a
