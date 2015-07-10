@@ -3,6 +3,7 @@ exec bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec bin/blackbox_addadmin         ../bin/blackbox_addadmin
 exec bin/blackbox_cat              ../bin/blackbox_cat
 exec bin/blackbox_decrypt_all_files  ../bin/blackbox_decrypt_all_files
+exec bin/blackbox_deregister_file  ../bin/blackbox_deregister_file
 exec bin/blackbox_diff             ../bin/blackbox_diff
 exec bin/blackbox_edit             ../bin/blackbox_edit
 exec bin/blackbox_edit_end         ../bin/blackbox_edit_end

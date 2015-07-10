@@ -2,8 +2,9 @@ exec /usr/bin/_blackbox_common.sh       ../bin/_blackbox_common.sh
 exec /usr/bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec /usr/bin/blackbox_addadmin         ../bin/blackbox_addadmin
 exec /usr/bin/blackbox_cat              ../bin/blackbox_cat
-exec /usr/bin/blackbox_decrypt_all_files ../bin/blackbox_decrypt_all_files
-exec /usr/bin/blackbox_diff              ../bin/blackbox_diff
+exec /usr/bin/blackbox_decrypt_all_files  ../bin/blackbox_decrypt_all_files
+exec /usr/bin/blackbox_deregister_file  ../bin/blackbox_deregister_file
+exec /usr/bin/blackbox_diff             ../bin/blackbox_diff
 exec /usr/bin/blackbox_edit             ../bin/blackbox_edit
 exec /usr/bin/blackbox_edit_end         ../bin/blackbox_edit_end
 exec /usr/bin/blackbox_edit_start       ../bin/blackbox_edit_start

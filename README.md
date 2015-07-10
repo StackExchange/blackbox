@@ -98,7 +98,7 @@ Commands:
 | `blackbox_diff` | Diff decrypted files against their original crypted version |
 | `blackbox_initialize` | Enable blackbox for a GIT or HG repo |
 | `blackbox_register_new_file` | Encrypt a file for the first time |
-|  blackbox_deregister_file  | Remove a file from blackbox |
+| `blackbox_deregister_file` | Remove a file from blackbox |
 | `blackbox_list_files` | List the files maintained by blackbox |
 | `blackbox_decrypt_all_files` | Decrypt all managed files (INTERACTIVE) |
 | `blackbox_postdeploy` | Decrypt all managed files (batch) |

@@ -4,6 +4,7 @@ PKGNAME=stack_blackbox
 
 all:
 	@echo 'Menu:'
+	@echo '  make update            Update any generated files'
 	@echo '  make packages          Make RPM packages'
 	@echo '  make packages-deb      Make DEB packages'
 	@echo '  make install           (incomplete)'
@@ -53,7 +54,7 @@ packages-deb:	tools/mk_deb_fpmdir.stack_blackbox.txt
 
 # Make mk_deb_fpmdir.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
 tools/mk_deb_fpmdir.stack_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
-	sed -e 's@/usr/blackbox/bin/@/usr/bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_deb_fpmdir.stack_blackbox.txt >$@
+	sed -e '/^#/d' -e 's@/usr/blackbox/bin/@/usr/bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
 
 packages-deb-debug:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	@echo BUILD:
@@ -76,7 +77,7 @@ local-deb:
 
 # Make mk_macports.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
 tools/mk_macports.vcs_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
-	sed -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
+	sed  -e '/^#/d' -e 's@/usr/blackbox/bin/@bin/@g' -e '/profile.d-usrblackbox.sh/d' <tools/mk_rpm_fpmdir.stack_blackbox.txt >$@
 
 # MacPorts expects to run: make packages-macports DESTDIR=${destroot}
 packages-macports: tools/mk_macports.vcs_blackbox.txt
@@ -94,6 +95,14 @@ uninstall-stow:
 	rm -rf /usr/local/stow/blackbox
 
 # Add other package types here.
+
+#
+# Updates
+#
+update: tools/mk_deb_fpmdir.stack_blackbox.txt tools/mk_macports.vcs_blackbox.txt
+
+clean:
+	rm tools/mk_deb_fpmdir.stack_blackbox.txt tools/mk_macports.vcs_blackbox.txt
 
 #
 # System Test:
