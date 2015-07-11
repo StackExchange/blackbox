@@ -20,8 +20,8 @@ function register_new_file() {
     exit 1
   fi
 
-  echo ========== PLAINFILE "$unencrypted_file"
-  echo ========== ENCRYPTED "$encrypted_file"
+  echo "========== PLAINFILE $unencrypted_file"
+  echo "========== ENCRYPTED $encrypted_file"
 
   fail_if_not_exists "$unencrypted_file" "Please specify an existing file."
   fail_if_exists "$encrypted_file" "Will not overwrite."
