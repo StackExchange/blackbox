@@ -44,7 +44,7 @@ function assert_file_missing() {
 function assert_file_exists() {
   if [[ ! -e "$1" ]]; then
     echo "ASSERT FAILED: ${1} should exist."
-    echo "PWD="$(/bin/pwd -P)
+    echo "PWD=$(/bin/pwd -P)"
     #echo "LS START"
     #ls -la
     #echo "LS END"
@@ -55,7 +55,8 @@ function assert_file_md5hash() {
   local file="$1"
   local wanted="$2"
   assert_file_exists "$file"
-  local found=$(md5sum_file "$file")
+  local found
+  found=$(md5sum_file "$file")
   if [[ "$wanted" != "$found" ]]; then
     echo "ASSERT FAILED: $file hash wanted=$wanted found=$found"
     exit 1
@@ -69,10 +70,10 @@ function assert_file_group() {
 
   case $(uname -s) in
     Darwin|FreeBSD )
-      found=$(stat -f '%Sg' $file)
+      found=$(stat -f '%Sg' "$file")
       ;;
     Linux )
-      found=$(stat -c '%G' $file)
+      found=$(stat -c '%G' "$file")
       ;;
     CYGWIN* )
       echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."
@@ -95,9 +96,9 @@ function assert_line_not_exists() {
   assert_file_exists "$file"
   if grep -F -x -s -q >/dev/null "$target" "$file" ; then
     echo "ASSERT FAILED: line '$target' should not exist in file $file"
-    echo ==== file contents: START "$file"
+    echo "==== file contents: START $file"
     cat "$file"
-    echo ==== file contents: END "$file"
+    echo "==== file contents: END $file"
     exit 1
   fi
 }
@@ -107,9 +108,9 @@ function assert_line_exists() {
   assert_file_exists "$file"
   if ! grep -F -x -s -q >/dev/null "$target" "$file" ; then
     echo "ASSERT FAILED: line '$target' should exist in file $file"
-    echo ==== file contents: START "$file"
+    echo "==== file contents: START $file"
     cat "$file"
-    echo ==== file contents: END "$file"
+    echo "==== file contents: END $file"
     exit 1
   fi
 }
@@ -120,17 +121,17 @@ cd "$test_repository"
 make_self_deleting_tempdir fake_alice_home
 make_self_deleting_tempdir fake_bob_home
 export GNUPGHOME="$fake_alice_home"
-eval $(gpg-agent --homedir "$fake_alice_home" --daemon)
+eval "$(gpg-agent --homedir "$fake_alice_home" --daemon)"
 GPG_AGENT_INFO_ALICE="$GPG_AGENT_INFO"
 
 export GNUPGHOME="$fake_bob_home"
-eval $(gpg-agent --homedir "$fake_bob_home" --daemon)
+eval "$(gpg-agent --homedir "$fake_bob_home" --daemon)"
 GPG_AGENT_INFO_BOB="$GPG_AGENT_INFO"
 
 function become_alice() {
   export GNUPGHOME="$fake_alice_home"
   export GPG_AGENT_INFO="$GPG_AGENT_INFO_ALICE"
-  echo BECOMING ALICE: GNUPGHOME=$GNUPGHOME AGENT=$GPG_AGENT_INFO
+  echo BECOMING ALICE: GNUPGHOME="$GNUPGHOME AGENT=$GPG_AGENT_INFO"
   git config --global user.name "Alice Example"
   git config --global user.email alice@example.com
 }
@@ -282,7 +283,7 @@ assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "d3e6bbdfc76fae7fd0a921f3408db1d1"
 )
 
-PHASE 'Bob appears.'
+PHASE 'appears.'
 become_bob
 
 PHASE 'Bob makes sure he has all new keys.'
@@ -293,7 +294,7 @@ gpg --import keyrings/live/pubring.gpg
 # This users's default group:
 DEFAULT_GID_NAME=$(id -gn)
 # Pick a group that is not the default group:
-TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv $(id -u) | head -n 1)
+TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv "$(id -u)" | head -n 1)
 TEST_GID_NAME=$(python -c 'import grp; print grp.getgrgid('"$TEST_GID_NUM"').gr_name')
 echo "DEFAULT_GID_NAME=$DEFAULT_GID_NAME"
 echo "TEST_GID_NUM=$TEST_GID_NUM"
@@ -307,7 +308,7 @@ assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
 assert_file_group secret.txt "$DEFAULT_GID_NAME"
 
 PHASE 'Bob postdeploys... with a GID.'
-blackbox_postdeploy $TEST_GID_NUM
+blackbox_postdeploy "$TEST_GID_NUM"
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
