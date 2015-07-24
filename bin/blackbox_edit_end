@@ -7,18 +7,29 @@
 set -e
 source "${0%/*}/_blackbox_common.sh"
 
-unencrypted_file=$(get_unencrypted_filename "$1")
-encrypted_file=$(get_encrypted_filename "$1")
-echo ========== PLAINFILE '"'$unencrypted_file'"'
-echo ========== ENCRYPTED '"'$encrypted_file'"'
+next_steps=()
 
-fail_if_not_on_cryptlist "$unencrypted_file"
-fail_if_not_exists "$unencrypted_file" "No unencrypted version to encrypt!"
-fail_if_keychain_has_secrets
+for param in "$@" ; do
 
-encrypt_file "$unencrypted_file" "$encrypted_file"
-shred_file "$unencrypted_file"
+  unencrypted_file=$(get_unencrypted_filename "$param")
+  encrypted_file=$(get_encrypted_filename "$param")
 
-echo ========== UPDATED '"'$encrypted_file'"'
-echo "Likely next step:"
-echo "    $VCS_TYPE commit -m\"${encrypted_file} updated\" \"$encrypted_file\""
+  echo >&2 ========== PLAINFILE '"'$unencrypted_file'"'
+  echo >&2 ========== ENCRYPTED '"'$encrypted_file'"'
+
+  fail_if_not_on_cryptlist "$unencrypted_file"
+  fail_if_not_exists "$unencrypted_file" "No unencrypted version to encrypt!"
+  fail_if_keychain_has_secrets
+
+  encrypt_file "$unencrypted_file" "$encrypted_file"
+  shred_file "$unencrypted_file"
+  echo >&2 ========== UPDATED '"'$encrypted_file'"'
+  next_steps+=( "    $VCS_TYPE commit -m\"${encrypted_file} updated\" \"$encrypted_file\"" )
+
+done
+
+echo >&2 "Likely next step:"
+for x in "${next_steps[@]}"
+do
+  echo >&2 "$x"
+done
