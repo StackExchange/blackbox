@@ -15,9 +15,10 @@ chmod 0700 TestB
 chmod 0070 TestC
 chmod 0070 TestD
 cp_permissions TestA TestB TestC
+# NOTE: cp_permissions is not touching TestD.
 assert_file_perm '--wxr--rwx' TestA
 assert_file_perm '--wxr--rwx' TestB
 assert_file_perm '--wxr--rwx' TestC
-assert_file_perm '----rwx---' TestD
+assert_file_perm '----rwx---' TestD  # TestD doesn't change.
 
 echo '========== DONE.'
