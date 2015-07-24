@@ -380,6 +380,23 @@ function md5sum_file() {
   esac
 }
 
+function cp_permissions() {
+  # Copy the perms of $1 onto $2 .. end.
+  case $(uname -s) in
+    Darwin )
+      chmod $( stat -f '%p' "$1" ) "${@:2}"
+      ;;
+    Linux | CYGWIN* )
+      chmod --reference "$1" "${@:2}"
+      ;;
+    * )
+      echo 'ERROR: Unknown OS. Exiting.'
+      exit 1
+      ;;
+  esac
+}
+
+
 #
 # Abstract the difference between git and hg:
 #

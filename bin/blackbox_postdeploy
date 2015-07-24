@@ -30,7 +30,7 @@ echo '========== Decrypting new/changed files: START'
 while IFS= read <&99 -r unencrypted_file; do
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
-  chmod --reference "$encrypted_file" "$unencrypted_file"
+  cp_permissions "$encrypted_file" "$unencrypted_file"
   if [[ ! -z "$FILE_GROUP" ]]; then
     chmod g+r "$unencrypted_file"
     chgrp "$FILE_GROUP" "$unencrypted_file"
