@@ -30,15 +30,17 @@ function become_alice() {
   export GNUPGHOME="$fake_alice_home"
   export GPG_AGENT_INFO="$GPG_AGENT_INFO_ALICE"
   echo BECOMING ALICE: GNUPGHOME="$GNUPGHOME AGENT=$GPG_AGENT_INFO"
-  git config --global user.name "Alice Example"
-  git config --global user.email alice@example.com
+  mkdir -p .git ; touch .git/config
+  git config user.name "Alice Example"
+  git config user.email alice@example.com
 }
 
 function become_bob() {
   export GNUPGHOME="$fake_bob_home"
   export GPG_AGENT_INFO="$GPG_AGENT_INFO_BOB"
-  git config --global user.name "Bob Example"
-  git config --global user.email bob@example.com
+  mkdir -p .git ; touch .git/config
+  git config user.name "Bob Example"
+  git config user.email bob@example.com
 }
 
 PHASE 'Alice creates a repo.  She creates secret.txt.'
