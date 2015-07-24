@@ -20,5 +20,6 @@ assert_file_perm '--wxr--rwx' TestA
 assert_file_perm '--wxr--rwx' TestB
 assert_file_perm '--wxr--rwx' TestC
 assert_file_perm '----rwx---' TestD  # TestD doesn't change.
+rm -f TestA TestB TestC TestD
 
 echo '========== DONE.'
