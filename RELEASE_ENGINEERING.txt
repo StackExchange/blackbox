@@ -73,18 +73,18 @@ Step 3: Watch for the update to happen.
 
 # Updating MacPorts (manual)
 
-This is the old, manual, procedure.  If the automated procedure work, these notes may or may not be helpful.
+This is the old, manual, procedure.  If the automated procedure fails to work, these notes may or may not be helpful.
 
-The ultimate result of the script should be a `diff -u Portfile.orig Portfile`.  The new `Portfile` should have these changes:
+The ultimate result of the script should be the output of `diff -u Portfile.orig Portfile` which is sent as an attachment to MacPorts.  The new `Portfile` should have these changes:
 
 1. The `github.setup` line should have a new version number.
 2. The `checksums` line(s) should have updated checksums.
 
 How to generate the checksums?
 
-The easiest way is to to make a Portfile with incorrect checksums, then run `sudo port -v checksum vcs_blackbox` to see what they should have been.  Fix the file, and try again.
+The easiest way is to to make a Portfile with incorrect checksums, then run `sudo port -v checksum vcs_blackbox` to see what they should have been.  Fix the file, and try again until the checksum command works.
 
-When the the checksum command works, run `port lint vcs_blackbox` and make sure it has no errors.
+Next run `port lint vcs_blackbox` and make sure it has no errors.
 
 Some useful commands:
 
@@ -95,12 +95,12 @@ sudo vi /opt/local/etc/macports/sources.conf
   file:///var/tmp/ports
 ```
 
-Add a local repo in an automated manner:
+Add a local repo:
 ```
 fgrep >/dev/null -x 'file:///var/tmp/ports' /opt/local/etc/macports/sources.conf || sudo sed -i -e '1s@^@file:///var/tmp/ports\'$'\n@' /opt/local/etc/macports/sources.conf
 ```
 
-Remove the local repo in an automated manner:
+Remove the local repo:
 ```
 sudo sed -i -e '\@^file:///var/tmp/ports@d' /opt/local/etc/macports/sources.conf
 ```
