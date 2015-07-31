@@ -43,7 +43,7 @@ fi
 
 # Generate the diff
 cp /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/vcs_blackbox/Portfile /var/tmp/ports/security/vcs_blackbox/Portfile.orig
-( cd /var/tmp/ports/security/vcs_blackbox && diff -u Portfile.orig Portfile ) > Portfile-vcs_blackbox.diff
+( cd /var/tmp/ports/security/vcs_blackbox && diff --ignore-matching-lines='Id:' -u Portfile.orig Portfile ) > Portfile-vcs_blackbox.diff
 open -R Portfile-vcs_blackbox.diff
 
 echo
@@ -62,6 +62,6 @@ github.setup and checksums updated.
     Type: update
     Component: ports
     Port: vcs_blackbox
-    Keywords: maintainer
+    Keywords: maintainer haspatch
 "
 echo 'Attach: Portfile-vcs_blackbox.diff'
