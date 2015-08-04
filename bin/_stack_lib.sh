@@ -57,11 +57,11 @@ function create_self_deleting_tempfile() {
       : ${TMPDIR:=/tmp} ;
       filename=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
-    Linux )
+    Linux | CYGWIN* )
       filename=$(mktemp)
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (create_self_deleting_tempfile)'
       exit 1
       ;;
   esac
@@ -78,11 +78,11 @@ function create_self_deleting_tempdir() {
       : ${TMPDIR:=/tmp} ;
       filename=$(mktemp -d -t _stacklib_ )
       ;;
-    Linux )
+    Linux | CYGWIN* )
       filename=$(mktemp -d)
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (create_self_deleting_tempdir)'
       exit 1
       ;;
   esac
@@ -102,11 +102,11 @@ function make_self_deleting_tempfile() {
       : ${TMPDIR:=/tmp} ;
       name=$(mktemp -t _stacklib_ )
       ;;
-    Linux )
+    Linux | CYGWIN* )
       name=$(mktemp)
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (make_self_deleting_tempfile)'
       exit 1
       ;;
   esac
@@ -124,11 +124,11 @@ function make_tempdir() {
       : ${TMPDIR:=/tmp} ;
       name=$(mktemp -d -t _stacklib_ )
       ;;
-    Linux )
+    Linux | CYGWIN* )
       name=$(mktemp -d)
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (make_tempdir)'
       exit 1
       ;;
   esac
@@ -164,14 +164,7 @@ function fail_if_in_root_directory() {
         exit 1
       fi
       ;;
-    Linux )
-      if [[ $(stat -c'%i' / ) == $(stat -c'%i' . ) ]] ; then
-        echo 'SECURITY ALERT: The current directory is the root directory.'
-        echo 'Exiting...'
-        exit 1
-      fi
-      ;;
-    CYGWIN* )
+    Linux | CYGWIN* )
       if [[ $(stat -c'%i' / ) == $(stat -c'%i' . ) ]] ; then
         echo 'SECURITY ALERT: The current directory is the root directory.'
         echo 'Exiting...'
@@ -179,7 +172,7 @@ function fail_if_in_root_directory() {
       fi
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (fail_if_in_root_directory)'
       exit 1
       ;;
   esac

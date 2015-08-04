@@ -367,14 +367,11 @@ function md5sum_file() {
     Darwin )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
-    Linux )
-      md5sum "$1" | awk '{ print $1 }'
-      ;;
-    CYGWIN* )
+    Linux | CYGWIN*)
       md5sum "$1" | awk '{ print $1 }'
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (md5sum_file)'
       exit 1
       ;;
   esac
@@ -390,7 +387,7 @@ function cp_permissions() {
       chmod --reference "$1" "${@:2}"
       ;;
     * )
-      echo 'ERROR: Unknown OS. Exiting.'
+      echo 'ERROR: Unknown OS. Exiting. (cp_permissions)'
       exit 1
       ;;
   esac
