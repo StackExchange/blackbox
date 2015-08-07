@@ -329,7 +329,11 @@ function enumerate_blackbox_repos() {
 function vcs_relative_path() {
   # Usage: vcs_relative_path file
   local name="$1"
-  python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
+  #python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
+  local p=$( echo -n "$( pwd -P )/${1}" | sed 's#//*#/#g' )
+  local name="${p#$REPOBASE}"
+  name=$( echo -n "$name" | sed 's#^/##g' | sed 's#/$##g' )
+  echo -n $name  
 }
 
 # Removes a line from a text file
