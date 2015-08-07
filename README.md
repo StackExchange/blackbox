@@ -318,11 +318,15 @@ To join the list of people that can edit the file requires three steps; You crea
 
 ### Step 1: YOU create a GPG key pair on a secure machine and add to public keychain.
 
+If you don't already have a GPG key, here's how to generate one:
+
 ```
 gpg --gen-key
 ```
 
 Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphrase.
+
+Now that you have a GPG key, add yourself as an admin:
 
 ```
 blackbox_addadmin KEYNAME
@@ -335,7 +339,7 @@ blackbox_addadmin tal@example.com
 ```
 
 When the command completes successfully, instructions on how to
-commit these changes will be output.  Run the command as give.
+commit these changes will be output.  Run the command as given. It will look like this:
 
 ```
 NEXT STEP: Check these into the repo.  Probably with a command like...
@@ -633,6 +637,7 @@ Also shred any other temporary files you may have made.
 
 Using Blackbox without a repo
 ===========================
+
 If the files are copied out of a repo they can still be decrypted
 and edited.  Obviously edits, changes to keys, and such will be lost
 if they are made outside the repo. Also note that commands are most
@@ -646,27 +651,51 @@ The following commands have been tested outside a repo:
   * `blackbox_edit_end`
 
 
-Help out: Submit bugs, pull requests and ideas:
+How to submit bugs or ask questions?
 ============
 
-I welcome code changes, questions, bug reports and feedback!
+We welcome questions, bug reports and feedback!
 
-  * Submit code: https://github.com/StackExchange/blackbox
-  * Report bugs/questions: https://github.com/StackExchange/blackbox/issues
+  * https://github.com/StackExchange/blackbox/issues
 
-Tip for submitting code:
+Developer Info
+============
 
-After you make a change, please re-run the confidence tests.  This
-runs through various procedures and checks the results.
+Code submissions are gladly welcomed!  The code is
+fairly easy to read.
 
-To run the tests:
+
+Get the code:
+
+```
+git clone git@github.com:StackExchange/blackbox.git
+```
+
+Test your changes:
 
 ```
 make confidence
 ```
 
+This runs through a number of system tests. It
+creates a repo, encrypts files, decrypts files, and so on.
+You can run these tests to verify that the changes you made
+didn't break anything.  You can also use these tests to
+verify that the system works with a new operating system.
+
+Please submit tests with code changes:
+
+The best way to change Blackbox is via Test Driven Development.
+First add a test to `tools/confidence.sh`. This test should
+fail, and demonstrate the need for the change you are about to
+make. Then fix the bug or add the feature you want.  When
+you are done, `make confidence` should pass all tests.
+The PR you submit should include your code as well as the new
+test.  This way the confidence tests accumulate as the system
+grows as we know future changes don't break old features.
+
 Note: The tests currently assume "git" and have been tested
-on CentOS and Cygwin.
+only on CentOS, Mac OS X, and Cygwin.  Patches welcome!
 
 
 Alternatives
@@ -674,9 +703,12 @@ Alternatives
 
 Here are other open source packages that do something similar to Blackbox. If you like them better than Blackbox, please use them.
 
+  * git-crypt:  https://www.agwa.name/projects/git-crypt/
   * Pass: http://www.zx2c4.com/projects/password-store/
   * Transcrypt: https://github.com/elasticdog/transcrypt
-  * git-crypt:  https://www.agwa.name/projects/git-crypt/
+
+git-crypt has the best git integration.  Once set up it is nearly transparent to the users.  However it only works with git.
+
 
 License
 =======
