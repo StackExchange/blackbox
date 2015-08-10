@@ -635,6 +635,20 @@ rm -rf /tmp/NEWMASTER
 Also shred any other temporary files you may have made.
 
 
+Some common errors:
+=========================================
+
+`gpg: filename: skipped: No public key` -- Usually this means there
+is an item in `keyrings/live/blackbox-admins.txt` that is not the
+name of the key.  Either something invalid was inserted (like a
+filename instead of a username) or a user has left the organization
+and their key was removed from the keychain, but their name wasn't
+removed from the blackbox-admins.txt file.
+
+`gpg: decryption failed: No secret key` -- Usually means you forgot
+to re-encrypt the file with the new key.
+
+
 Using Blackbox without a repo
 ===========================
 
