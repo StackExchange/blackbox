@@ -27,7 +27,7 @@ for param in "$@" ; do
     esac
   fi
   "${BLACKBOX_HOME}/blackbox_edit_start" "$unencrypted_file"
-  "$EDITOR" "$(get_unencrypted_filename "$unencrypted_file")"
+  $EDITOR "$(get_unencrypted_filename "$unencrypted_file")"
   "${BLACKBOX_HOME}/blackbox_edit_end" "$unencrypted_file"
 
 done
