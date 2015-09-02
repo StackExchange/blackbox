@@ -46,6 +46,19 @@ unlock-rpm:
 	sudo yum versionlock clear
 
 #
+# Manual install
+#
+manual-install:
+	@echo 'Symlinking files from ./bin to /usr/local/bin'
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f /usr/local/bin/$$f; done
+	@echo 'Done.'
+
+manual-uninstall:
+	@echo 'Removing blackbox files from /usr/local/bin'
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do rm /usr/local/bin/$$f; done
+	@echo 'Done.'
+
+#
 # DEB builds
 #
 
@@ -84,7 +97,7 @@ packages-macports: tools/mk_macports.vcs_blackbox.txt
 	mkdir -p $(DESTDIR)/bin
 	cd tools && ./mk_macports mk_macports.vcs_blackbox.txt
 
-# stow is a pretty easy way to manage simple local installs on GNU systems 
+# stow is a pretty easy way to manage simple local installs on GNU systems
 install-stow:
 	mkdir -p /usr/local/stow/blackbox/bin
 	cp bin/* /usr/local/stow/blackbox/bin
