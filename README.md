@@ -194,7 +194,7 @@ their network.
 *If you use Puppet, why didn't you just use hiera-eyaml?*
 There are 4 reasons:
 
-  1. This works works with any Git or Mercurial repo, even if you aren't using Puppet.
+  1. This works with any Git or Mercurial repo, even if you aren't using Puppet.
   2. hiera-eyaml decrypts "on demand" which means your Puppet Master now uses a lot of CPU to decrypt keys every time it is contacted. It slows down your master, which, in my case, is already slow enough.
   3. This works with binary files, without having to ASCIIify them and paste them into a YAML file.  Have you tried to do this with a cert that is 10K long and changes every few weeks?  Ick.
   4. hiera-eyaml didn't exist when I wrote this.
