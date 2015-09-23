@@ -324,7 +324,7 @@ If you don't already have a GPG key, here's how to generate one:
 gpg --gen-key
 ```
 
-Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphrase.
+Pick defaults for encryption settings, 0 expiration.  Pick a VERY GOOD passphrase.  Store the private key securely.  Tip: Store it on a secure machine, or one with little or no internet access, with full-disk-encryption, etc.  Your employer problably has rules about how to store such things.
 
 Now that you have a GPG key, add yourself as an admin:
 
@@ -338,23 +338,41 @@ blackbox_addadmin KEYNAME
 blackbox_addadmin tal@example.com
 ```
 
-When the command completes successfully, instructions on how to
-commit these changes will be output.  Run the command as given. It will look like this:
+When the command completes successfully, instructions on how to commit these changes will be output.  Run the command as given to commit the changes.  It will look like this:
 
 ```
-NEXT STEP: Check these into the repo.  Probably with a command like...
 git commit -m'NEW ADMIN: tal@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 ```
 
-Role accounts: If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter:
+Then push it to the repo:
 
 ```
-blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir
+git push
+
+or
+
+ht push
+
+(or whatever is appropriate)
 ```
+
+NOTE: Creating a Role Account?  If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter: `blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir`
+
 
 ### Step 2: SOMEONE ELSE adds you to the system.
 
-Ask someone that already has access to re-encrypt the data files. This gives you access.  They simply decrypt and re-encrypt the data without making any changes:
+Ask someone that already has access to re-encrypt the data files. This gives you access.  They simply decrypt and re-encrypt the data without making any changes.
+
+Pre-check: Verify the new keys look good.
+
+```
+$ gpg --homedir=keyrings/live --list-keys 
+```
+
+For example, examine the key name (email address) to make sure
+it conforms to corporate standards.
+
+Import the keychain into your personal keychain and reencrypt:
 
 ```
 gpg --import keyrings/live/pubring.gpg
