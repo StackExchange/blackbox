@@ -11,6 +11,31 @@ for Puppet, BlackBox now works with any Git or Mercurial repository.
 
 A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
+Table of Contents
+===============
+
+* [Overview](#overview)
+* [Why is this important?](#why-is-this-important)
+* [Installation Instructions](#installation-instructions)
+* [Commands](#commands)
+* [Compatibility](#compatibility)
+* [How is the encryption done?](#how-is-the-encryption-done)
+* [What does this look like to the typical user?](#what-does-this-look-like-to-the-typical-user)
+* [How to use the secrets with Puppet?](#how-to-use-the-secrets-with-puppet)
+* [How to enroll a new file into the system?](#how-to-enroll-a-new-file-into-the-system)
+* [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
+* [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
+* [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
+* [First Time Setup (enabling Blackbox for a repo)](#enabling-blackbox-for-a-repo)
+* [Set up automated users or "role accounts"](#set-up-automated-users-or-role-accounts)
+* [Some common errors](#some-common-errors)
+* [Using Blackbox without a repo](#using-blackbox-without-a-repo)
+* [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
+* [Developer Info](#developer-info)
+* [Alternatives](#alternatives)
+* [License](#license)
+
+
 Overview
 ========
 
@@ -428,7 +453,7 @@ so on just like when anyone that had privileged access leaves an
 organization.
 
 
-First Time Setup (enabling Blackbox for a repo)
+Enabling Blackbox For a Repo
 ===========================
 
 Overview:
