@@ -26,7 +26,7 @@ Table of Contents
 * [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
 * [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
 * [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
-* [First Time Setup (enabling Blackbox for a repo)](#enabling-blackbox-for-a-repo)
+* [Enabling Blackbox For a Repo](#enabling-blackbox-for-a-repo)
 * [Set up automated users or "role accounts"](#set-up-automated-users-or-role-accounts)
 * [Some common errors](#some-common-errors)
 * [Using Blackbox without a repo](#using-blackbox-without-a-repo)
