@@ -54,7 +54,7 @@ function create_self_deleting_tempfile() {
 
   case $(uname -s) in
     Darwin )
-      : ${TMPDIR:=/tmp} ;
+      : "${TMPDIR:=/tmp}"
       filename=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
     Linux | CYGWIN* )
@@ -75,7 +75,7 @@ function create_self_deleting_tempdir() {
 
   case $(uname -s) in
     Darwin )
-      : ${TMPDIR:=/tmp} ;
+      : "${TMPDIR:=/tmp}"
       filename=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
     Linux | CYGWIN* )
@@ -99,7 +99,7 @@ function make_self_deleting_tempfile() {
 
   case $(uname -s) in
     Darwin )
-      : ${TMPDIR:=/tmp} ;
+      : "${TMPDIR:=/tmp}"
       name=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
     Linux | CYGWIN* )
@@ -121,7 +121,7 @@ function make_tempdir() {
 
   case $(uname -s) in
     Darwin )
-      : ${TMPDIR:=/tmp} ;
+      : "${TMPDIR:=/tmp}"
       name=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
     Linux | CYGWIN* )
