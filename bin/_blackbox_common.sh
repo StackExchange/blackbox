@@ -28,7 +28,7 @@ source "${0%/*}"/_stack_lib.sh
 function physical_directory_of() {
   local d=$(dirname "$1")
   local f=$(basename "$1")
-  (cd "$d" && echo $(pwd -P)"/$f" )
+  (cd "$d" && echo "$(pwd -P)/$f" )
 }
 
 # Set REPOBASE to the top of the repository
@@ -330,10 +330,10 @@ function vcs_relative_path() {
   # Usage: vcs_relative_path file
   local name="$1"
   #python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
-  local p=$( echo -n "$( pwd -P )/${1}" | sed 's#//*#/#g' )
+  local p=$( printf "%s" "$( pwd -P )/${1}" | sed 's#//*#/#g' )
   local name="${p#$REPOBASE}"
-  name=$( echo -n "$name" | sed 's#^/##g' | sed 's#/$##g' )
-  echo -n $name  
+  name=$( printf "%s" "$name" | sed 's#^/##g' | sed 's#/$##g' )
+  printf "%s" "$name"
 }
 
 # Removes a line from a text file
