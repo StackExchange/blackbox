@@ -57,7 +57,7 @@ function create_self_deleting_tempfile() {
       : "${TMPDIR:=/tmp}"
       filename=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       filename=$(mktemp)
       ;;
     * )
@@ -78,7 +78,7 @@ function create_self_deleting_tempdir() {
       : "${TMPDIR:=/tmp}"
       filename=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       filename=$(mktemp -d)
       ;;
     * )
@@ -102,7 +102,7 @@ function make_self_deleting_tempfile() {
       : "${TMPDIR:=/tmp}"
       name=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       name=$(mktemp)
       ;;
     * )
@@ -124,7 +124,7 @@ function make_tempdir() {
       : "${TMPDIR:=/tmp}"
       name=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       name=$(mktemp -d)
       ;;
     * )
@@ -164,7 +164,7 @@ function fail_if_in_root_directory() {
         exit 1
       fi
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       if [[ $(stat -c'%i' / ) == $(stat -c'%i' . ) ]] ; then
         echo 'SECURITY ALERT: The current directory is the root directory.'
         echo 'Exiting...'

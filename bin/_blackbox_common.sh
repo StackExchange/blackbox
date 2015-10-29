@@ -371,7 +371,7 @@ function md5sum_file() {
     Darwin )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
-    Linux | CYGWIN*)
+    Linux | CYGWIN* | MINGW* )
       md5sum "$1" | awk '{ print $1 }'
       ;;
     * )
@@ -387,7 +387,7 @@ function cp_permissions() {
     Darwin )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
       ;;
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | MINGW* )
       chmod --reference "$1" "${@:2}"
       ;;
     * )
