@@ -764,6 +764,7 @@ Here are other open source packages that do something similar to Blackbox. If yo
   * git-crypt:  https://www.agwa.name/projects/git-crypt/
   * Pass: http://www.zx2c4.com/projects/password-store/
   * Transcrypt: https://github.com/elasticdog/transcrypt
+  * Keyringer: https://keyringer.pw/
 
 git-crypt has the best git integration.  Once set up it is nearly transparent to the users.  However it only works with git.
 
