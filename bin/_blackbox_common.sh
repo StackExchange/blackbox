@@ -562,6 +562,7 @@ function vcs_ignore_hg() {
 # Git
 function vcs_ignore_git() {
   vcs_ignore_generic_file "$(vcs_ignore_file_path)" "$file"
+  git add "$REPOBASE/.gitignore"
 }
 # Subversion
 function vcs_ignore_svn() {
@@ -603,6 +604,7 @@ function vcs_notice_hg() {
 # Git
 function vcs_notice_git() {
   vcs_notice_generic_file "$REPOBASE/.gitignore" "$file"
+  git add "$REPOBASE/.gitignore"
 }
 # Subversion
 function vcs_notice_svn() {
