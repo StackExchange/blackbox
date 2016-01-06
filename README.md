@@ -480,8 +480,7 @@ your .zshrc will download this repository and add it to your $PATH.
 
 ### For the first user, create a GPG key and add it to the key ring.
 
-Follow the instructions for "How to indoctrinate a new user into
-the system?".  Only do Step 1.
+Follow the instructions for "[How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)".  Only do Step 1.
 
 Once that is done, is a good idea to test the system by making sure
 a file can be added to the system (see "How to enroll a new file
@@ -509,8 +508,12 @@ blackbox_edit_end foo.txt.gpg
 ls -l foo.txt*
 ```
 
-Push these changes to the repo.  Make sure another user can
-check out and change the contents of the file.
+You should only see `foo.txt.gpg` as `foo.txt` should be gone.
+
+The next step is to commit `foo.txt.gpg` and make sure another user
+can check out, view, and change the contents of the file.  That is
+left as an exercise for the reader.  If you are feel like taking a
+risk, don't commit `foo.txt.gpg` and delete it instead.
 
 
 Set up automated users or "role accounts"
