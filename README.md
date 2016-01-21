@@ -28,6 +28,7 @@ Table of Contents
 * [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
 * [Enabling Blackbox For a Repo](#enabling-blackbox-for-a-repo)
 * [Set up automated users or "role accounts"](#set-up-automated-users-or-role-accounts)
+* [Replace expired keys](#replace-expired-keys)
 * [Some common errors](#some-common-errors)
 * [Using Blackbox without a repo](#using-blackbox-without-a-repo)
 * [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
@@ -681,6 +682,58 @@ rm -rf /tmp/NEWMASTER
 
 Also shred any other temporary files you may have made.
 
+Replace expired keys:
+=========================================
+
+If any one admin's key expires, you can no longer encrypt files.  You will need to replace the key
+and re-encrypt.
+
+* Step 0: You see this error:
+
+```
+$ blackbox_edit_end modified_file.txt
+--> Error: can't re-encrypt because a key has expired.
+```
+
+* Step 1. Administrator removes expired user:
+
+Warning: This process will erase any unencrypted files that you were in the process of editing. Copy them elsewhere and restore the changes when done.
+
+```
+blackbox_removeadmin expired_user@example.com
+# This next command overwrites any changed unencrypted files. See warning above.
+blackbox_update_all_files
+git commit -m "Re-encrypt all files"
+gpg --homedir=keyrings/live --delete-key expired_user@example.com
+git commit -m 'Cleaned expired_user@example.com from keyring'  keyrings/live/*
+git push
+```
+
+* Step 2. Expired user adds an updated key:
+
+```
+git pull
+blackbox_addadmin updated_user@example.com
+git commit -m'NEW ADMIN: updated_user@example.com keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git push
+```
+
+* Step 3. Administrator re-encrypts all files with the updated key of the expired user:
+
+```
+git pull
+gpg --import keyrings/live/pubring.gpg 
+blackbox_update_all_files 
+git commit -m "Re-encrypt all files"
+git push
+```
+
+* Step 4: Clean up:
+
+Any files that were temporarily copied in the first step so as to not be overwritten can now be copied back and re-encrypted with the `blackbox_edit_end` command.
+
+(Thanks to @chishaku for finding a solution to this problem!)
+
 
 Some common errors:
 =========================================
@@ -695,6 +748,10 @@ removed from the blackbox-admins.txt file.
 `gpg: decryption failed: No secret key` -- Usually means you forgot
 to re-encrypt the file with the new key.
 
+
+`Error: can't re-encrypt because a key has expired.` -- A user's key
+has expired and can't be used to encrypt any more.  Follow the
+[Replace expired keys](#replace-expired-keys) tip.
 
 Using Blackbox without a repo
 ===========================
