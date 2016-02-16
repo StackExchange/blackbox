@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# proposed space for blackbox recurion...coming soon
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+echo "$REBOBASE"

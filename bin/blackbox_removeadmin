@@ -10,18 +10,15 @@
 #
 
 set -e
-. _blackbox_common.sh
-. _stack_lib.sh
+source "${0%/*}/_blackbox_common.sh"
 
 fail_if_not_in_repo
 
 KEYNAME="$1"
-: ${KEYNAME:?ERROR: First argument must be a keyname (email address)} ;
+: "${KEYNAME:?ERROR: First argument must be a keyname (email address)}" ;
 
 # Remove the email address from the BB_ADMINS file.
-make_self_deleting_tempfile bbtemp
-cp "$BB_ADMINS" "$bbtemp"
-fgrep -v -x "$KEYNAME" <"$bbtemp" >"$BB_ADMINS"
+remove_line "$BB_ADMINS" "$KEYNAME"
 
 # Make a suggestion:
 echo

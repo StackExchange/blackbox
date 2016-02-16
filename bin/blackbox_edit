@@ -1,26 +1,33 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_edit.sh -- Decrypt a file temporarily for edition, then re-encrypts it again
+# blackbox_edit -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
 set -e
-. _blackbox_common.sh
+source "${0%/*}/_blackbox_common.sh"
 
-for param in """$@""" ; do
+for param in "$@" ; do
+
   unencrypted_file=$(get_unencrypted_filename "$param")
-  if  [[! is_on_cryptlist "$param" ]] && [[! is_on_cryptlist "$unencrypted_file" ]] ; then
-    read -p "Encrypt file $param? (y/n) " ans
+  encrypted_file=$(get_encrypted_filename "$param")
+
+  echo >&2 ========== PLAINFILE '"'$unencrypted_file'"'
+  echo >&2 ========== ENCRYPTED '"'$encrypted_file'"'
+
+  if  ! is_on_cryptlist "$encrypted_file" && ! is_on_cryptlist "$unencrypted_file" ; then
+    read -r -p "Encrypt file $param? (y/n) " ans
     case "$ans" in
       y* | Y*)
-        blackbox_register_new_file "$param"
+        "${BLACKBOX_HOME}/blackbox_register_new_file" "$unencrypted_file"
         ;;
       *)
-        echo 'Skipping...'
+        echo >&2 'Skipping...'
         continue
         ;;
     esac
   fi
-  blackbox_edit_start "$param"
-  $EDITOR $(get_unencrypted_filename $param)
-  blackbox_edit_end "$param"
+  "${BLACKBOX_HOME}/blackbox_edit_start" "$unencrypted_file"
+  $EDITOR "$(get_unencrypted_filename "$unencrypted_file")"
+  "${BLACKBOX_HOME}/blackbox_edit_end" "$unencrypted_file"
+
 done

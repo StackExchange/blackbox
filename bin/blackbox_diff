@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_diff -- Show all differences.
+#
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+if [[ -z $GPG_AGENT_INFO ]]; then
+  echo 'WARNING: You probably want to run gpg-agent as'
+  echo 'you will be asked for your passphrase many times.'
+  echo 'Example: $ eval $(gpg-agent --daemon)'
+  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
+fi
+
+prepare_keychain
+
+modified_files=()
+modifications=()
+echo '========== DIFFING FILES: START'
+while IFS= read <&99 -r unencrypted_file; do
+  unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
+  fail_if_not_on_cryptlist "$unencrypted_file"
+  if [[ -f "$unencrypted_file" ]]; then
+    out=$(diff -u <($GPG --yes -q --decrypt "$encrypted_file") "$unencrypted_file" || true)
+    if [ "$out" != "" ]; then
+      modified_files+=("$unencrypted_file")
+      modifications+=("$out")
+    fi
+  fi
+done 99<"$BB_FILES"
+modified_files_number=${#modified_files[@]}
+for (( i=0; i<${modified_files_number}; i++ )); do
+  echo ========== PROCESSING '"'${modified_files[$i]}'"'
+  echo -e "${modifications[$i]}\n"
+done
+echo '========== DIFFING FILES: DONE'
+
+fail_if_keychain_has_secrets
+
+echo '========== DONE.'
+
+if [ ${#modified_files[@]} -eq 0 ] ; then
+  exit 0
+fi
+
+echo 'Likely next steps:'
+for f in "${modified_files[@]}" ; do
+  echo "    blackbox_edit_end" '"'$f'"'
+done

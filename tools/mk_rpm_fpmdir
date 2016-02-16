@@ -1,0 +1,76 @@
+#! /usr/bin/env bash
+
+# Use fpm to package up files into an RPM.
+
+# Usage:
+#   mk_rpm_fpmdir PACKAGENAME MANIFEST1 MANIFEST2 ...
+
+# Example:
+#   Make a package foopkg manifest.txt
+# Where "manifest.txt" contains:
+#   exec /usr/bin/stack_makefqdn  misc/stack_makefqdn.py
+#   exec /usr/bin/bar             bar/bar.sh
+#   read /usr/man/man1/bar.1      bar/bar.1.man
+#   0444 /etc/foo.conf            bar/foo.conf
+
+set -e
+
+# Parameters for this RPM:
+PACKAGENAME=${1?"First arg must be the package name."}
+shift
+
+# Defaults that can be overridden:
+# All packages are 1.0 unless otherwise specifed:
+: ${PKGVERSION:=1.0} ;
+# If there is no iteration setting, assume "1":
+: ${PKGRELEASE:=1}
+# If there is no epoch, assume 0
+: ${PKGEPOCH:=0}
+
+# The RPM is output here: (should be a place that can be wiped)
+OUTPUTDIR="${HOME}/rpmbuild-$PACKAGENAME"
+# The TeamCity templates expect to find the list of artifacts here:
+RPM_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
+
+# -- Now the real work can be done.
+
+# Clean the output dir.
+rm -rf "$OUTPUTDIR"
+mkdir -p "$OUTPUTDIR/installroot"
+
+# Copy the files into place:
+set -o pipefail  # Error out if any manifest is not found.
+cat """$@""" | while read -a arr ; do
+  PERM="${arr[0]}"
+  case $PERM in
+    \#*)  continue ;;   # Skip comments.
+    exec) PERM=0755 ;;
+    read) PERM=0744 ;;
+    *) ;;
+  esac
+  DST="$OUTPUTDIR/installroot/${arr[1]}"
+  SRC="${arr[2]}"
+  if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
+    ( cd $(dirname "$SRC" ) && go build -a -v ) 
+  fi
+  install -D -T -b -m "$PERM" -T "$SRC" "$DST"
+done
+
+# Build the RPM:
+cd "$OUTPUTDIR" && fpm -s dir -t rpm \
+  -a all \
+  -n "${PACKAGENAME}" \
+  --epoch "${PKGEPOCH}" \
+  --version "${PKGVERSION}" \
+  --iteration "${PKGRELEASE}" \
+  ${PKGDESCRIPTION:+ --description="${PKGDESCRIPTION}"} \
+  ${PKGVENDOR:+ --vendor="${PKGVENDOR}"} \
+  -C "$OUTPUTDIR/installroot" \
+  .
+
+# TeamCity templates for RPMS expect to find
+# the list of all packages created in bin-packages.txt.
+# Generate that list:
+find "$OUTPUTDIR" -maxdepth 1 -name '*.rpm' >"$RPM_BIN_LIST"
+# Output it for debugging purposes:
+cat "$RPM_BIN_LIST"

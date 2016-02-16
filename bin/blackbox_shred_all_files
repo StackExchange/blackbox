@@ -16,16 +16,18 @@
 # have been decrypted for editing, you will see an empty list.
 
 set -e
-. _blackbox_common.sh
+source "${0%/*}/_blackbox_common.sh"
+
+change_to_vcs_root
 
 echo '========== FILES BEING SHREDDED:'
-for i in $(<$BB_FILES) ; do
-  unencrypted_file=$(get_unencrypted_filename "$i")
-  encrypted_file=$(get_encrypted_filename "$i")
+while IFS= read <&99 -r unencrypted_file; do
+  unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   if [[ -f "$unencrypted_file" ]]; then
     echo "    $unencrypted_file"
     shred_file "$unencrypted_file"
   fi
-done
+done 99<"$BB_FILES"
 
 echo '========== DONE.'

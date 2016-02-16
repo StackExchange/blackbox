@@ -1,0 +1,31 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id: Portfile 132962 2015-02-16 10:33:02Z ryandesign@macports.org $
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+github.setup        StackExchange blackbox @@VERSION@@ v
+name                vcs_blackbox
+categories          security
+platforms           darwin
+maintainers         whatexit.org:tal openmaintainer
+license             BSD
+supported_archs     noarch
+
+description         Safely store secrets in git/hg/svn repos using GPG encryption
+
+long_description    Storing secrets such as passwords, certificates and private keys \
+                    in Git/Mercurial/SubVersion is dangerous. Blackbox makes it easy \
+                    to store secrets safely using GPG encryption. They can be easily \
+                    decrypted for editing or use in production.
+
+checksums           rmd160  @@RMD160@@ \
+                    sha256  @@SHA256@@
+
+use_configure       no
+
+build               {}
+
+# This project's Makefile uses DESTDIR incorrectly.
+destroot.destdir    DESTDIR=${destroot}${prefix}
+destroot.target     packages-macports

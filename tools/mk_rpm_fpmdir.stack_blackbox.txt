@@ -1,0 +1,20 @@
+# Update tools/mk_rpm_fpmdir.stack_blackbox.txt.  Other files generate from it.
+read /etc/profile.d/usrblackbox.sh               profile.d-usrblackbox.sh
+exec /usr/blackbox/bin/_blackbox_common.sh       ../bin/_blackbox_common.sh
+exec /usr/blackbox/bin/_stack_lib.sh             ../bin/_stack_lib.sh
+exec /usr/blackbox/bin/blackbox_addadmin         ../bin/blackbox_addadmin
+exec /usr/blackbox/bin/blackbox_cat              ../bin/blackbox_cat
+exec /usr/blackbox/bin/blackbox_decrypt_all_files  ../bin/blackbox_decrypt_all_files
+exec /usr/blackbox/bin/blackbox_deregister_file  ../bin/blackbox_deregister_file
+exec /usr/blackbox/bin/blackbox_diff             ../bin/blackbox_diff
+exec /usr/blackbox/bin/blackbox_edit             ../bin/blackbox_edit
+exec /usr/blackbox/bin/blackbox_edit_end         ../bin/blackbox_edit_end
+exec /usr/blackbox/bin/blackbox_edit_start       ../bin/blackbox_edit_start
+exec /usr/blackbox/bin/blackbox_initialize       ../bin/blackbox_initialize
+exec /usr/blackbox/bin/blackbox_list_files       ../bin/blackbox_list_files
+exec /usr/blackbox/bin/blackbox_postdeploy       ../bin/blackbox_postdeploy
+exec /usr/blackbox/bin/blackbox_register_new_file ../bin/blackbox_register_new_file
+exec /usr/blackbox/bin/blackbox_removeadmin      ../bin/blackbox_removeadmin
+exec /usr/blackbox/bin/blackbox_shred_all_files  ../bin/blackbox_shred_all_files
+exec /usr/blackbox/bin/blackbox_update_all_files ../bin/blackbox_update_all_files
+exec /usr/blackbox/bin/blackbox_whatsnew         ../bin/blackbox_whatsnew

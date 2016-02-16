@@ -9,23 +9,12 @@
 #
 
 set -e
-. _blackbox_common.sh
-. _stack_lib.sh
+source "${0%/*}/_blackbox_common.sh"
 
 fail_if_not_in_repo
 
 KEYNAME="$1"
-: ${KEYNAME:?ERROR: First argument must be a keyname (email address)} ;
-
-# The second argument, if present, is the directory to find the GPG keys to be imported.
-if [[ "$2" == "" ]]; then
-  GPGEXPORTOPTIONS=""
-else
-  GPGEXPORTOPTIONS=--homedir="${2}"
-fi
-# TODO(tlim): This could probably be done with GNUPGHOME
-# but that affects all commands; we just want it to affect the key export.
-
+: "${KEYNAME:?ERROR: First argument must be a keyname (email address)}" ;
 
 # Add the email address to the BB_ADMINS file.  Remove any duplicates.
 # The file must exist for sort to act as we expect.
@@ -37,18 +26,28 @@ sort  -fdu -o "$BB_ADMINS" <(echo "$1") "$BB_ADMINS"
 
 # Extract it:
 make_self_deleting_tempfile pubkeyfile
-gpg $GPGEXPORTOPTIONS --export -a "$KEYNAME" >"$pubkeyfile"
+
+# The second argument, if present, is the directory to find the GPG keys to be imported.
+if [[ -z $2 ]]; then
+  $GPG --export -a "$KEYNAME" >"$pubkeyfile"
+else
+  # TODO(tlim): This could probably be done with GNUPGHOME
+  # but that affects all commands; we just want it to affect the key export.
+  $GPG --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
+fi
+
 if [[ $(wc -l < "$pubkeyfile") = 0 ]]; then
-  fail_out "GPG key '$KEYNAME' not found.  Please create it with: gpg --gen-key"
+  fail_out "GPG key '$KEYNAME' not found.  Please create it with: $GPG --gen-key"
   exit 1
 fi
 
 # Import it:
-gpg --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
-vcs_add "$KEYRINGDIR/pubring.gpg" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
+$GPG --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
+pubring_path=$(get_pubring_path)
+vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
 
 # Make a suggestion:
 echo
 echo
 echo 'NEXT STEP: You need to manually check these in:'
-echo '     ' $VCS_TYPE commit -m\'NEW ADMIN: $KEYNAME\' "$BLACKBOXDATA/pubring.gpg" "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
+echo '     ' $VCS_TYPE commit -m\'NEW ADMIN: $KEYNAME\' "$BLACKBOXDATA/$(basename ${pubring_path})" "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
