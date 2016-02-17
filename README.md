@@ -61,6 +61,7 @@ Installation Instructions:
 ==========================
 
 -	*The MacPorts Way*: `sudo port install vcs_blackbox`
+-	*The Homebrew Way*: `brew install blackbox`
 -	*The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods.
 -	*The Debian/Ubuntu way*: Check out the repo and install [fpm](https://github.com/jordansissel/fpm). Now you can make a DEB `make packages-deb` that can be distributed via local methods.
 -	*The hard way*: Copy all the files in "bin" to your "bin".
