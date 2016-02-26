@@ -22,8 +22,11 @@ shift
 # Defaults that can be overridden:
 # All packages are 1.0 unless otherwise specifed:
 : ${PKGVERSION:=1.0} ;
-# If there is no iteration setting, assume "1":
-: ${PKGRELEASE:=1}
+# If there is no iteration set, default to use the number of commits in the repository:
+if [[ -z "${PKGRELEASE}" ]]; then
+  PKGRELEASE=$(git rev-list HEAD --count)
+fi
+
 # If there is no epoch, assume 0
 : ${PKGEPOCH:=0}
 
@@ -51,7 +54,7 @@ cat """$@""" | while read -a arr ; do
   DST="$OUTPUTDIR/installroot/${arr[1]}"
   SRC="${arr[2]}"
   if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
-    ( cd $(dirname "$SRC" ) && go build -a -v ) 
+    ( cd $(dirname "$SRC" ) && go build -a -v )
   fi
   install -D -T -b -m "$PERM" -T "$SRC" "$DST"
 done
