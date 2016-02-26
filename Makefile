@@ -1,6 +1,8 @@
 SHELL=/bin/sh
 
 PKGNAME=stack_blackbox
+BASEDIR?=~
+OUTPUTDIR?="$(BASEDIR)/debbuild-${PACKAGENAME}"
 
 all:
 	@echo 'Menu:'
@@ -30,14 +32,14 @@ packages-rpm-debug:
 	@echo BUILD:
 	@PKGRELEASE=99 make packages
 	@echo ITEMS TO BE PACKAGED:
-	find ~/rpmbuild-$(PKGNAME)/installroot -type f
+	find $(BASEDIR)/rpmbuild-$(PKGNAME)/installroot -type f
 	@echo ITEMS ACTUALLY IN PACKAGE:
-	@rpm -qpl $$(cat ~/rpmbuild-$(PKGNAME)/bin-packages.txt)
+	@rpm -qpl $$(cat $(BASEDIR)/rpmbuild-$(PKGNAME)/bin-packages.txt)
 
 local-rpm:
 	@PKGRELEASE=1 make packages
 	-@sudo rpm -e $(PKGNAME)
-	sudo rpm -i $$(cat ~/rpmbuild-$(PKGNAME)/bin-packages.txt)
+	sudo rpm -i $$(cat $(BASEDIR)/rpmbuild-$(PKGNAME)/bin-packages.txt)
 
 lock-rpm:
 	sudo yum versionlock add $(PKGNAME)
@@ -63,7 +65,7 @@ manual-uninstall:
 #
 
 packages-deb:	tools/mk_deb_fpmdir.stack_blackbox.txt
-	cd tools && PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_deb_fpmdir stack_blackbox mk_deb_fpmdir.stack_blackbox.txt
+	cd tools && OUTPUTDIR=$(OUTPUTDIR) PKGRELEASE="$${PKGRELEASE}" PKGDESCRIPTION="Safely store secrets in git/hg/svn repos using GPG encryption" ./mk_deb_fpmdir stack_blackbox mk_deb_fpmdir.stack_blackbox.txt
 
 # Make mk_deb_fpmdir.vcs_blackbox.txt from mk_rpm_fpmdir.stack_blackbox.txt:
 tools/mk_deb_fpmdir.stack_blackbox.txt: tools/mk_rpm_fpmdir.stack_blackbox.txt
@@ -75,12 +77,12 @@ packages-deb-debug:	tools/mk_deb_fpmdir.stack_blackbox.txt
 	@echo ITEMS TO BE PACKAGED:
 	find ~/debbuild-$(PKGNAME)/installroot -type f
 	@echo ITEMS ACTUALLY IN PACKAGE:
-	@dpkg --contents $$(cat ~/debbuild-$(PKGNAME)/bin-packages.txt)
+	@dpkg --contents $$(cat $(BASEDIR)/debbuild-$(PKGNAME)/bin-packages.txt)
 
 local-deb:
 	@PKGRELEASE=1 make packages
 	-@sudo dpkg -e $(PKGNAME)
-	sudo dpkg -i $$(cat ~/rpmbuild-$(PKGNAME)/bin-packages.txt)
+	sudo dpkg -i $$(cat $(BASEDIR)/rpmbuild-$(PKGNAME)/bin-packages.txt)
 
 #
 # MacPorts builds

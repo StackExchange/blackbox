@@ -27,8 +27,14 @@ shift
 # If there is no epoch, assume 0
 : ${PKGEPOCH:=0}
 
-# The DEB is output here: (should be a place that can be wiped)
-OUTPUTDIR="${HOME}/debbuild-$PACKAGENAME"
+# Allow us to set a different OUTPUTDIR if we're building in CI/CD
+if [[ -z "${OUTPUTDIR}" ]]; then
+  # The DEB is output here: (should be a place that can be wiped)
+  OUTPUTDIR="${HOME}/debbuild-${PACKAGENAME}"
+else
+  echo "Using $OUTPUTDIR for OUTPUTDIR instead of ${HOME}/debbuild-${PACKAGENAME}"
+fi
+
 # The TeamCity templates expect to find the list of artifacts here:
 DEB_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
 
@@ -36,6 +42,7 @@ DEB_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
 
 # Clean the output dir.
 rm -rf "$OUTPUTDIR"
+
 mkdir -p "$OUTPUTDIR/installroot"
 
 # Copy the files into place:
@@ -51,7 +58,7 @@ cat """$@""" | while read -a arr ; do
   DST="$OUTPUTDIR/installroot/${arr[1]}"
   SRC="${arr[2]}"
   if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
-    ( cd $(dirname "$SRC" ) && go build -a -v ) 
+    ( cd $(dirname "$SRC" ) && go build -a -v )
   fi
   install -D -T -b -m "$PERM" -T "$SRC" "$DST"
 done
