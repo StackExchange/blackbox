@@ -25,6 +25,11 @@ shift
 # If there is no iteration set, default to use the number of commits in the repository:
 if [[ -z "${PKGRELEASE}" ]]; then
   PKGRELEASE=$(git rev-list HEAD --count)
+  if [[ $? != 0 ]]; then
+    # We're not in a git repo, fall back to 1 so we cope with being built from
+    # a tarball
+    PKGRELEASE=1
+  fi
 fi
 
 # If there is no epoch, assume 0
