@@ -22,8 +22,16 @@ shift
 # Defaults that can be overridden:
 # All packages are 1.0 unless otherwise specifed:
 : ${PKGVERSION:=1.0} ;
-# If there is no iteration setting, assume "1":
-: ${PKGRELEASE:=1}
+# If there is no iteration set, default to use the number of commits in the repository:
+if [[ -z "${PKGRELEASE}" ]]; then
+  PKGRELEASE=$(git rev-list HEAD --count)
+  if [[ $? != 0 ]]; then
+    # We're not in a git repo, fall back to 1 so we cope with being built from
+    # a tarball
+    PKGRELEASE=1
+  fi
+fi
+
 # If there is no epoch, assume 0
 : ${PKGEPOCH:=0}
 
