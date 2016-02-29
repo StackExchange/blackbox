@@ -19,8 +19,11 @@ set -e
 PACKAGENAME=${1?"First arg must be the package name."}
 shift
 
+# What is my name?
+CMDNAME=$(basename $0)
+
 # Defaults that can be overridden:
-# All packages are 1.0 unless otherwise specifed:
+# Packages are 1.0 unless otherwise specifed:
 : ${PKGVERSION:=1.0} ;
 # If there is no iteration set, default to use the number of commits in the repository:
 if [[ -z "${PKGRELEASE}" ]]; then
@@ -35,26 +38,59 @@ fi
 # If there is no epoch, assume 0
 : ${PKGEPOCH:=0}
 
+# If no arch defined, assume any. Other good values include "native".
+: ${PKGARCH:=all}
+# NOTE: If we later compile code, we set this to "native", which
+# FPM will translate to the correct value for local conditions.
+
 # Allow us to set a different OUTPUTDIR if we're building in CI/CD
 if [[ -z "${OUTPUTDIR}" ]]; then
   # The RPM is output here: (should be a place that can be wiped)
   OUTPUTDIR="${HOME}/rpmbuild-${PACKAGENAME}"
 else
-  echo "Using $OUTPUTDIR for OUTPUTDIR instead of ${HOME}/rpmbuild-${PACKAGENAME}"
+  echo "Using ${OUTPUTDIR} for OUTPUTDIR instead of ${HOME}/rpmbuild-${PACKAGENAME}"
 fi
+INSTALLROOT="$OUTPUTDIR/installroot"
 
-# The TeamCity templates expect to find the list of artifacts here:
+# StackOverflow's TeamCity templates expect to find the list of artifacts here:
 RPM_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
 
 # -- Now the real work can be done.
 
 # Clean the output dir.
 rm -rf "$OUTPUTDIR"
-mkdir -p "$OUTPUTDIR/installroot"
+mkdir -p "$INSTALLROOT"
 
-# Copy the files into place:
+# If there is a build script, execute it.
+BUILDSCRIPTNAME="./build.${PACKAGENAME}.sh"
+if [[ -x $BUILDSCRIPTNAME ]]; then
+  echo "========== $BUILDSCRIPTNAME FOUND. Running."
+  if [[ $PKGARCH == "all" ]]; then
+    echo 'WARNING: PKGARCH=all (which may not what you want)'
+    # If you are using a build.*.sh script, you probably want to
+    # set PKGARCH to "native" before you run mk_rpm_fpmdir.
+  fi
+  $BUILDSCRIPTNAME "$INSTALLROOT" "${PKGVERSION}"
+  # If we used the build build.*.sh script, it must do all compilation.
+  # Therefore, we disable the automagic GO build feature.
+  GO_COMPILE=false
+else
+  GO_COMPILE=true
+fi
+
+# If there are additional args for fpm, read them into a variable.  There is
+# a chdir later, therefore we can't rely on the file path working at that time.
+FPM_OPTIONS_FILE="./fpm_opts.${PACKAGENAME}.sh"
+if [[ -f $FPM_OPTIONS_FILE ]]; then
+  echo "========== $FPM_OPTIONS_FILE FOUND. Loading."
+  FPM_OPTIONS=$(<$FPM_OPTIONS_FILE)
+fi
+# Warning: The contents of the file are evaluated therefore
+# quotes and special chars must be quoted.
+
+# Copy any static files into place:
 set -o pipefail  # Error out if any manifest is not found.
-cat """$@""" | while read -a arr ; do
+cat "$@" | while read -a arr ; do
   PERM="${arr[0]}"
   case $PERM in
     \#*)  continue ;;   # Skip comments.
@@ -62,24 +98,39 @@ cat """$@""" | while read -a arr ; do
     read) PERM=0744 ;;
     *) ;;
   esac
-  DST="$OUTPUTDIR/installroot/${arr[1]}"
+  DST="$INSTALLROOT/${arr[1]}"
   SRC="${arr[2]}"
-  if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
-    ( cd $(dirname "$SRC" ) && go build -a -v )
+  if [[ ${#arr[@]} != 3 ]] ; then
+    echo "ERROR: Line must contain 3 items."
+    echo "DEBUG NUM=${#arr[@]} PERM=$PERM DST=$DST SRC=$SRC"
+    exit 1
+  fi
+  if $GO_COMPILE && [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
+    echo "========== BUILD&COPY $SRC"
+    ( cd $(dirname "$SRC" ) && go get -d && go build -a ) 
+    PKGARCH=native
+  else
+    echo "==========       COPY $SRC"
+  fi
+  if [[ ! -f "$SRC" ]]; then
+    echo "${CMDNAME}: ERROR: File not found: $SRC"
+    exit 1
   fi
   install -D -T -b -m "$PERM" -T "$SRC" "$DST"
 done
 
-# Build the RPM:
+set -x
+# Build the RPM out of what is found in $INSTALLROOT:
 cd "$OUTPUTDIR" && fpm -s dir -t rpm \
-  -a all \
+  -a "${PKGARCH}" \
   -n "${PACKAGENAME}" \
   --epoch "${PKGEPOCH}" \
   --version "${PKGVERSION}" \
   --iteration "${PKGRELEASE}" \
   ${PKGDESCRIPTION:+ --description="${PKGDESCRIPTION}"} \
   ${PKGVENDOR:+ --vendor="${PKGVENDOR}"} \
-  -C "$OUTPUTDIR/installroot" \
+  ${FPM_OPTIONS:+ $FPM_OPTIONS} \
+  -C "$INSTALLROOT" \
   .
 
 # TeamCity templates for RPMS expect to find
