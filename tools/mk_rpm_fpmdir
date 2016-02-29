@@ -19,6 +19,8 @@ set -e
 PACKAGENAME=${1?"First arg must be the package name."}
 shift
 
+CMDNAME=$(basename $0)
+
 # Defaults that can be overridden:
 # All packages are 1.0 unless otherwise specifed:
 : ${PKGVERSION:=1.0} ;
@@ -29,6 +31,7 @@ shift
 
 # The RPM is output here: (should be a place that can be wiped)
 OUTPUTDIR="${HOME}/rpmbuild-$PACKAGENAME"
+INSTALLROOT="$OUTPUTDIR/installroot"
 # The TeamCity templates expect to find the list of artifacts here:
 RPM_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
 
@@ -36,11 +39,32 @@ RPM_BIN_LIST="${OUTPUTDIR}/bin-packages.txt"
 
 # Clean the output dir.
 rm -rf "$OUTPUTDIR"
-mkdir -p "$OUTPUTDIR/installroot"
+mkdir -p "$INSTALLROOT"
 
-# Copy the files into place:
+# If there is a build script, execute it.
+BUILDSCRIPTNAME="./build.${PACKAGENAME}.sh"
+if [[ -x $BUILDSCRIPTNAME ]]; then
+  echo "========== $BUILDSCRIPTNAME FOUND. Running."
+  $BUILDSCRIPTNAME "$INSTALLROOT" "${PKGVERSION}"
+  GO_COMPILE=false
+else
+  GO_COMPILE=true
+fi
+
+# If there are additional args for fpm, read
+# them into a variable.  We'll chdir later, so we
+# can't rely on the file path working.
+FPM_OPTIONS_FILE="./fpm_opts.${PACKAGENAME}.sh"
+if [[ -f $FPM_OPTIONS_FILE ]]; then
+  echo "========== $FPM_OPTIONS_FILE FOUND. Loading."
+  FPM_OPTIONS=$(<$FPM_OPTIONS_FILE)
+fi
+# Warning: The contents of the file are evaluated therefore
+# quotes and special chars must be quoted.
+
+# Copy any static files into place:
 set -o pipefail  # Error out if any manifest is not found.
-cat """$@""" | while read -a arr ; do
+cat "$@" | while read -a arr ; do
   PERM="${arr[0]}"
   case $PERM in
     \#*)  continue ;;   # Skip comments.
@@ -48,24 +72,38 @@ cat """$@""" | while read -a arr ; do
     read) PERM=0744 ;;
     *) ;;
   esac
-  DST="$OUTPUTDIR/installroot/${arr[1]}"
+  DST="$INSTALLROOT/${arr[1]}"
   SRC="${arr[2]}"
-  if [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
-    ( cd $(dirname "$SRC" ) && go build -a -v ) 
+  if [[ ${#arr[@]} != 3 ]] ; then
+    echo "ERROR: Line must contain 3 items."
+    echo "DEBUG NUM=${#arr[@]} PERM=$PERM DST=$DST SRC=$SRC"
+    exit 1
+  fi
+  if $GO_COMPILE && [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
+    echo "========== BUILD&COPY $SRC"
+    ( cd $(dirname "$SRC" ) && go get -d && go build -a ) 
+  else
+    echo "==========       COPY $SRC"
+  fi
+  if [[ ! -f "$SRC" ]]; then
+    echo "${CMDNAME}: ERROR: File not found: $SRC"
+    exit 1
   fi
   install -D -T -b -m "$PERM" -T "$SRC" "$DST"
 done
 
-# Build the RPM:
+set -x
+# Build the RPM out of what is found in $INSTALLROOT:
 cd "$OUTPUTDIR" && fpm -s dir -t rpm \
-  -a all \
+  -a x86_64 \
   -n "${PACKAGENAME}" \
   --epoch "${PKGEPOCH}" \
   --version "${PKGVERSION}" \
   --iteration "${PKGRELEASE}" \
   ${PKGDESCRIPTION:+ --description="${PKGDESCRIPTION}"} \
   ${PKGVENDOR:+ --vendor="${PKGVENDOR}"} \
-  -C "$OUTPUTDIR/installroot" \
+  ${FPM_OPTIONS:+ $FPM_OPTIONS} \
+  -C "$INSTALLROOT" \
   .
 
 # TeamCity templates for RPMS expect to find
