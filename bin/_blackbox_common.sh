@@ -273,6 +273,7 @@ function shred_file() {
     CMD=srm
     OPT=-f
   else
+    echo "shred_file: WARNING: No secure deletion utility (shred or srm) present; using insecure rm"
     CMD=rm
     OPT=-f
   fi
