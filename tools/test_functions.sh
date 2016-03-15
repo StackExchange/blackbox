@@ -78,8 +78,10 @@ function assert_file_group() {
       ;;
   esac
 
+  echo "DEBUG: assert_file_group X${wanted}X vs. X${found}X"
+  echo "DEBUG:" $(which stat)
   if [[ "$wanted" != "$found" ]]; then
-    echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
+    echo "ASSERT FAILED: $file chgrp group wanted=$wanted found=$found"
     exit 1
   fi
 }
@@ -103,8 +105,10 @@ function assert_file_perm() {
       ;;
   esac
 
+  echo "DEBUG: assert_file_perm X${wanted}X vs. X${found}X"
+  echo "DEBUG:" $(which stat)
   if [[ "$wanted" != "$found" ]]; then
-    echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
+    echo "ASSERT FAILED: $file chgrp perm wanted=$wanted found=$found"
     exit 1
   fi
 }
