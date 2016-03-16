@@ -63,10 +63,10 @@ function assert_file_group() {
 
   case $(uname -s) in
     Darwin|FreeBSD )
-      found=$(stat -f '%Sg' "$file")
+      found=$(stat -f '%Dg' "$file")
       ;;
     Linux )
-      found=$(stat -c '%G' "$file")
+      found=$(stat -c '%g' "$file")
       ;;
     CYGWIN* )
       echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."

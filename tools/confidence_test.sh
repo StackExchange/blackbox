@@ -191,27 +191,25 @@ gpg --import keyrings/live/pubring.gpg
 
 # Pick a GID to use:
 # This users's default group:
-DEFAULT_GID_NAME=$(id -gn)
+DEFAULT_GID_NUM=$(id -g)
 # Pick a group that is not the default group:
-TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv "$(id -u)" | head -n 1)
-TEST_GID_NAME=$(python -c 'import grp; print grp.getgrgid('"$TEST_GID_NUM"').gr_name')
-echo "DEFAULT_GID_NAME=$DEFAULT_GID_NAME"
+TEST_GID_NUM=$(id -G | fmt -1 |  grep -xv "$(id -u)" | grep -xv "$(id -g)" | head -1)
+echo "DEFAULT_GID_NUM=$DEFAULT_GID_NUM"
 echo "TEST_GID_NUM=$TEST_GID_NUM"
-echo "TEST_GID_NAME=$TEST_GID_NAME"
 
 PHASE 'Bob postdeploys... default.'
 blackbox_postdeploy
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
-assert_file_group secret.txt "$DEFAULT_GID_NAME"
+assert_file_group secret.txt "$DEFAULT_GID_NUM"
 
 PHASE 'Bob postdeploys... with a GID.'
 blackbox_postdeploy "$TEST_GID_NUM"
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
-assert_file_group secret.txt "$TEST_GID_NAME"
+assert_file_group secret.txt "$TEST_GID_NUM"
 
 PHASE 'Bob cleans up the secret.'
 rm secret.txt
