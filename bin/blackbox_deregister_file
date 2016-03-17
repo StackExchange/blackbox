@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_deregister_file -- Remove a file from the blackbox system.
+#
+# Takes an encrypted file and removes it from the blackbox system.
+# The encrypted file will also be removed from the filesystem.
+# The unencrypted file, if it exists, will be left alone.
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+unencrypted_file=$(get_unencrypted_filename "$1")
+encrypted_file=$(get_encrypted_filename "$1")
+
+if [[ "$1" == "$unencrypted_file" ]]; then
+  echo ERROR: Please only deregister encrypted files.
+  exit 1
+fi
+
+echo ========== PLAINFILE "$unencrypted_file"
+echo ========== ENCRYPTED "$encrypted_file"
+
+fail_if_not_exists "$encrypted_file" "Please specify an existing file."
+
+prepare_keychain
+remove_filename_from_cryptlist "$unencrypted_file"
+vcs_remove "$encrypted_file"
+vcs_notice "$unencrypted_file"
+vcs_add "$BB_FILES" 
+
+vcs_commit "Removing from blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
+echo "========== UPDATING VCS: DONE"
+echo "Local repo updated.  Please push when ready."
+echo "    $VCS_TYPE push"

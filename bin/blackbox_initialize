@@ -9,46 +9,29 @@
 #
 
 set -e
-. _blackbox_common.sh
-
-_determine_vcs_base_and_type  # Sets VCS_TYPE
+source "${0%/*}/_blackbox_common.sh"
 
 if [[ $1 != 'yes' ]]; then
-  read -p "Enable blackbox for this $VCS_TYPE repo? (yes/no) " ans
+  read -r -p "Enable blackbox for this $VCS_TYPE repo? (yes/no) " ans
   if [[ $ans = 'no' || $ans = 'n' || $ans = '' ]]; then
     echo 'Exiting...'
     exit 1
   fi
 fi
 
-echo cd "$REPOBASE"
-cd "$REPOBASE"
+change_to_vcs_root
 
 echo VCS_TYPE: $VCS_TYPE
-
-if [[ $VCS_TYPE = "git" || $VCS_TYPE = "hg" ]]; then
-  # Update .gitignore or .hgignore
-
-  IGNOREFILE=".${VCS_TYPE}ignore"
-  if ! grep -sx >/dev/null 'pubring.gpg~' "$IGNOREFILE" ; then
-    echo 'pubring.gpg~' >>"$IGNOREFILE"
-  fi
-  if ! grep -sx >/dev/null 'secring.gpg' "$IGNOREFILE" ; then
-    echo 'secring.gpg' >>"$IGNOREFILE"
-  fi
-elif [[ $VCS_TYPE = "svn" ]]; then
-  # add file to svn ignore propset
-  IGNOREFILE="";
-  svn propset svn:ignore 'pubring.gpg~
-secring.gpg' .
-  svn commit -m "ignore file list"
-fi
+vcs_ignore keyrings/live/pubring.gpg~ keyrings/live/pubring.kbx~ keyrings/live/secring.gpg
 
 # Make directories
 mkdir -p "${KEYRINGDIR}"
 vcs_add "${KEYRINGDIR}"
 touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
-vcs_add "$IGNOREFILE" "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+vcs_add "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
+
+IGNOREFILE="$(vcs_ignore_file_path)"
+test -f "$IGNOREFILE" && vcs_add "$IGNOREFILE"
 
 # Make a suggestion:
 echo

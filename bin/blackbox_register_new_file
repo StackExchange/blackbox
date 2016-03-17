@@ -1,67 +1,56 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_register_new_file.sh -- Enroll a new file in the blackbox system.
+# blackbox_register_new_file -- Enroll new file(s) in the blackbox system.
 #
-# Takes a previously unencrypted file and enrolls it into the blackbox
-# system.  It will be kept in the repo as an encrypted file.  On deployment
+# Takes previously unencrypted file(s) and enrolls them into the blackbox
+# system.  Each file will be kept in the repo as an encrypted file.  On deployment
 # to systems that need the plaintext (unencrypted) versions, run
 # blackbox_postdeploy.sh to decrypt all the files.
 
-# TODO(tlim): Add the unencrypted file to .hgignore
-
 set -e
-. _blackbox_common.sh
-_determine_vcs_base_and_type
+source "${0%/*}/_blackbox_common.sh"
 
-unencrypted_file=$(get_unencrypted_filename "$1")
-encrypted_file=$(get_encrypted_filename "$1")
+function register_new_file() {
+  unencrypted_file=$(get_unencrypted_filename "$1")
+  encrypted_file=$(get_encrypted_filename "$1")
 
-if [[ $1 == $encrypted_file ]]; then
-  echo ERROR: Please only register unencrypted files.
-  exit 1
-fi
-
-echo ========== PLAINFILE "$unencrypted_file"
-echo ========== ENCRYPTED "$encrypted_file"
-
-fail_if_not_exists "$unencrypted_file" "Please specify an existing file."
-fail_if_exists "$encrypted_file" "Will not overwrite."
-
-prepare_keychain
-encrypt_file "$unencrypted_file" "$encrypted_file"
-add_filename_to_cryptlist "$unencrypted_file"
-
-# Is the unencrypted file already in HG? (ie. are we correcting a bad situation)
-SECRETSEXPOSED=$(is_in_vcs ${unencrypted_file})
-echo "========== CREATED: ${encrypted_file}"
-echo "========== UPDATING REPO:"
-shred_file "$unencrypted_file"
-
-VCSCMD=$(which_vcs)
-if $SECRETSEXPOSED ; then
-  vcs_remove "$unencrypted_file"
-  vcs_add "$encrypted_file"
-  COMMIT_FILES="$BB_FILES $encrypted_file $unencrypted_file"
-else
-  COMMIT_FILES="$BB_FILES $encrypted_file"
-fi
-
-# TODO(tlim): This should be moved to _blackbox_common.sh in a
-# VCS-independent way.
-IGNOREFILE=".${VCS_TYPE}ignore"
-if [[ $VCS_TYPE = 'git' ]]; then
-  ignored_file="$(echo "$unencrypted_file" |  sed 's/\([\*\?]\)/\\\1/g' | sed 's/^\([!#]\)/\\\1/')"
-  if ! grep -Fsx >/dev/null "$ignored_file" "$IGNOREFILE"; then
-    echo "$ignored_file" >>"$IGNOREFILE"
-    COMMIT_FILES="$COMMIT_FILES $IGNOREFILE"
+  if [[ "$1" == "$encrypted_file" ]]; then
+    echo ERROR: Please only register unencrypted files.
+    exit 1
   fi
-  vcs_add "$IGNOREFILE"
-fi
 
-echo 'NOTE: "already tracked!" messages are safe to ignore.'
-vcs_add $BB_FILES $encrypted_file
-vcs_commit "registered in blackbox: ${unencrypted_file}" $COMMIT_FILES
+  echo "========== PLAINFILE $unencrypted_file"
+  echo "========== ENCRYPTED $encrypted_file"
+
+  fail_if_not_exists "$unencrypted_file" "Please specify an existing file."
+  fail_if_exists "$encrypted_file" "Will not overwrite."
+
+  prepare_keychain
+  encrypt_file "$unencrypted_file" "$encrypted_file"
+  add_filename_to_cryptlist "$unencrypted_file"
+
+  # Is the unencrypted file already in HG? (ie. are we correcting a bad situation)
+  SECRETSEXPOSED=$(is_in_vcs "${unencrypted_file}")
+  echo "========== CREATED: ${encrypted_file}"
+  echo "========== UPDATING REPO:"
+  shred_file "$unencrypted_file"
+
+  if "$SECRETSEXPOSED" ; then
+    vcs_remove "$unencrypted_file"
+    vcs_add "$encrypted_file"
+  fi
+
+  vcs_ignore "$unencrypted_file"
+  echo 'NOTE: "already tracked!" messages are safe to ignore.'
+  vcs_add "$BB_FILES" "$encrypted_file"
+  vcs_commit "registered in blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
+}
+
+for target in "$@"; do
+  register_new_file "$target"
+done
+
 echo "========== UPDATING VCS: DONE"
 echo "Local repo updated.  Please push when ready."
-echo "    $VCSCMD push"
+echo "    $VCS_TYPE push"

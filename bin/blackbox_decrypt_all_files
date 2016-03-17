@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_decrypt_all_files -- Decrypt all blackbox files (INTERACTIVE).
+#
+
+# Usage:
+#   blackbox_decrypt_all_files [GROUP]
+#       GROUP is optional.  If supplied, the resulting files
+#       are chgrp'ed to that group.
+
+# Since this is often run in a security-critical situation, we
+# force /usr/bin and /bin to the front of the PATH.
+export PATH=/usr/bin:/bin:"$PATH"
+
+set -e
+
+if [[ -z $GPG_AGENT_INFO ]]; then
+  eval $(gpg-agent --daemon)
+fi
+
+exec blackbox_postdeploy "$@"

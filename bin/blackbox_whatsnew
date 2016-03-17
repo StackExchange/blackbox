@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_whatsnew - show what has changed in the last commit for a given file
+#
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+if [[ $# -ne 1 ]]
+then
+  echo "Pass only 1 file at a time"
+  exit 1
+fi
+
+fail_if_not_in_repo
+
+if [[ -z $GPG_AGENT_INFO ]]; then
+  echo 'WARNING: You probably want to run gpg-agent as'
+  echo 'you will be asked for your passphrase many times.'
+  echo 'Example: $ eval $(gpg-agent --daemon)'
+  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
+fi
+
+COLUMNS=`tput cols`
+FILE=$1
+GIT="git log --abbrev-commit --pretty=oneline"
+CURR_COMMIT=`$GIT                  $FILE | head -1 | awk '{print $1}'`
+PREV_COMMIT=`$GIT ${CURR_COMMIT}~1 $FILE | head -1 | awk '{print $1}'`
+# Use colordiff if available
+if which colordiff > /dev/null 2>&1
+  then DIFF="colordiff"
+  else DIFF="diff"
+fi
+
+cat_commit()
+{
+  COMMIT=$1
+  git checkout $COMMIT $FILE
+  echo "[$COMMIT] $FILE"
+  echo "---------------------"
+  "${BLACKBOX_HOME}/blackbox_cat" $FILE | sed '/========== PLAINFILE/,/========== EXTRACTING/d'
+}
+
+CURR_CONTENT=`cat_commit $CURR_COMMIT`
+PREV_CONTENT=`cat_commit $PREV_COMMIT`
+clear
+
+# For some unknown reason this command executes fine but return exit code 1
+$DIFF -y --width $COLUMNS \
+  <(echo "CURRENT"  "$CURR_CONTENT" | fold -w $(( $COLUMNS / 2 - 4 ))  ) \
+  <(echo "PREVIOUS" "$PREV_CONTENT" | fold -w $(( $COLUMNS / 2 - 4 ))  )
+
+git checkout $CURR_COMMIT $FILE
+echo

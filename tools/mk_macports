@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Install files into MacPorts DESTDIR
+
+# Usage:
+#   mk_macports MANIFEST MANIFEST1 ...
+
+# Where "manifest.txt" contains:
+#   exec /usr/bin/stack_makefqdn  misc/stack_makefqdn.py
+#   exec /usr/bin/bar             bar/bar.sh
+#   read /usr/man/man1/bar.1      bar/bar.1.man
+#   0444 /etc/foo.conf            bar/foo.conf
+# (NOTE: "exec" means 0755; "read" means 0744)
+
+set -e
+
+# Fail if DESTDIR is not set.
+DESTDIR="${DESTDIR?"Envvar DESTDIR must be set to destination dir."}"
+
+# Copy the files into place:
+cat """$@""" | while read -a arr ; do
+  PERM="${arr[0]}"
+  case $PERM in
+    \#*)  continue ;;   # Skip comments.
+    exec) PERM=0755 ;;
+    read) PERM=0744 ;;
+    *) ;;
+  esac
+  DST="$DESTDIR/${arr[1]}"
+  SRC="${arr[2]}"
+  install -m "$PERM" "$SRC" "$DST"
+done

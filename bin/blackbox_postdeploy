@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_postdeploy.sh -- Decrypt all blackbox files.
+# blackbox_postdeploy -- Decrypt all blackbox files.
 #
 
 # Usage:
@@ -14,7 +14,7 @@
 export PATH=/usr/bin:/bin:"$PATH"
 
 set -e
-. _blackbox_common.sh
+source "${0%/*}/_blackbox_common.sh"
 
 if [[ "$1" == "" ]]; then
   FILE_GROUP=""
@@ -22,28 +22,19 @@ else
   FILE_GROUP="$1"
 fi
 
-# If BASEDIR is not set, use REPOBASE.
-if [[ "$BASEDIR" = "" ]]; then
-  BASEDIR="$REPOBASE"
-fi
-
-if [[ "$BASEDIR" = "/dev/null" ]]; then
-  echo 'WARNING: Not in a VCS repo.  Not changing directory.'
-else
-  echo "CDing to $BASEDIR"
-  cd "$BASEDIR"
-fi
-
+change_to_vcs_root
 prepare_keychain
 
 # Decrypt:
 echo '========== Decrypting new/changed files: START'
-while read unencrypted_file; do
+while IFS= read <&99 -r unencrypted_file; do
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   decrypt_file_overwrite "$encrypted_file" "$unencrypted_file"
-  chmod g+r "$unencrypted_file"
+  cp_permissions "$encrypted_file" "$unencrypted_file"
   if [[ ! -z "$FILE_GROUP" ]]; then
-    chgrp $FILE_GROUP "$unencrypted_file"
+    chmod g+r "$unencrypted_file"
+    chgrp "$FILE_GROUP" "$unencrypted_file"
   fi
-done <"$BB_FILES"
+done 99<"$BB_FILES"
+
 echo '========== Decrypting new/changed files: DONE'
