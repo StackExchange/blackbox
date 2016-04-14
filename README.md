@@ -124,7 +124,7 @@ Note: Cywin support requires the following packages:
 
 Note: MinGW (comes with Git for Windows) support requires the following additional installations
 -	Normal operation:
-	-	Git for Windows (not tested with Mercurial)
+	-	[Git for Windows](https://git-scm.com/) (not tested with Mercurial)
 		-	Git Bash MINTTY returns a MinGW console.  So when you install make sure you pick `MINTTY` instead of windows console.  You'll be executing blackbox from the Git Bash prompt.
 	-	[Gpg4Win](https://www.gpg4win.org/) with the path add to your PATH (ex: `PATH=%PATH%;C:\Program Files (x86)\GNU\GnuPG`)
 	-	[GnuWin32](https://sourceforge.net/projects/getgnuwin32/files/) - needed for various tools not least of which is mktemp which is used by blackbox
