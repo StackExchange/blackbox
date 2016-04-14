@@ -106,6 +106,7 @@ Blackbox automatically determines which VCS you are using and does the right thi
 	-	CentOS / RedHat
 	-	MacOS X
 	-	Cygwin (Thanks, Ben Drasin!)
+	-	MinGW (git bash on windows)
 
 To add or fix support for a VCS system, look for code at the end of `bin/_blackbox_common.sh`
 
@@ -120,6 +121,18 @@ Note: Cywin support requires the following packages:
 	-	procps
 	-	make
 	-	git (the confidence test currently only tests git)
+
+Note: MinGW (comes with Git for Windows) support requires the following additional installations
+-	Normal operation:
+	-	Git for Windows (not tested with Mercurial)
+		-	Git Bash MINTTY returns a MinGW console.  So when you install make sure you pick `MINTTY` instead of windows console.  You'll be executing blackbox from the Git Bash prompt.
+	-	[Gpg4Win](https://www.gpg4win.org/) with the path add to your PATH (ex: `PATH=%PATH%;C:\Program Files (x86)\GNU\GnuPG`)
+	-	[GnuWin32](https://sourceforge.net/projects/getgnuwin32/files/) - needed for various tools not least of which is mktemp which is used by blackbox
+		-	after downloading the install just provides you with some batch files.  Because of prior issues at sourceforge and to make sure you get the latest version of each package the batch files handle the brunt of the work of getting the correct packages and installing them for you.
+		-	from a **windows command prompt** run `download.bat`  once it has completed run `install.bat` then add the path for those tools to your PATH (ex: `PATH=%PATH%;c:\GnuWin32\bin`)
+-	Development: 
+	-	unknown
+
 
 How is the encryption done?
 ===========================
