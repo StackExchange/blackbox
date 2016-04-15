@@ -28,7 +28,6 @@ prepare_keychain
 # Decrypt:
 echo '========== Decrypting new/changed files: START'
 while IFS= read <&99 -r unencrypted_file; do
-
   #on windows the carriage return is kept in the file name so we
   #need to strip it.
   unencrypted_file=$(echo $unencrypted_file|tr -d '\r')
