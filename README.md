@@ -127,7 +127,6 @@ Note: MinGW (comes with Git for Windows) support requires the following addition
 	-	[Git for Windows](https://git-scm.com/) (not tested with Mercurial)
 		-	Git Bash MINTTY returns a MinGW console.  So when you install make sure you pick `MINTTY` instead of windows console.  You'll be executing blackbox from the Git Bash prompt.
 		-	You need at least version 2.8.1 of Git for Windows.
-	-	[Gpg4Win](https://www.gpg4win.org/) with the path add to your PATH (ex: `PATH=%PATH%;C:\Program Files (x86)\GNU\GnuPG`)
 	-	[GnuWin32](https://sourceforge.net/projects/getgnuwin32/files/) - needed for various tools not least of which is mktemp which is used by blackbox
 		-	after downloading the install just provides you with some batch files.  Because of prior issues at sourceforge and to make sure you get the latest version of each package the batch files handle the brunt of the work of getting the correct packages and installing them for you.
 		-	from a **windows command prompt** run `download.bat`  once it has completed run `install.bat` then add the path for those tools to your PATH (ex: `PATH=%PATH%;c:\GnuWin32\bin`)
