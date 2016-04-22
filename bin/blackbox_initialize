@@ -19,6 +19,11 @@ if [[ $1 != 'yes' ]]; then
   fi
 fi
 
+if [[ $VCS_TYPE = "unknown" ]]; then
+	echo 'Not in a known VCS directory'
+	exit 1
+fi
+
 change_to_vcs_root
 
 echo VCS_TYPE: $VCS_TYPE
@@ -30,11 +35,17 @@ vcs_add "${KEYRINGDIR}"
 touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 vcs_add "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 
-IGNOREFILE="$(vcs_ignore_file_path)"
-test -f "$IGNOREFILE" && vcs_add "$IGNOREFILE"
+if [[ $VCS_TYPE = "svn" ]]; then
+	echo
+	echo
+	echo '`subversion` automatically tracks the ignored files; you just need to commit.'
+else
+	IGNOREFILE="$(vcs_ignore_file_path)"
+	test -f "$IGNOREFILE" && vcs_add "$IGNOREFILE"
 
-# Make a suggestion:
-echo
-echo
-echo 'NEXT STEP: You need to manually check these in:'
-echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' keyrings "$IGNOREFILE"
+	# Make a suggestion:
+	echo
+	echo
+	echo 'NEXT STEP: You need to manually check these in:'
+	echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' keyrings "$IGNOREFILE"
+fi

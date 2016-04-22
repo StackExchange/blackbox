@@ -52,5 +52,9 @@ for target in "$@"; do
 done
 
 echo "========== UPDATING VCS: DONE"
-echo "Local repo updated.  Please push when ready."
-echo "    $VCS_TYPE push"
+if [[ $VCS_TYPE = "svn" ]]; then
+	echo "Local repo updated and file pushed to source control (unless an error was displayed)."
+else
+	echo "Local repo updated.  Please push when ready."
+	echo "    $VCS_TYPE push"
+fi

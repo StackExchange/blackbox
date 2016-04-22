@@ -62,6 +62,11 @@ export REPOBASE=$(physical_directory_of "$REPOBASE")
 # FIXME: Verify this function by checking for .hg or .git
 # after determining what we believe to be the answer.
 
+if [[ -n "$BLACKBOX_REPOBASE" ]]; then
+	echo "Using custom repobase: $BLACKBOX_REPOBASE"
+	export REPOBASE="$BLACKBOX_REPOBASE"
+fi
+
 KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
 BB_ADMINS_FILE="blackbox-admins.txt"
 BB_ADMINS="${KEYRINGDIR}/${BB_ADMINS_FILE}"
@@ -567,7 +572,7 @@ function vcs_ignore_git() {
 }
 # Subversion
 function vcs_ignore_svn() {
-  svn propset svn:ignore "$(vcs_relative_path "$file")"
+  svn propset svn:ignore "$file" "$(vcs_relative_path)"
 }
 # Perforce
 function vcs_ignore_p4() {
