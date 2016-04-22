@@ -29,6 +29,7 @@ Table of Contents
 - [Replace expired keys:](#replace-expired-keys)
 - [Some common errors:](#some-common-errors)
 - [Using Blackbox without a repo](#using-blackbox-without-a-repo)
+- [Some Subversion gotchas:](#some-subversion-gotchas)
 - [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
 - [Developer Info](#developer-info)
 - [Alternatives](#alternatives)
@@ -635,6 +636,13 @@ The following commands have been tested outside a repo:
 -	`blackbox_postdeploy`
 -	`blackbox_edit_start`
 -	`blackbox_edit_end`
+
+Some Subversion gotchas:
+========================
+
+The current implementation will store the blackbox in `/keyrings` at the root of the entire repo.  this will create an issue between environments that have different roots (ie, checking out `/` on development vs `/releases/foo` in production).  To get around this, you can `export BLACKBOX_REPOBASE=/path/to/repo` and set a specific base for your repo.
+
+This was originally written for git and supports a two-phase commit, in which `commit` is a local commit and "push" sends the change upstream to the version control server when something is registered or deregistered with the system.  The current implementation will immediately `commit` a file (to the upstream subversion server) when you execute a `blackbox_*` command.
 
 How to submit bugs or ask questions?
 ====================================
