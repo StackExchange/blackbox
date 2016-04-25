@@ -53,12 +53,20 @@ done 99<"$BB_FILES"
 
 fail_if_keychain_has_secrets
 
-echo '========== COMMITING TO VCS:'
+echo '========== ADDING TO VCS:'
 while IFS= read <&99 -r unencrypted_file; do
     vcs_add "$unencrypted_file.gpg"
 done 99<"$BB_FILES"
-vcs_commit 'Re-encrypted keys'
+
+if [[ $VCS_TYPE != "svn" ]]; then
+	echo '========== COMITTING TO VCS:'
+	vcs_commit 'Re-encrypted keys'
+fi
 
 echo '========== DONE.'
 echo 'Likely next step:'
-echo "    $VCS_TYPE push"
+if [[ $VCS_TYPE == "svn" ]]; then
+	echo "    svn commit"
+else
+	echo "    $VCS_TYPE push"
+fi

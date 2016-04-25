@@ -502,7 +502,9 @@ function vcs_commit_git() {
 }
 # Subversion
 function vcs_commit_svn() {
-  svn commit -m "$@"
+  # svn commit -m "$@"
+  # subversion commits hit the upstream server; best to not commit
+  :
 }
 # Perforce
 function vcs_commit_p4() {

@@ -44,7 +44,11 @@ function register_new_file() {
   vcs_ignore "$unencrypted_file"
   echo 'NOTE: "already tracked!" messages are safe to ignore.'
   vcs_add "$BB_FILES" "$encrypted_file"
-  vcs_commit "registered in blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
+  if [[ $VCS_TYPE == "svn" ]]; then
+  	echo "registered in blackbox: ${unencrypted_file} as ${encrypted_file}; you must commit to subversion repo."
+  else
+	vcs_commit "registered in blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
+  fi
 }
 
 for target in "$@"; do
@@ -52,9 +56,9 @@ for target in "$@"; do
 done
 
 echo "========== UPDATING VCS: DONE"
-if [[ $VCS_TYPE = "svn" ]]; then
-	echo "Local repo updated and file pushed to source control (unless an error was displayed)."
+echo "Local repo updated.  Please push when ready."
+if [[ $VCS_TYPE == "svn" ]]; then
+	echo "    svn commit"
 else
-	echo "Local repo updated.  Please push when ready."
 	echo "    $VCS_TYPE push"
 fi
