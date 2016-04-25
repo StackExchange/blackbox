@@ -88,6 +88,7 @@ Commands:
 | `blackbox_postdeploy`        | Decrypt all managed files (batch)                                       |
 | `blackbox_addadmin`          | Add someone to the list of people that can encrypt/decrypt secrets      |
 | `blackbox_removeadmin`       | Remove someone from the list of people that can encrypt/decrypt secrets |
+| `blackbox_listadmins`        | Display the list of people that can encrypt/decrypt secrets             |
 | `blackbox_shred_all_files`   | Safely delete any decrypted files                                       |
 | `blackbox_update_all_files`  | Decrypt then re-encrypt all files. Useful after keys are changed        |
 | `blackbox_whatsnew`          | show what has changed in the last commit for a given file               |

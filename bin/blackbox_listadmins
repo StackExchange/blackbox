@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_listadmins -- List active admins for keyring
+#
+
+# Example:
+#    blackbox_listadmins
+#
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+fail_if_not_in_repo
+
+
+# simply display the contents of the admins file
+cat "$BB_ADMINS"
