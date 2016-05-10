@@ -78,7 +78,7 @@ Backwards compatibility: This would add a "none" VCS, not remove any existing fu
 
 `go` is my favorite language. I could probably rewrite this in go in a weekend. However, now the code is compiled, not interpreted. Therefore we lose the ability to just "git clone" and have the tools you want.  Not everyone has a Go compiler installed on every machine.
 
-The system is basically unusable on Windows without Cygwin or MINGW.  A rewrite in python or go would make it work with native windows. On the other hand, maybe Ubuntu-on-Windows makes that a non-issue.
+The system is basically unusable on Windows without Cygwin or MINGW.  A rewrite in python or go would make it work better on Windows, which currently requires Cygwin or MinGW (which is a bigger investment than installing Python). On the other hand, maybe Ubuntu-on-Windows makes that a non-issue.
 
 As long as the code is in `bash` the configuration files like `blackbox-files.txt` and `blackbox-admins.txt` have problems.  Filenames with carriage returns aren't supported.  If this was in Python/Go/etc. those files could be json or some format with decent quoting and we could handle funny file names better. On the other hand, maybe it is best that we don't support funny filenames... we shouldn't enable bad behavior.
 
