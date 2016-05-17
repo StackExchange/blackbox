@@ -6,7 +6,7 @@
 
 set -e
 . "${0%/*}/_blackbox_common.sh"
-. tools/test_functions.sh
+. /Users/tlimoncelli/gitwork/blackbox/tools/test_functions.sh
 
 PHASE 'Test cp-permissions: TestA'
 touch TestA TestB TestC TestD
@@ -21,5 +21,19 @@ assert_file_perm '--wxr--rwx' TestB
 assert_file_perm '--wxr--rwx' TestC
 assert_file_perm '----rwx---' TestD  # TestD doesn't change.
 rm -f TestA TestB TestC TestD
+
+PHASE 'Test vcs_relative_path: TestA'
+export REPOBASE='/Users/tlimoncelli/Applications (Parallels)/{fd3049c8-9fdd-48d5-aa16-d31daf3a6879} Applications.localized'
+FILE='Microsoft  Windows Fax and Scan.app/Contents'
+result=$(vcs_relative_path Contents)
+echo result=XXX${result}XXX
+if [[ $FILE != $result ]] ; then
+  echo FAIL
+fi
+
+unencrypted_file=$(get_unencrypted_filename "${result}.gpg")
+echo un=XXX${unencrypted_file}XXX
+encrypted_file=$(get_encrypted_filename "${result}")
+echo en=XXX${encrypted_file}XXX
 
 echo '========== DONE.'

@@ -5,4 +5,7 @@
 #
 set -e
 source "${0%/*}/_blackbox_common.sh"
-cat "$BB_FILES"
+
+while IFS= read <&99 -r encodedname; do
+  echo $encodedname
+done 99<"$BB_FILES"

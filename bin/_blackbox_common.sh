@@ -76,6 +76,10 @@ SECRING="${KEYRINGDIR}/secring.gpg"
 : "${DECRYPT_UMASK:=0022}" ;
 # : ${DECRYPT_UMASK:=o=} ;
 
+# $BB_FILES file format:
+# Filenames are listed one per line, relative to the base directory of the repo.
+# Each line is listed in "printf %q" format, which escapes special chars.
+
 # Checks if $1 is 0 bytes, and if $1/keyrings
 # is a directory
 function is_blackbox_repo() {
@@ -86,10 +90,18 @@ function is_blackbox_repo() {
   fi
 }
 
-# Return error if not on cryptlist.
+# is_on_cryptlist resturns an error if $1 not on cryptlist.
 function is_on_cryptlist() {
+  # $1: The filename.
   # Assumes $1 does NOT have the .gpg extension
-  file_contains_line "$BB_FILES" "$(vcs_relative_path "$1")"
+
+  # https://github.com/koalaman/shellcheck/wiki/SC2155
+  local name
+  name=$(vcs_relative_path "$1")
+  local encodedname
+  encodedname=$(printf "%q" "$name")
+
+  file_contains_line "$BB_FILES" "$encodedname"
 }
 
 # Exit with error if a file exists.
@@ -151,15 +163,32 @@ function get_pubring_path() {
   fi
 }
 
-# Output the unencrypted filename.
-function get_unencrypted_filename() {
-  echo "$(dirname "$1")/$(basename "$1" .gpg)" | sed -e 's#^\./##'
+# normalize_filename_arg takes a filename from the command line and
+# outputs the non-encrypted filename.
+function normalize_filename() {
+  # $1: the input from a user
+  # Use this if the user may have entered the encrypted or
+  # non-encrypted filename.
+  local name
+  name=$(vcs_relative_path "$1")
+  echo "$(dirname "$name")/$(basename "$name" .gpg)" | sed -e 's#^\./##'
 }
 
 # Output the encrypted filename.
-function get_encrypted_filename() {
-  echo "$(dirname "$1")/$(basename "$1" .gpg).gpg" | sed -e 's#^\./##'
+function get_gpg_filename() {
+  # $1: normalized file path
+  echo "$1".gpg
 }
+
+## Output the unencrypted filename.
+#function get_unencrypted_filename() {
+#  echo "$(dirname "$1")/$(basename "$1" .gpg)" | sed -e 's#^\./##'
+#}
+#
+## Output the encrypted filename.
+#function get_encrypted_filename() {
+#  echo "$(dirname "$1")/$(basename "$1" .gpg).gpg" | sed -e 's#^\./##'
+#}
 
 # Prepare keychain for use.
 function prepare_keychain() {
@@ -168,37 +197,43 @@ function prepare_keychain() {
   echo '========== Importing keychain: DONE' >&2
 }
 
-# Add file to list of encrypted files.
+# add_filename_to_cryptlist adds $1 to the list of encrypted files.
 function add_filename_to_cryptlist() {
+  # $1: The filename.
   # If the name is already on the list, this is a no-op.
-  # However no matter what the datestamp is updated.
-  
+
   # https://github.com/koalaman/shellcheck/wiki/SC2155
   local name
   name=$(vcs_relative_path "$1")
+  local encodedname
+  encodedname=$(printf "%q" "$name")
 
-  if file_contains_line "$BB_FILES" "$name" ; then
+
+  if file_contains_line "$BB_FILES" "$encodedname" ; then
     echo "========== File is registered. No need to add to list."
   else
     echo "========== Adding file to list."
     touch "$BB_FILES"
-    sort -u -o "$BB_FILES" <(echo "$name") "$BB_FILES"
+    sort -u -o "$BB_FILES" <(printf "%q\n" "$name") "$BB_FILES"
   fi
 }
 
-# Removes a file from the list of encrypted files
+# remove_filename_from_cryptlist removes $1 from the list of encrypted files.
 function remove_filename_from_cryptlist() {
+  # $1: The filename.
   # If the name is not already on the list, this is a no-op.
 
   # https://github.com/koalaman/shellcheck/wiki/SC2155
   local name
   name=$(vcs_relative_path "$1")
+  local encodedname
+  encodedname=$(printf "%q" "$name")
 
-  if ! file_contains_line "$BB_FILES" "$name" ; then
+  if ! file_contains_line "$BB_FILES" "$encodedname" ; then
     echo "========== File is not registered. No need to remove from list."
   else
     echo "========== Removing file from list."
-    remove_line "$BB_FILES" "$name"
+    remove_line "$BB_FILES" "$encodedname"
   fi
 }
 
