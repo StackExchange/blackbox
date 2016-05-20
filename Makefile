@@ -2,7 +2,7 @@ SHELL=/bin/sh
 
 PKGNAME=stack_blackbox
 BASEDIR?=~
-OUTPUTDIR?="$(BASEDIR)/debbuild-${PACKAGENAME}"
+OUTPUTDIR?="$(BASEDIR)/debbuild-${PKGNAME}"
 
 all:
 	@echo 'Menu:'
