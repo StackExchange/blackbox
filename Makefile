@@ -1,7 +1,7 @@
 SHELL=/bin/sh
 
 PKGNAME=stack_blackbox
-BASEDIR?=~
+BASEDIR?=$(HOME)
 OUTPUTDIR?="$(BASEDIR)/debbuild-${PKGNAME}"
 
 all:
