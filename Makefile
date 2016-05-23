@@ -1,8 +1,8 @@
 SHELL=/bin/sh
 
 PKGNAME=stack_blackbox
-BASEDIR?=~
-OUTPUTDIR?="$(BASEDIR)/debbuild-${PACKAGENAME}"
+BASEDIR?=$(HOME)
+OUTPUTDIR?="$(BASEDIR)/debbuild-${PKGNAME}"
 
 all:
 	@echo 'Menu:'
