@@ -36,7 +36,7 @@ function register_new_file() {
   echo "========== UPDATING REPO:"
   shred_file "$unencrypted_file"
 
-  if "$SECRETSEXPOSED" ; then
+  if [[ "$SECRETSEXPOSED" == "true" ]] ; then
     vcs_remove "$unencrypted_file"
     vcs_add "$encrypted_file"
   fi
