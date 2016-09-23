@@ -27,7 +27,7 @@ fi
 change_to_vcs_root
 
 echo VCS_TYPE: $VCS_TYPE
-vcs_ignore keyrings/live/pubring.gpg~ keyrings/live/pubring.kbx~ keyrings/live/secring.gpg
+vcs_ignore "${BLACKBOXDATA}/pubring.gpg~" "${BLACKBOXDATA}/pubring.kbx~" "${BLACKBOXDATA}/secring.gpg"
 
 # Make directories
 mkdir -p "${KEYRINGDIR}"
