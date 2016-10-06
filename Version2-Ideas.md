@@ -30,6 +30,7 @@ There should be one program, with subcommands that have names that make more sen
 * `blackbox cat <filename> <...>`
 * `blackbox diff <filename> <...>`
 * `blackbox list_files`
+* `blackbox list_admins`
 * `blackbox shred_all`
 * `blackbox update_all`
 * `blackbox whatsnew`
