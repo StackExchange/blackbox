@@ -84,6 +84,7 @@ Commands:
 | `blackbox_register_new_file <file>` | Encrypt a file for the first time                                       |
 | `blackbox_deregister_file <file>`   | Remove a file from blackbox                                             |
 | `blackbox_list_files`               | List the files maintained by blackbox                                   |
+| `blackbox_list_admins`              | List admins currently authorized for blackbox                           |
 | `blackbox_decrypt_all_files`        | Decrypt all managed files (INTERACTIVE)                                 |
 | `blackbox_postdeploy`               | Decrypt all managed files (batch)                                       |
 | `blackbox_addadmin <gpg-key>`       | Add someone to the list of people that can encrypt/decrypt secrets      |
