@@ -9,6 +9,7 @@ exec bin/blackbox_edit             ../bin/blackbox_edit
 exec bin/blackbox_edit_end         ../bin/blackbox_edit_end
 exec bin/blackbox_edit_start       ../bin/blackbox_edit_start
 exec bin/blackbox_initialize       ../bin/blackbox_initialize
+exec bin/blackbox_listadmins       ../bin/blackbox_listadmins
 exec bin/blackbox_list_files       ../bin/blackbox_list_files
 exec bin/blackbox_list_admins      ../bin/blackbox_list_admins
 exec bin/blackbox_postdeploy       ../bin/blackbox_postdeploy
