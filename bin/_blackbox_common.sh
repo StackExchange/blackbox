@@ -374,7 +374,7 @@ function file_contains_line() {
 function md5sum_file() {
   # Portably generate the MD5 hash of file $1.
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
     Linux | CYGWIN* | MINGW* )
@@ -390,7 +390,7 @@ function md5sum_file() {
 function cp_permissions() {
   # Copy the perms of $1 onto $2 .. end.
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
       ;;
     Linux | CYGWIN* | MINGW* )
