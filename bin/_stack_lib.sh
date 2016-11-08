@@ -53,7 +53,7 @@ function create_self_deleting_tempfile() {
   local filename
 
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       : "${TMPDIR:=/tmp}" ;
       filename=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
@@ -74,7 +74,7 @@ function create_self_deleting_tempdir() {
   local filename
 
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       : "${TMPDIR:=/tmp}" ;
       filename=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
@@ -98,7 +98,7 @@ function make_self_deleting_tempfile() {
   local name
 
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       : "${TMPDIR:=/tmp}" ;
       name=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
@@ -120,7 +120,7 @@ function make_tempdir() {
   local name
 
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       : "${TMPDIR:=/tmp}" ;
       name=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
@@ -157,7 +157,7 @@ function fail_if_not_running_as_root() {
 function fail_if_in_root_directory() {
   # Verify nobody has tricked us into being in "/".
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       if [[ $(stat -f'%i' / ) == $(stat -f'%i' . ) ]] ; then
         echo 'SECURITY ALERT: The current directory is the root directory.'
         echo 'Exiting...'
