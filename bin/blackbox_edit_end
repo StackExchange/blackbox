@@ -9,6 +9,11 @@ source "${0%/*}/_blackbox_common.sh"
 
 next_steps=()
 
+if [ $# -eq 0 ]; then
+  echo >&2 "Please provide at least one file for which editing has finished"
+  exit 1
+fi
+
 for param in "$@" ; do
 
   unencrypted_file=$(get_unencrypted_filename "$param")
