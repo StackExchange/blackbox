@@ -7,6 +7,11 @@
 set -e
 source "${0%/*}/_blackbox_common.sh"
 
+if [ $# -eq 0 ]; then
+  echo >&2 "Please provide at least one file to start editing"
+  exit 1
+fi
+
 for param in "$@" ; do
 
   unencrypted_file=$(get_unencrypted_filename "$param")
