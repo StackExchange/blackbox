@@ -425,8 +425,11 @@ function md5sum_file() {
 function cp_permissions() {
   # Copy the perms of $1 onto $2 .. end.
   case $(uname -s) in
-    Darwin | FreeBSD )
+    Darwin )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
+      ;;
+    FreeBSD )
+      chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
       ;;
     Linux | CYGWIN* | MINGW* )
       chmod --reference "$1" "${@:2}"
