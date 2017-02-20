@@ -122,7 +122,10 @@ function make_tempdir() {
   case $(uname -s) in
     Darwin | FreeBSD )
       : "${TMPDIR:=/tmp}" ;
-      name=$(mktemp -d -t _stacklib_.XXXXXXXX )
+      # The full path to the temp directory must be short.
+      # This is used by blackbox's testing suite to make a fake GNUPGHOME,
+      # which needs to fit within sockaddr_un.sun_path (see unix(7)).
+      name=$(mktemp -d -t SO )
       ;;
     Linux | CYGWIN* | MINGW* )
       name=$(mktemp -d)
