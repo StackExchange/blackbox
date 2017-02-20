@@ -31,6 +31,7 @@ function become_alice() {
   export GPG_AGENT_INFO="$GPG_AGENT_INFO_ALICE"
   echo BECOMING ALICE: GNUPGHOME="$GNUPGHOME AGENT=$GPG_AGENT_INFO"
   mkdir -p .git ; touch .git/config
+  git init
   git config user.name "Alice Example"
   git config user.email alice@example.com
 }
@@ -46,7 +47,6 @@ function become_bob() {
 PHASE 'Alice creates a repo.  She creates secret.txt.'
 
 become_alice
-git init
 echo 'this is my secret' >secret.txt
 
 
