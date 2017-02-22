@@ -9,6 +9,7 @@ all:
 	@echo '  make update            Update any generated files'
 	@echo '  make packages          Make RPM packages'
 	@echo '  make packages-deb      Make DEB packages'
+	@echo '  make test              Run tests'
 	@echo '  make install           (incomplete)'
 
 install:
@@ -122,6 +123,7 @@ clean:
 #
 # System Test:
 #
+test: confidence
 confidence:
 	@if [ -e ~/.gnupg ]; then echo ERROR: '~/.gnupg should not exist. If it does, bugs may polute your .gnupg configuration. If the code has no bugs everything will be fine. Do you feel lucky?'; false ; fi
 	@if which >/dev/null gpg-agent ; then pkill gpg-agent ; rm -rf /tmp/tmp.* ; fi
