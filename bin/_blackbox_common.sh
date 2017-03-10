@@ -277,6 +277,9 @@ function shred_file() {
     #NOTE: srm by default uses 35-pass Gutmann algorithm
     CMD=srm
     OPT=-f
+  elif _F=$(mktemp); rm -P "${_F}" >/dev/null 2>/dev/null ; then
+    CMD=rm
+    OPT=-Pf
   else
     echo "shred_file: WARNING: No secure deletion utility (shred or srm) present; using insecure rm"
     CMD=rm
