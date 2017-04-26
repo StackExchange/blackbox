@@ -7,13 +7,7 @@
 set -e
 source "${0%/*}/_blackbox_common.sh"
 
-if [[ -z $GPG_AGENT_INFO ]]; then
-  echo 'WARNING: You probably want to run gpg-agent as'
-  echo 'you will be asked for your passphrase many times.'
-  echo 'Example: $ eval $(gpg-agent --daemon)'
-  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
-fi
-
+gpg_agent_notice
 prepare_keychain
 
 modified_files=()
