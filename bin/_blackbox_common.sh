@@ -646,3 +646,20 @@ function vcs_notice_generic_file() {
     echo "WARNING:  If so, manually update the ignore file"
   fi
 }
+
+function gpg_agent_version_check() {
+  if ! hash 'gpg-agent' &> /dev/null; then
+    return 1
+  fi
+  local gpg_agent_version=$(gpg-agent --version | head -1 | awk '{ print $3 }' | tr -d '\n')
+  semverLT $gpg_agent_version "2.1.0"
+}
+
+function gpg_agent_notice() {
+  if [[ $(gpg_agent_version_check) == '0' && -z $GPG_AGENT_INFO ]];then
+    echo 'WARNING: You probably want to run gpg-agent as'
+    echo 'you will be asked for your passphrase many times.'
+    echo 'Example: $ eval $(gpg-agent --daemon)'
+    read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
+  fi
+}
