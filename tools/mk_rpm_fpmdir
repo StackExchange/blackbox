@@ -107,7 +107,7 @@ cat "$@" | while read -a arr ; do
   fi
   if $GO_COMPILE && [[ $SRC == "cmd/"* || $SRC == *"/cmd/"* ]]; then
     echo "========== BUILD&COPY $SRC"
-    ( cd $(dirname "$SRC" ) && go get -d && go build -a ) 
+    ( cd $(dirname "$SRC" ) && go get -d && go build ) 
     PKGARCH=native
   else
     echo "==========       COPY $SRC"
