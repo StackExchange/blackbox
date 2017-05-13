@@ -82,7 +82,7 @@ git commit -m'INITIALIZE BLACKBOX' keyrings .gitignore
 PHASE 'and adds herself as an admin.'
 
 blackbox_addadmin alice@example.com
-git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 
 
 PHASE 'Bob arrives.'
@@ -110,13 +110,13 @@ gpg --no-permission-warning --batch --gen-key "$gpgconfig"
 echo '========== Bob enrolls himself too.'
 
 blackbox_addadmin bob@example.com
-git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 
 PHASE 'Alice does the second part to enroll bob.'
 become_alice
 
 PHASE 'She enrolls bob.'
-gpg --import keyrings/live/pubring.gpg
+gpg --import $(get_pubring_path)
 # TODO(tlim) That --import can be eliminated... maybe?
 
 PHASE 'She enrolls secrets.txt.'
@@ -187,7 +187,7 @@ become_bob
 
 PHASE 'Bob makes sure he has all new keys.'
 
-gpg --import keyrings/live/pubring.gpg
+gpg --import keyrings/live/pubring.???
 
 # Pick a GID to use:
 # This users's default group:
@@ -314,6 +314,7 @@ PHASE 'Bob shreds all exposed files.'
 assert_file_exists 'my/path/to/relsecrets.txt'
 assert_file_exists 'secret.txt'
 blackbox_shred_all_files
+which blackbox_shred_all_files
 assert_file_missing '!important!.txt'
 assert_file_missing '#andpounds.txt'
 assert_file_missing 'mistake.txt'
