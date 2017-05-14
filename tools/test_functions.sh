@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# NB: This is copied from _blackbox_common.sh
+function get_pubring_path() {
+  : "${KEYRINGDIR:=keyrings/live}" ;
+  if [[ -f "${KEYRINGDIR}/pubring.gpg" ]]; then
+    echo "${KEYRINGDIR}/pubring.gpg"
+  else
+    echo "${KEYRINGDIR}/pubring.kbx"
+  fi
+}
+
 function PHASE() {
   echo '********************'
   echo '********************'
