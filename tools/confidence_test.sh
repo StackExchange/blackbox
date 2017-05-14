@@ -116,8 +116,8 @@ PHASE 'Alice does the second part to enroll bob.'
 become_alice
 
 PHASE 'She enrolls bob.'
-gpg --import $(get_pubring_path)
-# TODO(tlim) That --import can be eliminated... maybe?
+#gpg --import $(get_pubring_path)
+## TODO(tlim) That --import can be eliminated... maybe?
 
 PHASE 'She enrolls secrets.txt.'
 blackbox_register_new_file secret.txt
@@ -185,9 +185,8 @@ assert_file_md5hash secret.txt "d3e6bbdfc76fae7fd0a921f3408db1d1"
 PHASE 'appears.'
 become_bob
 
-PHASE 'Bob makes sure he has all new keys.'
-
-gpg --import keyrings/live/pubring.???
+#PHASE 'Bob makes sure he has all new keys.'
+#gpg --import keyrings/live/pubring.???
 
 # Pick a GID to use:
 # This users's default group:
