@@ -22,7 +22,7 @@ remove_line "$BB_ADMINS" "$KEYNAME"
 
 
 # remove the admin key from the pubring
-$GPG --no-permission-warning --homedir="$KEYRINGDIR" --batch --yes --delete-key "$KEYNAME"
+$GPG --no-permission-warning --homedir="$KEYRINGDIR" --batch --yes --delete-key "$KEYNAME" || true
 pubring_path=$(get_pubring_path)
 vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
 
