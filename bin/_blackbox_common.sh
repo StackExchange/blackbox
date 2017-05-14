@@ -163,8 +163,15 @@ function get_encrypted_filename() {
 
 # Prepare keychain for use.
 function prepare_keychain() {
+  local keyringasc
   echo '========== Importing keychain: START' >&2
-  $GPG --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
+  # Works with gpg 2.0
+  #$GPG --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
+  # Works with gpg 2.0 and 2.1
+  # NB: We must export the keys to a format that can be imported.
+  make_self_deleting_tempfile keyringasc
+  $GPG --export --keyring "$(get_pubring_path)" >"$keyringasc"
+  $GPG --import "$keyringasc"
   echo '========== Importing keychain: DONE' >&2
 }
 
