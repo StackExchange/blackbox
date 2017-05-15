@@ -5,4 +5,4 @@
 #
 set -e
 source "${0%/*}/_blackbox_common.sh"
-cat "$BB_ADMINS_FILE"
+cat "$BB_ADMINS"

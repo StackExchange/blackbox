@@ -84,6 +84,10 @@ PHASE 'and adds herself as an admin.'
 blackbox_addadmin alice@example.com
 git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
 
+make_self_deleting_tempfile adminlist1
+blackbox_list_admins >"$adminlist1"
+assert_file_md5hash "$adminlist1" "aa1db827772e1d51d453b844394b7617"
+
 
 PHASE 'Bob arrives.'
 
@@ -111,6 +115,10 @@ echo '========== Bob enrolls himself too.'
 
 blackbox_addadmin bob@example.com
 git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+
+make_self_deleting_tempfile adminlist2
+blackbox_list_admins >"$adminlist2"
+assert_file_md5hash "$adminlist2" "0b82b0b3c96e6e5dd5faf60493fe5cf7"
 
 PHASE 'Alice does the second part to enroll bob.'
 become_alice
@@ -216,6 +224,10 @@ rm secret.txt
 PHASE 'Bob removes Alice.'
 blackbox_removeadmin alice@example.com
 assert_line_not_exists 'alice@example.com' keyrings/live/blackbox-admins.txt
+
+make_self_deleting_tempfile adminlist3
+blackbox_list_admins >"$adminlist3"
+assert_file_md5hash "$adminlist3" "aadbfafd76ea66ff40dbfd239a69067f"
 
 PHASE 'Bob reencrypts files so alice can not access them.'
 blackbox_update_all_files
@@ -390,6 +402,10 @@ if blackbox_update_all_files; then
 fi
 # Cleanup:
 blackbox_removeadmin abba@notarealuser.com
+
+make_self_deleting_tempfile adminlist4
+blackbox_list_admins >"$adminlist4"
+assert_file_md5hash "$adminlist4" "aadbfafd76ea66ff40dbfd239a69067f"
 
 
 # TODO: Create a new directory. "git clone" the repo into it.
