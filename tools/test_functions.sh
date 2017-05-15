@@ -21,7 +21,7 @@ function PHASE() {
 function md5sum_file() {
   # Portably generate the MD5 hash of file $1.
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
     Linux )
