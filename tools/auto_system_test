@@ -1,0 +1,14 @@
+#!/usr/bin/env expect
+
+spawn tools/confidence_test.sh
+
+set times 0;
+while { $times < 300 } {
+   expect {
+       "my password is the lowercase letter a" { set pw "a\n" ; exp_continue }
+       "my password is the lowercase letter b" { set pw "b\n" ; exp_continue }
+       "Passphrase:" { send $pw ; exp_continue }
+       eof { break }
+   }
+   set times [ expr $times+1];
+}
