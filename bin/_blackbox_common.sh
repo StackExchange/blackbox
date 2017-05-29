@@ -28,7 +28,7 @@ source "${0%/*}"/_stack_lib.sh
 function physical_directory_of() {
   local d=$(dirname "$1")
   local f=$(basename "$1")
-  (cd "$d" && echo "$(pwd -P)/$f" )
+  (cd "$d" && echo "$(pwd -P | sed 's/\/$//')/$f" )
 }
 
 # Set REPOBASE to the top of the repository
