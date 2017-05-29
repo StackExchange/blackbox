@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
-export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin"
+export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:${blackbox_home}"
 
 set -e
 . _stack_lib.sh
@@ -19,10 +19,15 @@ cd "$test_repository"
 make_self_deleting_tempdir fake_alice_home
 make_self_deleting_tempdir fake_bob_home
 export GNUPGHOME="$fake_alice_home"
+#echo 'pinentry-program' "$(which pinentry-insecure-fake)" >> "$GNUPGHOME/gpg-agent.conf"
+echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
+#pinentry-program "${blackbox_home}/pinentry-fake-insecure"
 eval "$(gpg-agent --homedir "$fake_alice_home" --daemon)"
 GPG_AGENT_INFO_ALICE="$GPG_AGENT_INFO"
 
 export GNUPGHOME="$fake_bob_home"
+#echo 'pinentry-program' "$(which pinentry-insecure-fake)" >> "$GNUPGHOME/gpg-agent.conf"
+echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
 eval "$(gpg-agent --homedir "$fake_bob_home" --daemon)"
 GPG_AGENT_INFO_BOB="$GPG_AGENT_INFO"
 
