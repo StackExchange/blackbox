@@ -3,6 +3,8 @@
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
 export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:${blackbox_home}"
 
+export LANG=C.UTF-8
+
 set -e
 . _stack_lib.sh
 . tools/test_functions.sh
