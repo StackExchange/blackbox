@@ -170,6 +170,7 @@ function prepare_keychain() {
   # Works with gpg 2.0 and 2.1
   # NB: We must export the keys to a format that can be imported.
   make_self_deleting_tempfile keyringasc
+  export LANG="C.UTF-8"
   $GPG --export --keyring "$(get_pubring_path)" >"$keyringasc"
   $GPG --import "$keyringasc"
   echo '========== Importing keychain: DONE' >&2
