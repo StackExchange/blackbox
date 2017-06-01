@@ -3,7 +3,25 @@
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
 export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:${blackbox_home}"
 
-export LANG=C.UTF-8
+export LANG=C.UTF-8  # Required ro "gpg --export" to work properly.
+
+# This script requires many utilities, some are not
+# required by the usual blackbox scripts.  Test to make
+# sure we have them all.
+e=false
+for i in blackbox_addadmin blackbox_list_admins blackbox_register_new_file \
+  cat git gpg gpg-agent mkdir pinentry pinentry-tty rm tar which ; do
+  if ! which >/dev/null 2>&1  $i ; then
+    echo ERROR: Command not in PATH: $i
+    e=true
+  fi
+done
+if $e ; then
+  echo 'Exiting. Please install the above commands.'
+  echo 'This script requires many utilities not required by blackbox itself.'
+  echo PATH="$PATH"
+  exit 1
+fi
 
 set -e
 . _stack_lib.sh
