@@ -29,7 +29,14 @@ vcs_remove "$encrypted_file"
 vcs_notice "$unencrypted_file"
 vcs_add "$BB_FILES" 
 
-vcs_commit "Removing from blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
-echo "========== UPDATING VCS: DONE"
-echo "Local repo updated.  Please push when ready."
-echo "    $VCS_TYPE push"
+if [[ $VCS_TYPE == "svn" ]]; then
+  echo "========== UPDATING VCS: DONE"
+  echo "Local repo updated."
+  echo "Please commit to subversion server when ready."
+  echo "    svn commit"
+else:
+  vcs_commit "Removing from blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file"
+  echo "========== UPDATING VCS: DONE"
+  echo "Local repo updated.  Please push when ready."
+  echo "    $VCS_TYPE push"
+fi

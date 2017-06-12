@@ -35,17 +35,18 @@ vcs_add "${KEYRINGDIR}"
 touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 vcs_add "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 
-if [[ $VCS_TYPE = "svn" ]]; then
-	echo
-	echo
+# Make a suggestion:
+# some whitespace
+echo
+echo
+if [[ $VCS_TYPE == "svn" ]]; then
 	echo '`subversion` automatically tracks the ignored files; you just need to commit.'
+	echo 'NEXT STEP: You need to manually check these in:'
+	echo '     ' svn commit -m\'INITIALIZE BLACKBOX\' keyrings
 else
 	IGNOREFILE="$(vcs_ignore_file_path)"
 	test -f "$IGNOREFILE" && vcs_add "$IGNOREFILE"
 
-	# Make a suggestion:
-	echo
-	echo
 	echo 'NEXT STEP: You need to manually check these in:'
 	echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' keyrings "$IGNOREFILE"
 fi
