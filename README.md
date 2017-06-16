@@ -600,17 +600,26 @@ rm -rf /tmp/NEWMASTER
 
 Also shred any other temporary files you may have made.
 
-Replace expired keys
-====================
+Replacing expired keys
+======================
 
-If any one admin's key expires, you can no longer encrypt files. You will need to replace the key and re-encrypt.
-
--	Step 0: You see this error:
+If someone's key has already expired, blackbox will stop
+encrypting.  You see this error:
 
 ```
 $ blackbox_edit_end modified_file.txt
 --> Error: can't re-encrypt because a key has expired.
 ```
+
+You can also detect keys that are about to expire by issuing this command and manually reviewing the "expired:" dates:
+
+    gpg --homedir=keyrings/live  --list-keys
+
+or... list UIDs that will expire within 1 month from today: (Warning: this also lists keys without an expiration date)
+
+    gpg --homedir=keyrings/live --list-keys  --with-colons --fixed-list-mode  | grep ^uid | awk -F: '$6 < '$(( $(date +%s) + 2592000))
+
+Here's how to replace the key:
 
 -	Step 1. Administrator removes expired user:
 
