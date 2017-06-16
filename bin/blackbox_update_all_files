@@ -12,13 +12,13 @@ disclose_admins
 prepare_keychain
 
 echo '========== ENCRYPTED FILES TO BE RE-ENCRYPTED:'
-while IFS= read <&99 -r unencrypted_file; do
+while IFS=$'\r' read <&99 -r unencrypted_file; do
     echo "    $unencrypted_file.gpg"
 done 99<"$BB_FILES"
 
 echo '========== FILES IN THE WAY:'
 need_warning=false
-while IFS= read <&99 -r unencrypted_file; do
+while IFS=$'\r' read <&99 -r unencrypted_file; do
   unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   if [[ -f "$unencrypted_file" ]]; then
@@ -35,7 +35,7 @@ else
 fi
 
 echo '========== RE-ENCRYPTING FILES:'
-while IFS= read <&99 -r unencrypted_file; do
+while IFS=$'\r' read <&99 -r unencrypted_file; do
   unencrypted_file=$(get_unencrypted_filename "$unencrypted_file")
   encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   echo ========== PROCESSING '"'$unencrypted_file'"'
@@ -48,7 +48,7 @@ done 99<"$BB_FILES"
 fail_if_keychain_has_secrets
 
 echo '========== COMMITING TO VCS:'
-while IFS= read <&99 -r unencrypted_file; do
+while IFS=$'\r' read <&99 -r unencrypted_file; do
     vcs_add "$unencrypted_file.gpg"
 done 99<"$BB_FILES"
 vcs_commit 'Re-encrypted keys'
