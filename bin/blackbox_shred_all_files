@@ -39,6 +39,6 @@ DEREFERENCED_BIN_DIR="${0%/*}"
 MAX_PARALLEL_SHRED=10
 
 export IFS=
-tr '\n' '\0' <"$BB_FILES" | xargs -0 -I{} -n 1 -P $MAX_PARALLEL_SHRED bash -c "exported_internal_shred_file $DEREFERENCED_BIN_DIR \"{}\"" $DEREFERENCED_BIN_DIR/fake
+tr '\r\n' '\0' <"$BB_FILES" | tr -s '\0' | xargs -0 -I{} -n 1 -P $MAX_PARALLEL_SHRED bash -c "exported_internal_shred_file $DEREFERENCED_BIN_DIR \"{}\"" $DEREFERENCED_BIN_DIR/fake
 
 echo '========== DONE.'
