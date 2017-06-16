@@ -35,6 +35,17 @@ vcs_add "${KEYRINGDIR}"
 touch "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 vcs_add "$BLACKBOXDATA/$BB_ADMINS_FILE" "$BLACKBOXDATA/$BB_FILES_FILE"
 
+if [[ $VCS_TYPE = "git" ]]; then
+
+  # Set .gitattributes so that Windows users don't break the admin files.
+  FILE="$BLACKBOXDATA/.gitattributes"
+  LINE='blackbox-admins.txt text eol=lf'
+  grep -qF "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+  LINE='blackbox-files.txt text eol=lf'
+  grep -qF "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+
+fi
+
 if [[ $VCS_TYPE = "svn" ]]; then
 	echo
 	echo
