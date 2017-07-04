@@ -201,7 +201,7 @@ function prepare_keychain() {
   make_self_deleting_tempfile keyringasc
   export LANG="C.UTF-8"
   $GPG --export --keyring "$(get_pubring_path)" >"$keyringasc"
-  $GPG --import "$keyringasc"
+  $GPG --import "$keyringasc" 2>&1 | egrep -v 'not changed$' >&2
   echo '========== Importing keychain: DONE' >&2
 }
 
