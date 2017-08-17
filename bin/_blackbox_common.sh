@@ -63,7 +63,7 @@ export REPOBASE=$(physical_directory_of "$REPOBASE")
 # after determining what we believe to be the answer.
 
 if [[ -n "$BLACKBOX_REPOBASE" ]]; then
-	echo "Using custom repobase: $BLACKBOX_REPOBASE"
+	echo "Using custom repobase: $BLACKBOX_REPOBASE" >&2
 	export REPOBASE="$BLACKBOX_REPOBASE"
 fi
 
