@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
 
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
-export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin"
+export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:${blackbox_home}"
+
+export LANG=C.UTF-8  # Required ro "gpg --export" to work properly.
+
+# This script requires many utilities, some are not
+# required by the usual blackbox scripts.  Test to make
+# sure we have them all.
+e=false
+for i in blackbox_addadmin blackbox_list_admins blackbox_register_new_file \
+  cat git gpg gpg-agent mkdir pinentry pinentry-tty rm tar which ; do
+  if ! which >/dev/null 2>&1  $i ; then
+    echo ERROR: Command not in PATH: $i
+    e=true
+  fi
+done
+if $e ; then
+  echo 'Exiting. Please install the above commands.'
+  echo 'This script requires many utilities not required by blackbox itself.'
+  echo PATH="$PATH"
+  exit 1
+fi
 
 set -e
 . _stack_lib.sh
@@ -19,10 +39,15 @@ cd "$test_repository"
 make_self_deleting_tempdir fake_alice_home
 make_self_deleting_tempdir fake_bob_home
 export GNUPGHOME="$fake_alice_home"
+#echo 'pinentry-program' "$(which pinentry-insecure-fake)" >> "$GNUPGHOME/gpg-agent.conf"
+echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
+#pinentry-program "${blackbox_home}/pinentry-fake-insecure"
 eval "$(gpg-agent --homedir "$fake_alice_home" --daemon)"
 GPG_AGENT_INFO_ALICE="$GPG_AGENT_INFO"
 
 export GNUPGHOME="$fake_bob_home"
+#echo 'pinentry-program' "$(which pinentry-insecure-fake)" >> "$GNUPGHOME/gpg-agent.conf"
+echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
 eval "$(gpg-agent --homedir "$fake_bob_home" --daemon)"
 GPG_AGENT_INFO_BOB="$GPG_AGENT_INFO"
 
@@ -31,6 +56,7 @@ function become_alice() {
   export GPG_AGENT_INFO="$GPG_AGENT_INFO_ALICE"
   echo BECOMING ALICE: GNUPGHOME="$GNUPGHOME AGENT=$GPG_AGENT_INFO"
   mkdir -p .git ; touch .git/config
+  git init
   git config user.name "Alice Example"
   git config user.email alice@example.com
 }
@@ -46,7 +72,6 @@ function become_bob() {
 PHASE 'Alice creates a repo.  She creates secret.txt.'
 
 become_alice
-git init
 echo 'this is my secret' >secret.txt
 
 
@@ -82,7 +107,11 @@ git commit -m'INITIALIZE BLACKBOX' keyrings .gitignore
 PHASE 'and adds herself as an admin.'
 
 blackbox_addadmin alice@example.com
-git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+
+make_self_deleting_tempfile adminlist1
+blackbox_list_admins >"$adminlist1"
+assert_file_md5hash "$adminlist1" "aa1db827772e1d51d453b844394b7617"
 
 
 PHASE 'Bob arrives.'
@@ -110,14 +139,18 @@ gpg --no-permission-warning --batch --gen-key "$gpgconfig"
 echo '========== Bob enrolls himself too.'
 
 blackbox_addadmin bob@example.com
-git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: alice@example.com' keyrings/live/pubring.??? keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+
+make_self_deleting_tempfile adminlist2
+blackbox_list_admins >"$adminlist2"
+assert_file_md5hash "$adminlist2" "0b82b0b3c96e6e5dd5faf60493fe5cf7"
 
 PHASE 'Alice does the second part to enroll bob.'
 become_alice
 
 PHASE 'She enrolls bob.'
-gpg --import keyrings/live/pubring.gpg
-# TODO(tlim) That --import can be eliminated... maybe?
+#gpg --import $(get_pubring_path)
+## TODO(tlim) That --import can be eliminated... maybe?
 
 PHASE 'She enrolls secrets.txt.'
 blackbox_register_new_file secret.txt
@@ -185,33 +218,30 @@ assert_file_md5hash secret.txt "d3e6bbdfc76fae7fd0a921f3408db1d1"
 PHASE 'appears.'
 become_bob
 
-PHASE 'Bob makes sure he has all new keys.'
-
-gpg --import keyrings/live/pubring.gpg
+#PHASE 'Bob makes sure he has all new keys.'
+#gpg --import keyrings/live/pubring.???
 
 # Pick a GID to use:
 # This users's default group:
-DEFAULT_GID_NAME=$(id -gn)
+DEFAULT_GID_NUM=$(id -g)
 # Pick a group that is not the default group:
-TEST_GID_NUM=$(id -G | fmt -1 | tail -n +2 | grep -xv "$(id -u)" | head -n 1)
-TEST_GID_NAME=$(python -c 'import grp; print grp.getgrgid('"$TEST_GID_NUM"').gr_name')
-echo "DEFAULT_GID_NAME=$DEFAULT_GID_NAME"
+TEST_GID_NUM=$(id -G | fmt -1 | sort -rn | grep -xv "$(id -u)" | grep -xv "$(id -g)" | head -1)
+echo "DEFAULT_GID_NUM=$DEFAULT_GID_NUM"
 echo "TEST_GID_NUM=$TEST_GID_NUM"
-echo "TEST_GID_NAME=$TEST_GID_NAME"
 
 PHASE 'Bob postdeploys... default.'
 blackbox_postdeploy
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
-assert_file_group secret.txt "$DEFAULT_GID_NAME"
+assert_file_group secret.txt "$DEFAULT_GID_NUM"
 
 PHASE 'Bob postdeploys... with a GID.'
 blackbox_postdeploy "$TEST_GID_NUM"
 assert_file_exists secret.txt
 assert_file_exists secret.txt.gpg
 assert_file_md5hash secret.txt "08a3fa763a05c018a38e9924363b97e7"
-assert_file_group secret.txt "$TEST_GID_NAME"
+assert_file_group secret.txt "$TEST_GID_NUM"
 
 PHASE 'Bob cleans up the secret.'
 rm secret.txt
@@ -219,6 +249,10 @@ rm secret.txt
 PHASE 'Bob removes Alice.'
 blackbox_removeadmin alice@example.com
 assert_line_not_exists 'alice@example.com' keyrings/live/blackbox-admins.txt
+
+make_self_deleting_tempfile adminlist3
+blackbox_list_admins >"$adminlist3"
+assert_file_md5hash "$adminlist3" "aadbfafd76ea66ff40dbfd239a69067f"
 
 PHASE 'Bob reencrypts files so alice can not access them.'
 blackbox_update_all_files
@@ -316,6 +350,7 @@ PHASE 'Bob shreds all exposed files.'
 assert_file_exists 'my/path/to/relsecrets.txt'
 assert_file_exists 'secret.txt'
 blackbox_shred_all_files
+which blackbox_shred_all_files
 assert_file_missing '!important!.txt'
 assert_file_missing '#andpounds.txt'
 assert_file_missing 'mistake.txt'
@@ -392,6 +427,10 @@ if blackbox_update_all_files; then
 fi
 # Cleanup:
 blackbox_removeadmin abba@notarealuser.com
+
+make_self_deleting_tempfile adminlist4
+blackbox_list_admins >"$adminlist4"
+assert_file_md5hash "$adminlist4" "aadbfafd76ea66ff40dbfd239a69067f"
 
 
 # TODO: Create a new directory. "git clone" the repo into it.

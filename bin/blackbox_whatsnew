@@ -14,13 +14,7 @@ then
 fi
 
 fail_if_not_in_repo
-
-if [[ -z $GPG_AGENT_INFO ]]; then
-  echo 'WARNING: You probably want to run gpg-agent as'
-  echo 'you will be asked for your passphrase many times.'
-  echo 'Example: $ eval $(gpg-agent --daemon)'
-  read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
-fi
+gpg_agent_notice
 
 COLUMNS=`tput cols`
 FILE=$1

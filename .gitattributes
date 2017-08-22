@@ -1,0 +1,5 @@
+bin/** text eol=lf
+tools/** text eol=lf
+Makefile text eol=lf
+Portfile text eol=lf
+blackbox.plugin.zsh text eol=lf
