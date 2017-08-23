@@ -11,7 +11,9 @@ exec /usr/blackbox/bin/blackbox_edit             ../bin/blackbox_edit
 exec /usr/blackbox/bin/blackbox_edit_end         ../bin/blackbox_edit_end
 exec /usr/blackbox/bin/blackbox_edit_start       ../bin/blackbox_edit_start
 exec /usr/blackbox/bin/blackbox_initialize       ../bin/blackbox_initialize
+exec /usr/blackbox/bin/blackbox_listadmins       ../bin/blackbox_listadmins
 exec /usr/blackbox/bin/blackbox_list_files       ../bin/blackbox_list_files
+exec /usr/blackbox/bin/blackbox_list_admins      ../bin/blackbox_list_admins
 exec /usr/blackbox/bin/blackbox_postdeploy       ../bin/blackbox_postdeploy
 exec /usr/blackbox/bin/blackbox_register_new_file ../bin/blackbox_register_new_file
 exec /usr/blackbox/bin/blackbox_removeadmin      ../bin/blackbox_removeadmin

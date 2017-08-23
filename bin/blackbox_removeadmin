@@ -20,8 +20,15 @@ KEYNAME="$1"
 # Remove the email address from the BB_ADMINS file.
 remove_line "$BB_ADMINS" "$KEYNAME"
 
+
+# remove the admin key from the pubring
+$GPG --no-permission-warning --homedir="$KEYRINGDIR" --batch --yes --delete-key "$KEYNAME" || true
+pubring_path=$(get_pubring_path)
+vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
+
+
 # Make a suggestion:
 echo
 echo
 echo 'NEXT STEP: Check these into the repo.  Probably with a command like...'
-echo $VCS_TYPE commit -m\'REMOVED ADMIN: $KEYNAME\' "$BLACKBOXDATA/$BB_ADMINS_FILE"
+echo $VCS_TYPE commit -m\'REMOVED ADMIN: $KEYNAME\' "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"

@@ -5,6 +5,8 @@ Safely store secrets in a VCS repo (i.e. Git, Mercurial, Subversion or Perforce)
 
 A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
+Join our mailing list: [https://groups.google.com/d/forum/blackbox-project](https://groups.google.com/d/forum/blackbox-project)
+
 Table of Contents
 =================
 
@@ -12,23 +14,25 @@ Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why is this important?](#why-is-this-important)
-- [Installation Instructions:](#installation-instructions)
-- [Commands:](#commands)
-- [Compatibility:](#compatibility)
+- [Installation Instructions](#installation-instructions)
+- [Commands](#commands)
+- [Compatibility](#compatibility)
 - [How is the encryption done?](#how-is-the-encryption-done)
 - [What does this look like to the typical user?](#what-does-this-look-like-to-the-typical-user)
 - [How to use the secrets with Puppet?](#how-to-use-the-secrets-with-puppet)
-  - [Entire files:](#entire-files)
-  - [Small strings:](#small-strings)
+  - [Entire files](#entire-files)
+  - [Small strings](#small-strings)
 - [How to enroll a new file into the system?](#how-to-enroll-a-new-file-into-the-system)
 - [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
 - [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
 - [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
 - [Enabling Blackbox For a Repo](#enabling-blackbox-for-a-repo)
 - [Set up automated users or &ldquo;role accounts&rdquo;](#set-up-automated-users-or-role-accounts)
-- [Replace expired keys:](#replace-expired-keys)
-- [Some common errors:](#some-common-errors)
+- [Replace expired keys](#replace-expired-keys)
+- [Some common errors](#some-common-errors)
+- [Using Blackbox on Windows](#using-blackbox-on-windows)
 - [Using Blackbox without a repo](#using-blackbox-without-a-repo)
+- [Some Subversion gotchas](#some-subversion-gotchas)
 - [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
 - [Developer Info](#developer-info)
 - [Alternatives](#alternatives)
@@ -55,12 +59,13 @@ OBVIOUSLY we don't want secret things like SSL private keys and passwords to be 
 
 NOT SO OBVIOUSLY when we store "secrets" in a VCS repo like Git or Mercurial, suddenly we are less able to share our code with other people. Communication between subteams of an organization is hurt. You can't collaborate as well. Either you find yourself emailing individual files around (yuck!), making a special repo with just the files needed by your collaborators (yuck!!), or just deciding that collaboration isn't worth all that effort (yuck!!!).
 
-The ability to be open and transparent about our code, with the exception of a few specific files, is key to the kind of collaboration that DevOps and modern IT practitioniers need to do.
+The ability to be open and transparent about our code, with the exception of a few specific files, is key to the kind of collaboration that DevOps and modern IT practitioners need to do.
 
-Installation Instructions:
-==========================
+Installation Instructions
+=========================
 
 -	*The MacPorts Way*: `sudo port install vcs_blackbox`
+-	*The Homebrew Way*: `brew install blackbox`
 -	*The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods.
 -	*The Debian/Ubuntu way*: Check out the repo and install [fpm](https://github.com/jordansissel/fpm). Now you can make a DEB `make packages-deb` that can be distributed via local methods.
 -	*The hard way*: Copy all the files in "bin" to your "bin".
@@ -68,30 +73,31 @@ Installation Instructions:
 -	*The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
 -	*The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
 
-Commands:
-=========
+Commands
+========
 
-| Name:                        | Description:                                                            |
-|------------------------------|-------------------------------------------------------------------------|
-| `blackbox_edit`              | Decrypt, run $EDITOR, re-encrypt a file                                 |
-| `blackbox_edit_start`        | Decrypt a file so it can be updated                                     |
-| `blackbox_edit_end`          | Encrypt a file after blackbox_edit_start was used                       |
-| `blackbox_cat`               | Decrypt and view the contents of a file                                 |
-| `blackbox_diff`              | Diff decrypted files against their original crypted version             |
-| `blackbox_initialize`        | Enable blackbox for a GIT or HG repo                                    |
-| `blackbox_register_new_file` | Encrypt a file for the first time                                       |
-| `blackbox_deregister_file`   | Remove a file from blackbox                                             |
-| `blackbox_list_files`        | List the files maintained by blackbox                                   |
-| `blackbox_decrypt_all_files` | Decrypt all managed files (INTERACTIVE)                                 |
-| `blackbox_postdeploy`        | Decrypt all managed files (batch)                                       |
-| `blackbox_addadmin`          | Add someone to the list of people that can encrypt/decrypt secrets      |
-| `blackbox_removeadmin`       | Remove someone from the list of people that can encrypt/decrypt secrets |
-| `blackbox_shred_all_files`   | Safely delete any decrypted files                                       |
-| `blackbox_update_all_files`  | Decrypt then re-encrypt all files. Useful after keys are changed        |
-| `blackbox_whatsnew`          | show what has changed in the last commit for a given file               |
+| Name:                               | Description:                                                            |
+|-------------------------------------|-------------------------------------------------------------------------|
+| `blackbox_edit <file>`              | Decrypt, run $EDITOR, re-encrypt a file                                 |
+| `blackbox_edit_start <file>`        | Decrypt a file so it can be updated                                     |
+| `blackbox_edit_end <file>`          | Encrypt a file after blackbox_edit_start was used                       |
+| `blackbox_cat <file>`               | Decrypt and view the contents of a file                                 |
+| `blackbox_diff`                     | Diff decrypted files against their original crypted version             |
+| `blackbox_initialize`               | Enable blackbox for a GIT or HG repo                                    |
+| `blackbox_register_new_file <file>` | Encrypt a file for the first time                                       |
+| `blackbox_deregister_file <file>`   | Remove a file from blackbox                                             |
+| `blackbox_list_files`               | List the files maintained by blackbox                                   |
+| `blackbox_list_admins`              | List admins currently authorized for blackbox                           |
+| `blackbox_decrypt_all_files`        | Decrypt all managed files (INTERACTIVE)                                 |
+| `blackbox_postdeploy`               | Decrypt all managed files (batch)                                       |
+| `blackbox_addadmin <gpg-key>`       | Add someone to the list of people that can encrypt/decrypt secrets      |
+| `blackbox_removeadmin <gpg-key>`    | Remove someone from the list of people that can encrypt/decrypt secrets |
+| `blackbox_shred_all_files`          | Safely delete any decrypted files                                       |
+| `blackbox_update_all_files`         | Decrypt then re-encrypt all files. Useful after keys are changed        |
+| `blackbox_whatsnew <file>`          | show what has changed in the last commit for a given file               |
 
-Compatibility:
-==============
+Compatibility
+=============
 
 Blackbox automatically determines which VCS you are using and does the right thing. It has a plug-in architecture to make it easy to extend to work with other systems. It has been tested to work with many operating systems.
 
@@ -104,21 +110,64 @@ Blackbox automatically determines which VCS you are using and does the right thi
 -	Operating system
 	-	CentOS / RedHat
 	-	MacOS X
-	-	Cygwin (Thanks, Ben Drasin!)
+	-	Cygwin (Thanks, Ben Drasin!) **See Note Below**
+	-	MinGW (git bash on windows) **See Note Below**
 
 To add or fix support for a VCS system, look for code at the end of `bin/_blackbox_common.sh`
 
 To add or fix support for a new operating system, look for the case statements in `bin/_blackbox_common.sh` and `bin/_stack_lib.sh` and maybe `tools/confidence_test.sh`
 
-Note: Cywin support requires the following packages:
+Using Blackbox on Windows
+=========================
 
--	Normal operation:
-	-	gnupg
-	-	git or mercurial or subversion or perforce (as appropriate)
--	Development (if you will be adding code and want to run the confidence test)
-	-	procps
-	-	make
-	-	git (the confidence test currently only tests git)
+Blackbox can be used with Cygwin or MinGW.
+
+### Protect the line endings
+
+Blackbox assumes that `blackbox-admins.txt` and `blackbox-files.txt` will have
+LF line endings. Windows users should be careful to configure Git or other systems
+to not convert or "fix" those files.
+
+If you use Git, add the following lines to your `.gitattributes` file:
+
+    **/blackbox-admins.txt text eol=lf
+    **/blackbox-files.txt text eol=lf
+
+The latest version of `blackbox_initialize` will create a `.gitattributes` file in the `$BLACKBOXDATA`
+directory (usually `keyrings/live`) for you.
+
+### Cygwin
+
+Cygwin support requires the following packages:
+
+Normal operation:
+
+-	gnupg
+-	git or mercurial or subversion or perforce (as appropriate)
+
+Development (if you will be adding code and want to run the confidence test)
+
+-	procps
+-	make
+-	git (the confidence test currently only tests git)
+
+### MinGW
+
+MinGW (comes with Git for Windows) support requires the following:
+
+Normal operation:
+
+-	[Git for Windows](https://git-scm.com/) (not tested with Mercurial)
+	-	Git Bash MINTTY returns a MinGW console.  So when you install make sure you pick `MINTTY` instead of windows console.  You'll be executing blackbox from the Git Bash prompt.
+	-	You need at least version 2.8.1 of Git for Windows.
+-	[GnuWin32](https://sourceforge.net/projects/getgnuwin32/files/) - needed for various tools not least of which is mktemp which is used by blackbox
+	-	after downloading the install just provides you with some batch files.  Because of prior issues at sourceforge and to make sure you get the latest version of each package the batch files handle the brunt of the work of getting the correct packages and installing them for you.
+	-	from a **windows command prompt** run `download.bat`  once it has completed run `install.bat` then add the path for those tools to your PATH (ex: `PATH=%PATH%;c:\GnuWin32\bin`)
+
+Development: 
+
+-	unknown (if you develop Blackbox under MinGW, please let us know if any additional packages are required to run `make test`)
+
 
 How is the encryption done?
 ===========================
@@ -256,7 +305,7 @@ If you don't already have a GPG key, here's how to generate one:
 gpg --gen-key
 ```
 
-Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store the private key securely. Tip: Store it on a secure machine, or one with little or no internet access, with full-disk-encryption, etc. Your employer problably has rules about how to store such things.
+Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a machine secure machine with little or no internet access, full-disk-encryption, etc. Your employer problably has rules about how to store such things.
 
 Now that you have a GPG key, add yourself as an admin:
 
@@ -551,17 +600,26 @@ rm -rf /tmp/NEWMASTER
 
 Also shred any other temporary files you may have made.
 
-Replace expired keys:
-=====================
+Replacing expired keys
+======================
 
-If any one admin's key expires, you can no longer encrypt files. You will need to replace the key and re-encrypt.
-
--	Step 0: You see this error:
+If someone's key has already expired, blackbox will stop
+encrypting.  You see this error:
 
 ```
 $ blackbox_edit_end modified_file.txt
 --> Error: can't re-encrypt because a key has expired.
 ```
+
+You can also detect keys that are about to expire by issuing this command and manually reviewing the "expired:" dates:
+
+    gpg --homedir=keyrings/live  --list-keys
+
+or... list UIDs that will expire within 1 month from today: (Warning: this also lists keys without an expiration date)
+
+    gpg --homedir=keyrings/live --list-keys  --with-colons --fixed-list-mode  | grep ^uid | awk -F: '$6 < '$(( $(date +%s) + 2592000))
+
+Here's how to replace the key:
 
 -	Step 1. Administrator removes expired user:
 
@@ -602,8 +660,25 @@ Any files that were temporarily copied in the first step so as to not be overwri
 
 (Thanks to @chishaku for finding a solution to this problem!)
 
-Some common errors:
-===================
+### Configure git to show diffs in encrypted files
+
+It's possible to tell Git to decrypt versions of the file before running them through `git diff` or `git log`. To achieve this do:
+
+- Add the following to `.gitattributes` at the top of the git repository:
+```
+*.gpg diff=blackbox
+```
+
+- Add the following to `.git/config`:
+```
+[diff "blackbox"]
+    textconv = gpg --use-agent -q --batch --decrypt
+````
+
+And now commands like `git log -p file.gpg` will show a nice log of the changes in the encrypted file.
+
+Some common errors
+==================
 
 `gpg: filename: skipped: No public key` -- Usually this means there is an item in `keyrings/live/blackbox-admins.txt` that is not the name of the key. Either something invalid was inserted (like a filename instead of a username) or a user has left the organization and their key was removed from the keychain, but their name wasn't removed from the blackbox-admins.txt file.
 
@@ -622,10 +697,21 @@ The following commands have been tested outside a repo:
 -	`blackbox_edit_start`
 -	`blackbox_edit_end`
 
+Some Subversion gotchas
+=======================
+
+The current implementation will store the blackbox in `/keyrings` at the root of the entire repo.  this will create an issue between environments that have different roots (ie, checking out `/` on development vs `/releases/foo` in production).  To get around this, you can `export BLACKBOX_REPOBASE=/path/to/repo` and set a specific base for your repo.
+
+This was originally written for git and supports a two-phase commit, in which `commit` is a local commit and "push" sends the change upstream to the version control server when something is registered or deregistered with the system.  The current implementation will immediately `commit` a file (to the upstream subversion server) when you execute a `blackbox_*` command.
+
 How to submit bugs or ask questions?
 ====================================
 
 We welcome questions, bug reports and feedback!
+
+The best place to start is to join the [blackbox-project mailing list](https://groups.google.com/d/forum/blackbox-project) and ask there.
+
+Bugs are tracked here in Github. Please feel free to files bugs yourself:
 
 -	https://github.com/StackExchange/blackbox/issues
 
@@ -663,6 +749,7 @@ Here are other open source packages that do something similar to Blackbox. If yo
 -	Pass: http://www.zx2c4.com/projects/password-store/
 -	Transcrypt: https://github.com/elasticdog/transcrypt
 -	Keyringer: https://keyringer.pw/
+-	git-secret: https://github.com/sobolevn/git-secret
 
 git-crypt has the best git integration. Once set up it is nearly transparent to the users. However it only works with git.
 

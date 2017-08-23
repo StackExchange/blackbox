@@ -1,0 +1,25 @@
+#!/usr/bin/env expect
+
+# Run the confidence test non-interactively.  Since the script
+# asks for passphrases, we use "expect" to simulate keyboard data entry.
+
+# Run the test:
+spawn tools/confidence_test.sh
+
+# As we run the confidence test, respond with the right password.
+# We do this for up to 300 times to prevent an infinite loop.
+
+set times 0;
+while { $times < 300 } {
+   expect {
+       # The script outputs what the password will be, and we save
+       # that info in $pw any time we see the text.
+       "my password is the lowercase letter a" { set pw "a\n" ; exp_continue }
+       "my password is the lowercase letter b" { set pw "b\n" ; exp_continue }
+       # If the passphrase is requested, send it.
+       "Passphrase:" { send $pw ; exp_continue }
+       # If we reach EOF, exit this loop.
+       eof { break }
+   }
+   set times [ expr $times+1];
+}

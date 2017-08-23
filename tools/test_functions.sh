@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# NB: This is copied from _blackbox_common.sh
+function get_pubring_path() {
+  : "${KEYRINGDIR:=keyrings/live}" ;
+  if [[ -f "${KEYRINGDIR}/pubring.gpg" ]]; then
+    echo "${KEYRINGDIR}/pubring.gpg"
+  else
+    echo "${KEYRINGDIR}/pubring.kbx"
+  fi
+}
+
 function PHASE() {
   echo '********************'
   echo '********************'
@@ -11,7 +21,7 @@ function PHASE() {
 function md5sum_file() {
   # Portably generate the MD5 hash of file $1.
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
     Linux )
@@ -63,10 +73,10 @@ function assert_file_group() {
 
   case $(uname -s) in
     Darwin|FreeBSD )
-      found=$(stat -f '%Sg' "$file")
+      found=$(stat -f '%Dg' "$file")
       ;;
     Linux )
-      found=$(stat -c '%G' "$file")
+      found=$(stat -c '%g' "$file")
       ;;
     CYGWIN* )
       echo "ASSERT_FILE_GROUP: Running on Cygwin. Not being tested."
@@ -78,8 +88,10 @@ function assert_file_group() {
       ;;
   esac
 
+  echo "DEBUG: assert_file_group X${wanted}X vs. X${found}X"
+  echo "DEBUG:" $(which stat)
   if [[ "$wanted" != "$found" ]]; then
-    echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
+    echo "ASSERT FAILED: $file chgrp group wanted=$wanted found=$found"
     exit 1
   fi
 }
@@ -103,8 +115,10 @@ function assert_file_perm() {
       ;;
   esac
 
+  echo "DEBUG: assert_file_perm X${wanted}X vs. X${found}X"
+  echo "DEBUG:" $(which stat)
   if [[ "$wanted" != "$found" ]]; then
-    echo "ASSERT FAILED: $file chgrp wanted=$wanted found=$found"
+    echo "ASSERT FAILED: $file chgrp perm wanted=$wanted found=$found"
     exit 1
   fi
 }

@@ -27,7 +27,23 @@ Stable Releases
 
 Marking the software to be "stable":
 
-Step 1. Tag it.
+Step 1.  Update CHANGELOG.md
+
+Use "git log" to see what has changed and update CHANGELOG.md.
+
+For a new release, add:
+
+```
+   echo Release v1.$(date +%Y%m%d)
+```
+
+Commit with:
+
+```
+git commit -m'Update CHANGELOG.md' CHANGELOG.md
+```
+
+Step 2. Tag it.
 
 ```
 git pull
@@ -37,7 +53,7 @@ git tag stable
 git push origin tag stable
 ```
 
-Step 2. Mark your calendar 1 week from today to check to see if this should be promoted to production.
+Step 3. Mark your calendar 1 week from today to check to see if this should be promoted to production.
 
 Production Releases
 ===================

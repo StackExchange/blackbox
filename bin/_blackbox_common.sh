@@ -28,7 +28,7 @@ source "${0%/*}"/_stack_lib.sh
 function physical_directory_of() {
   local d=$(dirname "$1")
   local f=$(basename "$1")
-  (cd "$d" && echo "$(pwd -P)/$f" )
+  (cd "$d" && echo "$(pwd -P | sed 's/\/$//')/$f" )
 }
 
 # Set REPOBASE to the top of the repository
@@ -61,6 +61,11 @@ export VCS_TYPE
 export REPOBASE=$(physical_directory_of "$REPOBASE")
 # FIXME: Verify this function by checking for .hg or .git
 # after determining what we believe to be the answer.
+
+if [[ -n "$BLACKBOX_REPOBASE" ]]; then
+	echo "Using custom repobase: $BLACKBOX_REPOBASE" >&2
+	export REPOBASE="$BLACKBOX_REPOBASE"
+fi
 
 KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
 BB_ADMINS_FILE="blackbox-admins.txt"
@@ -158,8 +163,16 @@ function get_encrypted_filename() {
 
 # Prepare keychain for use.
 function prepare_keychain() {
+  local keyringasc
   echo '========== Importing keychain: START' >&2
-  $GPG --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
+  # Works with gpg 2.0
+  #$GPG --import "$(get_pubring_path)" 2>&1 | egrep -v 'not changed$' >&2
+  # Works with gpg 2.0 and 2.1
+  # NB: We must export the keys to a format that can be imported.
+  make_self_deleting_tempfile keyringasc
+  export LANG="C.UTF-8"
+  $GPG --export --keyring "$(get_pubring_path)" >"$keyringasc"
+  $GPG --import "$keyringasc" 2>&1 | egrep -v 'not changed$' >&2
   echo '========== Importing keychain: DONE' >&2
 }
 
@@ -272,7 +285,11 @@ function shred_file() {
     #NOTE: srm by default uses 35-pass Gutmann algorithm
     CMD=srm
     OPT=-f
+  elif _F=$(mktemp); rm -P "${_F}" >/dev/null 2>/dev/null ; then
+    CMD=rm
+    OPT=-Pf
   else
+    echo "shred_file: WARNING: No secure deletion utility (shred or srm) present; using insecure rm" >&2
     CMD=rm
     OPT=-f
   fi
@@ -368,7 +385,7 @@ function file_contains_line() {
 function md5sum_file() {
   # Portably generate the MD5 hash of file $1.
   case $(uname -s) in
-    Darwin )
+    Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
     Linux | CYGWIN* | MINGW* )
@@ -386,6 +403,9 @@ function cp_permissions() {
   case $(uname -s) in
     Darwin )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
+      ;;
+    FreeBSD )
+      chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
       ;;
     Linux | CYGWIN* | MINGW* )
       chmod --reference "$1" "${@:2}"
@@ -566,7 +586,7 @@ function vcs_ignore_git() {
 }
 # Subversion
 function vcs_ignore_svn() {
-  svn propset svn:ignore "$(vcs_relative_path "$file")"
+  svn propset svn:ignore "$file" "$(vcs_relative_path)"
 }
 # Perforce
 function vcs_ignore_p4() {
@@ -632,5 +652,22 @@ function vcs_notice_generic_file() {
     echo "WARNING:  Found a non-absolute ignore match in $1"
     echo "WARNING:  Confirm the pattern is intended to only exclude $file"
     echo "WARNING:  If so, manually update the ignore file"
+  fi
+}
+
+function gpg_agent_version_check() {
+  if ! hash 'gpg-agent' &> /dev/null; then
+    return 1
+  fi
+  local gpg_agent_version=$(gpg-agent --version | head -1 | awk '{ print $3 }' | tr -d '\n')
+  semverLT $gpg_agent_version "2.1.0"
+}
+
+function gpg_agent_notice() {
+  if [[ $(gpg_agent_version_check) == '0' && -z $GPG_AGENT_INFO ]];then
+    echo 'WARNING: You probably want to run gpg-agent as'
+    echo 'you will be asked for your passphrase many times.'
+    echo 'Example: $ eval $(gpg-agent --daemon)'
+    read -r -p 'Press CTRL-C now to stop. ENTER to continue: '
   fi
 }
