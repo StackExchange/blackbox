@@ -711,7 +711,7 @@ We welcome questions, bug reports and feedback!
 
 The best place to start is to join the [blackbox-project mailing list](https://groups.google.com/d/forum/blackbox-project) and ask there.
 
-Bugs are tracked here in Github. Please feel free to files bugs yourself:
+Bugs are tracked here in Github. Please feel free to report bugs yourself:
 
 -	https://github.com/StackExchange/blackbox/issues
 
