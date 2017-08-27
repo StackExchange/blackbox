@@ -756,4 +756,4 @@ git-crypt has the best git integration. Once set up it is nearly transparent to 
 License
 =======
 
-This content is released under the MIT License. See the LICENSE.txt file.
+This content is released under the MIT License. See the [LICENSE.txt](LICENSE.txt) file.
