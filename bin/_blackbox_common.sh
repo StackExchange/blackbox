@@ -443,8 +443,12 @@ function cp_permissions() {
       chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
       ;;
     Linux | CYGWIN* | MINGW* )
-      chmod --reference "$1" "${@:2}"
-      ;;
+      if [[ -e /etc/alpine-release ]]; then
+        chmod $( stat -c '%a' "$1" ) "${@:2}"
+      else
+        chmod --reference "$1" "${@:2}"
+      fi
+      ;; 
     * )
       echo 'ERROR: Unknown OS. Exiting. (cp_permissions)'
       exit 1
