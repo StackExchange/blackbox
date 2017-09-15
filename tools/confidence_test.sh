@@ -225,7 +225,7 @@ become_bob
 # This users's default group:
 DEFAULT_GID_NUM=$(id -g)
 # Pick a group that is not the default group:
-TEST_GID_NUM=$(id -G | fmt -1 | sort -rn | grep -xv "$(id -u)" | grep -xv "$(id -g)" | head -1)
+TEST_GID_NUM=$(grep -v "$DEFAULT_GID_NUM" /etc/group | cut -d: -f3 | sort -rn | head -1)
 echo "DEFAULT_GID_NUM=$DEFAULT_GID_NUM"
 echo "TEST_GID_NUM=$TEST_GID_NUM"
 

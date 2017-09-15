@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: ubuntu:16.04
+    steps:
+      - checkout
+      - run:
+          name: 'Installing'
+          command: |
+            apt-get update -y
+            apt-get install -y build-essential expect git gnupg2 psmisc pinentry-tty rpm ruby-dev
+            gem install fpm
+      - run:
+          name: 'Cleaning'
+          command: |
+            rm -rf ~/.gpnupg
+            make clean
+      - run:
+          name: 'Testing'
+          command: |
+            GPG=gpg2 make test
+            make packages-deb
+            make packages-rpm
