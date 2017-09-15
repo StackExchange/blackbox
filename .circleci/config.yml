@@ -18,7 +18,7 @@ jobs:
           name: 'Installing'
           command: |
             apt-get update -y
-            apt-get install -y build-essential expect git gnupg2 pinentry-tty psmisc rpm ruby-dev
+            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev
             gem install fpm
       - run:
           name: 'Cleaning'
@@ -41,7 +41,7 @@ jobs:
           name: 'Installing'
           command: |
             apt-get update -y
-            apt-get install -y build-essential expect git gnupg2 pinentry-tty psmisc rpm ruby-dev
+            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev
             gem install fpm
       - run:
           name: 'Cleaning'
