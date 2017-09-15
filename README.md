@@ -1,4 +1,4 @@
-BlackBox
+BlackBox ![CircleCI](https://circleci.com/gh/StackExchange/blackbox.svg?style=shield)
 ========
 
 Safely store secrets in a VCS repo (i.e. Git, Mercurial, Subversion or Perforce). These commands make it easy for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are "encrypted at rest" in your repository. However, the scripts make it easy to decrypt them when you need to view or edit them, and decrypt them for use in production. Originally written for Puppet, BlackBox now works with any Git or Mercurial repository.
