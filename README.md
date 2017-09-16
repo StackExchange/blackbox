@@ -7,8 +7,6 @@ A slide presentation about an older release [is on SlideShare](http://www.slides
 
 Join our mailing list: [https://groups.google.com/d/forum/blackbox-project](https://groups.google.com/d/forum/blackbox-project)
 
-[![CircleCI](https://circleci.com/gh/StackExchange/blackbox.svg?style=svg)](https://circleci.com/gh/StackExchange/blackbox)
-
 Table of Contents
 =================
 
