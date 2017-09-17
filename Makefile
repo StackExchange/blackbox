@@ -118,7 +118,7 @@ uninstall-stow:
 update: tools/mk_deb_fpmdir.stack_blackbox.txt tools/mk_macports.vcs_blackbox.txt
 
 clean:
-	rm tools/mk_deb_fpmdir.stack_blackbox.txt tools/mk_macports.vcs_blackbox.txt
+	rm -f tools/mk_deb_fpmdir.stack_blackbox.txt tools/mk_macports.vcs_blackbox.txt
 
 #
 # System Test:
