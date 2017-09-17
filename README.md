@@ -134,7 +134,7 @@ If you use Git, add the following lines to your `.gitattributes` file:
     **/blackbox-files.txt text eol=lf
 
 The latest version of `blackbox_initialize` will create a `.gitattributes` file in the `$BLACKBOXDATA`
-directory (usually `keyrings/live`) for you.
+directory (usually `.blackbox`) for you.
 
 ### Cygwin
 
@@ -293,7 +293,7 @@ blackbox_deregister_file path/to/file.name.key
 How to indoctrinate a new user into the system?
 ===============================================
 
-`keyrings/live/blackbox-admins.txt` is a file that lists which users are able to decrypt files. (More pedantically, it is a list of the GnuPG key names that the file is encrypted for.)
+`.blackbox/blackbox-admins.txt` is a file that lists which users are able to decrypt files. (More pedantically, it is a list of the GnuPG key names that the file is encrypted for.)
 
 To join the list of people that can edit the file requires three steps; You create a GPG key and add it to the key ring. Then, someone that already has access adds you to the system. Lastly, you should test your access.
 
@@ -322,7 +322,7 @@ blackbox_addadmin tal@example.com
 When the command completes successfully, instructions on how to commit these changes will be output. Run the command as given to commit the changes. It will look like this:
 
 ```
-git commit -m'NEW ADMIN: tal@example.com' keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: tal@example.com' .blackbox/pubring.gpg .blackbox/trustdb.gpg .blackbox/blackbox-admins.txt
 ```
 
 Then push it to the repo:
@@ -346,7 +346,7 @@ Ask someone that already has access to re-encrypt the data files. This gives you
 Pre-check: Verify the new keys look good.
 
 ```
-$ gpg --homedir=keyrings/live --list-keys 
+$ gpg --homedir=.blackbox --list-keys
 ```
 
 For example, examine the key name (email address) to make sure it conforms to corporate standards.
@@ -354,7 +354,7 @@ For example, examine the key name (email address) to make sure it conforms to co
 Import the keychain into your personal keychain and reencrypt:
 
 ```
-gpg --import keyrings/live/pubring.gpg
+gpg --import .blackbox/pubring.gpg
 blackbox_update_all_files
 ```
 
@@ -391,9 +391,9 @@ When the command completes, you will be given a reminder to check in the change 
 Note that their keys will still be in the key ring, but they will go unused. If you'd like to clean up the keyring, use the normal GPG commands and check in the file.
 
 ```
-gpg --homedir=keyrings/live --list-keys
-gpg --homedir=keyrings/live --delete-key olduser@example.com
-git commit -m'Cleaned olduser@example.com from keyring'  keyrings/live/*
+gpg --homedir=.blackbox --list-keys
+gpg --homedir=.blackbox --delete-key olduser@example.com
+git commit -m'Cleaned olduser@example.com from keyring'  .blackbox/*
 ```
 
 The key ring only has public keys. There are no secret keys to delete.
@@ -540,12 +540,12 @@ cd ~/.gnupg && tar xpvf /tmp/keys.tar
 Back on SECUREHOST, import the pubkey into the repository.
 
 ```
-$ cd keyrings/live
+$ cd .blackbox
 $ gpg --homedir . --import /tmp/NEWMASTER/pubkey.txt
 ```
 -->
 
-Back on SECUREHOST, add the new email address to keyrings/live/blackbox-admins.txt:
+Back on SECUREHOST, add the new email address to .blackbox/blackbox-admins.txt:
 
 ```
 cd /path/to/the/repo
@@ -555,14 +555,14 @@ blackbox_addadmin $KEYNAME /tmp/NEWMASTER
 Verify that secring.gpg is a zero-length file. If it isn't, you have somehow added a private key to the keyring. Start over.
 
 ```
-$ cd keyrings/live
+$ cd .blackbox
 $ ls -l secring.gpg
 ```
 
 Commit the recent changes:
 
 ```
-$ cd keyrings/live
+$ cd .blackbox
 git commit -m"Adding key for KEYNAME" pubring.gpg trustdb.gpg blackbox-admins.txt
 ```
 
@@ -579,7 +579,7 @@ On NEWMASTER, import the keys and decrypt the files:
 
 ```
 sudo -u svc_sadeploy bash   # Become the role account.
-gpg --import /etc/puppet/keyrings/live/pubring.gpg
+gpg --import /etc/puppet/.blackbox/pubring.gpg
 export PATH=$PATH:/path/to/blackbox/bin
 blackbox_postdeploy
 sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
@@ -613,11 +613,11 @@ $ blackbox_edit_end modified_file.txt
 
 You can also detect keys that are about to expire by issuing this command and manually reviewing the "expired:" dates:
 
-    gpg --homedir=keyrings/live  --list-keys
+    gpg --homedir=.blackbox  --list-keys
 
 or... list UIDs that will expire within 1 month from today: (Warning: this also lists keys without an expiration date)
 
-    gpg --homedir=keyrings/live --list-keys  --with-colons --fixed-list-mode  | grep ^uid | awk -F: '$6 < '$(( $(date +%s) + 2592000))
+    gpg --homedir=.blackbox --list-keys  --with-colons --fixed-list-mode  | grep ^uid | awk -F: '$6 < '$(( $(date +%s) + 2592000))
 
 Here's how to replace the key:
 
@@ -630,8 +630,8 @@ blackbox_removeadmin expired_user@example.com
 # This next command overwrites any changed unencrypted files. See warning above.
 blackbox_update_all_files
 git commit -m "Re-encrypt all files"
-gpg --homedir=keyrings/live --delete-key expired_user@example.com
-git commit -m 'Cleaned expired_user@example.com from keyring'  keyrings/live/*
+gpg --homedir=.blackbox --delete-key expired_user@example.com
+git commit -m 'Cleaned expired_user@example.com from keyring'  .blackbox/*
 git push
 ```
 
@@ -640,7 +640,7 @@ git push
 ```
 git pull
 blackbox_addadmin updated_user@example.com
-git commit -m'NEW ADMIN: updated_user@example.com keyrings/live/pubring.gpg keyrings/live/trustdb.gpg keyrings/live/blackbox-admins.txt
+git commit -m'NEW ADMIN: updated_user@example.com .blackbox/pubring.gpg .blackbox/trustdb.gpg .blackbox/blackbox-admins.txt
 git push
 ```
 
@@ -648,7 +648,7 @@ git push
 
 ```
 git pull
-gpg --import keyrings/live/pubring.gpg 
+gpg --import .blackbox/pubring.gpg
 blackbox_update_all_files 
 git commit -m "Re-encrypt all files"
 git push
@@ -680,7 +680,7 @@ And now commands like `git log -p file.gpg` will show a nice log of the changes 
 Some common errors
 ==================
 
-`gpg: filename: skipped: No public key` -- Usually this means there is an item in `keyrings/live/blackbox-admins.txt` that is not the name of the key. Either something invalid was inserted (like a filename instead of a username) or a user has left the organization and their key was removed from the keychain, but their name wasn't removed from the blackbox-admins.txt file.
+`gpg: filename: skipped: No public key` -- Usually this means there is an item in `.blackbox/blackbox-admins.txt` that is not the name of the key. Either something invalid was inserted (like a filename instead of a username) or a user has left the organization and their key was removed from the keychain, but their name wasn't removed from the blackbox-admins.txt file.
 
 `gpg: decryption failed: No secret key` -- Usually means you forgot to re-encrypt the file with the new key.
 

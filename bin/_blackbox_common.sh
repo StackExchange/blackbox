@@ -15,9 +15,12 @@ source "${0%/*}"/_stack_lib.sh
 # Where are we?
 : "${BLACKBOX_HOME:="$(cd "${0%/*}" ; pwd)"}" ;
 
-# Where in the VCS repo should the blackbox data be found?
-: "${BLACKBOXDATA:=keyrings/live}" ;   # If BLACKBOXDATA not set, set it.
-
+# What are the candidates for the blackbox data directory?
+declare -a BLACKBOXDATA_CANDIDATES
+BLACKBOXDATA_CANDIDATES=(
+  'keyrings/live'
+  '.blackbox'
+)
 
 # If $EDITOR is not set, set it to "vi":
 : "${EDITOR:=vi}" ;
@@ -65,6 +68,16 @@ export REPOBASE=$(physical_directory_of "$REPOBASE")
 if [[ -n "$BLACKBOX_REPOBASE" ]]; then
 	echo "Using custom repobase: $BLACKBOX_REPOBASE" >&2
 	export REPOBASE="$BLACKBOX_REPOBASE"
+fi
+
+if [ -z "$BLACKBOXDATA" ] ; then
+  BLACKBOXDATA="${BLACKBOXDATA_CANDIDATES[0]}"
+  for candidate in ${BLACKBOXDATA_CANDIDATES[@]} ; do
+    if [ -d "$REPOBASE/$candidate" ] ; then
+      BLACKBOXDATA="$candidate"
+      break
+    fi
+  done
 fi
 
 KEYRINGDIR="$REPOBASE/$BLACKBOXDATA"
