@@ -24,6 +24,7 @@ echo '========== FILES BEING SHREDDED:'
 
 exported_internal_shred_file() {
   source "$1/_blackbox_common.sh"
+  #unencrypted_file=$(get_unencrypted_filename "$2")
   unencrypted_file="$2"
   if [[ -f "$unencrypted_file" ]]; then
     echo "    SHRED: $unencrypted_file"
