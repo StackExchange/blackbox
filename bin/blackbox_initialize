@@ -39,6 +39,7 @@ if [[ $VCS_TYPE = "git" ]]; then
 
   # Set .gitattributes so that Windows users don't break the admin files.
   FILE="$BLACKBOXDATA/.gitattributes"
+  touch "$FILE"
   LINE='blackbox-admins.txt text eol=lf'
   grep -qF "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
   LINE='blackbox-files.txt text eol=lf'
