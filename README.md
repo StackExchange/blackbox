@@ -684,7 +684,7 @@ Some common errors
 
 `gpg: decryption failed: No secret key` -- Usually means you forgot to re-encrypt the file with the new key.
 
-`Error: can't re-encrypt because a key has expired.` -- A user's key has expired and can't be used to encrypt any more. Follow the[Replace expired keys](#replace-expired-keys) tip.
+`Error: can't re-encrypt because a key has expired.` -- A user's key has expired and can't be used to encrypt any more. Follow the [Replace expired keys](#replace-expired-keys) tip.
 
 Using Blackbox without a repo
 =============================
