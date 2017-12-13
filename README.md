@@ -172,7 +172,7 @@ Development:
 How is the encryption done?
 ===========================
 
-GPG has many different ways to encrypt a file. BlackBox uses the mode that lets you specify a list of keys that can decrypt the messsage.
+GPG has many different ways to encrypt a file. BlackBox uses the mode that lets you specify a list of keys that can decrypt the message.
 
 If you have 5 people ("admins") that should be able to access the secrets, each creates a GPG key and adds their public key to the keychain. The GPG command used to encrypt the file lists all 5 key names, and therefore any 1 key can decrypt the file.
 
