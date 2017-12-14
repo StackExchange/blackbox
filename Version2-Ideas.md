@@ -2,7 +2,7 @@
 
 I'm writing this to solicit feedback and encourage discussion.
 
-Here are my thoughts on a "verison 2" of blackbox.  This is where
+Here are my thoughts on a "version 2" of blackbox.  This is where
 I list ideas that would require major changes to the system. They
 might break backwards compatibility, though usually not.
 
