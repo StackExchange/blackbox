@@ -587,7 +587,7 @@ sudo -u puppet cat /etc/puppet/hieradata/blackbox.yaml # or any encrypted file.
 
 ProTip: If you get "gpg: decryption failed: No secret key" then you forgot to re-encrypt blackbox.yaml with the new key.
 
-On SECUREHOST, securerly delete your files:
+On SECUREHOST, securely delete your files:
 
 ```
 cd /tmp/NEWMASTER
