@@ -75,7 +75,7 @@ Backwards compatibility: This would add a "none" VCS, not remove any existing fu
 
 `bash` is fairly universal. It even exists on Windows.  However it is not the right language for large systems. Writing the acceptance tests is quite a bear.  Managing ".gitignore" files in bash is impossible and the current implementation fails in many cases.
 
-`python` is my second favorite langauge. It would make the code cleaner and more testable. However it is not installed everywhere.  I would also want to write it in Python3 (why start a new project in Python2?) but sadly Python3 is less common.  It is a chicken vs. egg situation.
+`python` is my second favorite language. It would make the code cleaner and more testable. However it is not installed everywhere.  I would also want to write it in Python3 (why start a new project in Python2?) but sadly Python3 is less common.  It is a chicken vs. egg situation.
 
 `go` is my favorite language. I could probably rewrite this in go in a weekend. However, now the code is compiled, not interpreted. Therefore we lose the ability to just "git clone" and have the tools you want.  Not everyone has a Go compiler installed on every machine.
 
