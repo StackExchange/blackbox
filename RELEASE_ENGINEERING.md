@@ -17,7 +17,7 @@ There are 3 branches/tags:
 -	**tag stable:** Stable enough for use by most people.
 -	**tag production:** Burned in long enough that we are confident it can be widely adopted.
 
-If you are packaging Blackbox for distribution, you should track the *tag production*. You might also want to provide a separate package that tracks *tag stable:* for early adopters.
+If you are packaging BlackBox for distribution, you should track the *tag production*. You might also want to provide a separate package that tracks *tag stable:* for early adopters.
 
 Build Tasks
 ===========
