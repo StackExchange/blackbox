@@ -26,12 +26,12 @@ Table of Contents
 - [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
 - [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
 - [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
-- [Enabling Blackbox For a Repo](#enabling-blackbox-for-a-repo)
+- [Enabling BlackBox For a Repo](#enabling-blackbox-for-a-repo)
 - [Set up automated users or &ldquo;role accounts&rdquo;](#set-up-automated-users-or-role-accounts)
 - [Replace expired keys](#replace-expired-keys)
 - [Some common errors](#some-common-errors)
-- [Using Blackbox on Windows](#using-blackbox-on-windows)
-- [Using Blackbox without a repo](#using-blackbox-without-a-repo)
+- [Using BlackBox on Windows](#using-blackbox-on-windows)
+- [Using BlackBox without a repo](#using-blackbox-without-a-repo)
 - [Some Subversion gotchas](#some-subversion-gotchas)
 - [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
 - [Developer Info](#developer-info)
@@ -99,7 +99,7 @@ Commands
 Compatibility
 =============
 
-Blackbox automatically determines which VCS you are using and does the right thing. It has a plug-in architecture to make it easy to extend to work with other systems. It has been tested to work with many operating systems.
+BlackBox automatically determines which VCS you are using and does the right thing. It has a plug-in architecture to make it easy to extend to work with other systems. It has been tested to work with many operating systems.
 
 -	Version Control systems
 	-	`git` -- The Git
@@ -117,14 +117,14 @@ To add or fix support for a VCS system, look for code at the end of `bin/_blackb
 
 To add or fix support for a new operating system, look for the case statements in `bin/_blackbox_common.sh` and `bin/_stack_lib.sh` and maybe `tools/confidence_test.sh`
 
-Using Blackbox on Windows
+Using BlackBox on Windows
 =========================
 
-Blackbox can be used with Cygwin or MinGW.
+BlackBox can be used with Cygwin or MinGW.
 
 ### Protect the line endings
 
-Blackbox assumes that `blackbox-admins.txt` and `blackbox-files.txt` will have
+BlackBox assumes that `blackbox-admins.txt` and `blackbox-files.txt` will have
 LF line endings. Windows users should be careful to configure Git or other systems
 to not convert or "fix" those files.
 
@@ -400,7 +400,7 @@ The key ring only has public keys. There are no secret keys to delete.
 
 Remember that this person did have access to all the secrets at one time. They could have made a copy. Therefore, to be completely secure, you should change all passwords, generate new SSL keys, and so on just like when anyone that had privileged access leaves an organization.
 
-Enabling Blackbox For a Repo
+Enabling BlackBox For a Repo
 ============================
 
 Overview:
@@ -734,14 +734,14 @@ This runs through a number of system tests. It creates a repo, encrypts files, d
 
 Please submit tests with code changes:
 
-The best way to change Blackbox is via Test Driven Development. First add a test to `tools/confidence.sh`. This test should fail, and demonstrate the need for the change you are about to make. Then fix the bug or add the feature you want. When you are done, `make confidence` should pass all tests. The PR you submit should include your code as well as the new test. This way the confidence tests accumulate as the system grows as we know future changes don't break old features.
+The best way to change BlackBox is via Test Driven Development. First add a test to `tools/confidence.sh`. This test should fail, and demonstrate the need for the change you are about to make. Then fix the bug or add the feature you want. When you are done, `make confidence` should pass all tests. The PR you submit should include your code as well as the new test. This way the confidence tests accumulate as the system grows as we know future changes don't break old features.
 
 Note: The tests currently assume "git" and have been tested only on CentOS, Mac OS X, and Cygwin. Patches welcome!
 
 Alternatives
 ============
 
-Here are other open source packages that do something similar to Blackbox. If you like them better than Blackbox, please use them.
+Here are other open source packages that do something similar to BlackBox. If you like them better than BlackBox, please use them.
 
 -	[git-crypt](https://www.agwa.name/projects/git-crypt/)
 -	[Pass](http://www.zx2c4.com/projects/password-store/)
