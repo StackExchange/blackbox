@@ -1,12 +1,12 @@
-# Ideas for blackbox Version 2
+# Ideas for BlackBox Version 2
 
 I'm writing this to solicit feedback and encourage discussion.
 
-Here are my thoughts on a "version 2" of blackbox.  This is where
+Here are my thoughts on a "version 2" of BlackBox.  This is where
 I list ideas that would require major changes to the system. They
 might break backwards compatibility, though usually not.
 
-Blackbox grew from a few simple shell scripts used at StackOverflow.com
+BlackBox grew from a few simple shell scripts used at StackOverflow.com
 to a larger system used by dozens (hundreds?) of organizations. Not
 all the design decisions were "forward looking".
 
@@ -94,4 +94,4 @@ However, I've never used it so I don't have any idea whether git-crypt is any be
 
 Of course, git-crypt doesn't work with SVN, HG, or any other VCS.  Is blackbox's strong point the fact that it support so many VCS systems?  To be honest, it originally only supported HG and GIT because I was at a company that used HG but then changed to GIT.  Supporting anything else was thanks to contributors. Heck, HG support hasn't even been tested recently (by me) since we've gone all git where I work.
 
-How important is this to blackbox users?
+How important is this to BlackBox users?
