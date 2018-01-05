@@ -26,7 +26,7 @@ BLACKBOXDATA_CANDIDATES=(
 : "${EDITOR:=vi}" ;
 
 # Allow overriding gpg command
-: "${GPG:=gpg}" ;
+: "${GPG:=gpg2}" ;
 
 function physical_directory_of() {
   local d=$(dirname "$1")
@@ -184,8 +184,9 @@ function prepare_keychain() {
   # NB: We must export the keys to a format that can be imported.
   make_self_deleting_tempfile keyringasc
   export LANG="C.UTF-8"
-  $GPG --export --no-default-keyring --keyring "$(get_pubring_path)" >"$keyringasc"
-  $GPG --import "$keyringasc" 2>&1 | egrep -v 'not changed$' >&2
+  $GPG --keyring "$(get_pubring_path)" --export | $GPG --import
+  #$GPG --export --no-default-keyring --keyring "$(get_pubring_path)" >"$keyringasc"
+  #$GPG --import "$keyringasc" 2>&1 | egrep -v 'not changed$' >&2
   echo '========== Importing keychain: DONE' >&2
 }
 
