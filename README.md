@@ -33,7 +33,7 @@ Table of Contents
 - [Using BlackBox on Windows](#using-blackbox-on-windows)
 - [Using BlackBox without a repo](#using-blackbox-without-a-repo)
 - [Some Subversion gotchas](#some-subversion-gotchas)
-- [Using Blackbox when gpg2 is installed next to gpg](#using-Blackbox-when-gpg2-is-installed-next-to-gpg)
+- [Using Blackbox when gpg2 is installed next to gpg](#using-blackbox-when-gpg2-is-installed-next-to-gpg)
 - [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
 - [Developer Info](#developer-info)
 - [Alternatives](#alternatives)
