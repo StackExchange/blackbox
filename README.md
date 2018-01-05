@@ -33,6 +33,7 @@ Table of Contents
 - [Using BlackBox on Windows](#using-blackbox-on-windows)
 - [Using BlackBox without a repo](#using-blackbox-without-a-repo)
 - [Some Subversion gotchas](#some-subversion-gotchas)
+- [Using Blackbox when gpg2 is installed next to gpg](#using-blackbox-when-gpg2-is-installed-next-to-gpg)
 - [How to submit bugs or ask questions?](#how-to-submit-bugs-or-ask-questions)
 - [Developer Info](#developer-info)
 - [Alternatives](#alternatives)
@@ -703,6 +704,19 @@ Some Subversion gotchas
 The current implementation will store the blackbox in `/keyrings` at the root of the entire repo.  this will create an issue between environments that have different roots (ie, checking out `/` on development vs `/releases/foo` in production).  To get around this, you can `export BLACKBOX_REPOBASE=/path/to/repo` and set a specific base for your repo.
 
 This was originally written for git and supports a two-phase commit, in which `commit` is a local commit and "push" sends the change upstream to the version control server when something is registered or deregistered with the system.  The current implementation will immediately `commit` a file (to the upstream subversion server) when you execute a `blackbox_*` command.
+
+Using Blackbox when gpg2 is installed next to gpg
+=================================================
+
+In some situations, team members or automated roles need to install gpg
+2.x next to the system gpg version 1.x. to catch up with the teams gpg
+version. On Ubuntu 16. you can ```apt-get install gnupg2``` which
+installes the binary gpg2. If you want to use this gpg2 binany run every
+blackbox command with GPG=gpg2. E.g.:
+
+```
+GPG=gpg2 blackbox_postdeploy
+```
 
 How to submit bugs or ask questions?
 ====================================
