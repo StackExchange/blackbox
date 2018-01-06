@@ -709,10 +709,12 @@ Using Blackbox when gpg2 is installed next to gpg
 =================================================
 
 In some situations, team members or automated roles need to install gpg
-2.x next to the system gpg version 1.x. to catch up with the teams gpg
-version. On Ubuntu 16. you can ```apt-get install gnupg2``` which
-installes the binary gpg2. If you want to use this gpg2 binany run every
-blackbox command with GPG=gpg2. E.g.:
+2.x alongside the system gpg version 1.x to catch up with the team's gpg
+version. On Ubuntu 16, you can ```apt-get install gnupg2``` which
+installs the binary gpg2. If you want to use this gpg2 binary, run every
+blackbox command with GPG=gpg2. 
+
+For example:
 
 ```
 GPG=gpg2 blackbox_postdeploy
