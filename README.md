@@ -28,7 +28,7 @@ Table of Contents
 - [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
 - [Enabling BlackBox For a Repo](#enabling-blackbox-for-a-repo)
 - [Set up automated users or &ldquo;role accounts&rdquo;](#set-up-automated-users-or-role-accounts)
-- [Replace expired keys](#replace-expired-keys)
+- [Replacing expired keys](#replacing-expired-keys)
 - [Some common errors](#some-common-errors)
 - [Using BlackBox on Windows](#using-blackbox-on-windows)
 - [Using BlackBox without a repo](#using-blackbox-without-a-repo)
