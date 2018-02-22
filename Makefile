@@ -16,7 +16,8 @@ all:
 
 install:
 	@echo 'To install, copy the files from bin to somewhere in your PATH.'
-	@echo 'Or, "make" (with no options) for more info.'
+	@echo 'The README.md document gives more details.'
+	@echo 'Or run "make" (with no options) for more info.'
 
 # The default package type is RPM.
 packages: packages-rpm
