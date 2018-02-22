@@ -65,14 +65,14 @@ The ability to be open and transparent about our code, with the exception of a f
 Installation Instructions
 =========================
 
+-	*The hard way*: Copy all the files in "bin" to your "bin".
 -	*The MacPorts Way*: `sudo port install vcs_blackbox`
 -	*The Homebrew Way*: `brew install blackbox`
--	*The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods.
--	*The Debian/Ubuntu way*: Check out the repo and install [fpm](https://github.com/jordansissel/fpm). Now you can make a DEB `make packages-deb` that can be distributed via local methods.
--	*The hard way*: Copy all the files in "bin" to your "bin".
--	*The manual way*: `make manual-install` to install. `make manual-uninstall` to uninstall.
+-	*The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
+-	*The Debian/Ubuntu way*: Check out the repo and make a DEB via `make packages-deb`; now you can distribute the DEB via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
 -	*The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
 -	*The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
+-	*Use symlinks*: To make symlinks in `/usr/local/bin` pointing to these files: `make symlinks-install` to install. `make symlinks-uninstall` to delete.
 
 Commands
 ========

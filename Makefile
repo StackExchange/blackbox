@@ -51,12 +51,12 @@ unlock-rpm:
 #
 # Manual install
 #
-manual-install:
+symlinks-install:
 	@echo 'Symlinking files from ./bin to /usr/local/bin'
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f /usr/local/bin/$$f; done
 	@echo 'Done.'
 
-manual-uninstall:
+symlinks-uninstall:
 	@echo 'Removing blackbox files from /usr/local/bin'
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do rm /usr/local/bin/$$f; done
 	@echo 'Done.'
