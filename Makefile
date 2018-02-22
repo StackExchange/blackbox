@@ -6,15 +6,17 @@ OUTPUTDIR?="$(BASEDIR)/debbuild-${PKGNAME}"
 
 all:
 	@echo 'Menu:'
-	@echo '  make update            Update any generated files'
-	@echo '  make packages          Make RPM packages'
-	@echo '  make packages-deb      Make DEB packages'
-	@echo '  make test              Run tests'
-	@echo '  make install           (incomplete)'
+	@echo '  make update             Update any generated files'
+	@echo '  make packages-rpm       Make RPM packages'
+	@echo '  make packages-deb       Make DEB packages'
+	@echo '  make symlinks-install   Make symlinks in /usr/local/bin/'
+	@echo '  make copy-install       Copy "bin" files to /usr/local/bin/'
+	@echo '  make usrlocal-uninstall Remove blackbox files from /usr/local/bin/'
+	@echo '  make test               Run tests'
 
 install:
 	@echo 'To install, copy the files from bin to somewhere in your PATH.'
-	@echo 'Or, if you use RPMs, "make packages" and install the result.'
+	@echo 'Or, "make" (with no options) for more info.'
 
 # The default package type is RPM.
 packages: packages-rpm
@@ -56,7 +58,12 @@ symlinks-install:
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f /usr/local/bin/$$f; done
 	@echo 'Done.'
 
-symlinks-uninstall:
+copy-install:
+	@echo 'Copying files from ./bin to /usr/local/bin'
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do cp `pwd`/$$f /usr/local/bin/$$f; done
+	@echo 'Done.'
+
+usrlocal-uninstall:
 	@echo 'Removing blackbox files from /usr/local/bin'
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do rm /usr/local/bin/$$f; done
 	@echo 'Done.'
