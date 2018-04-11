@@ -31,4 +31,4 @@ vcs_add "$pubring_path" "$KEYRINGDIR/trustdb.gpg" "$BB_ADMINS"
 echo
 echo
 echo 'NEXT STEP: Check these into the repo.  Probably with a command like...'
-echo $VCS_TYPE commit -m\'REMOVED ADMIN: $KEYNAME\' "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
+echo $VCS_TYPE commit -m\'REMOVED ADMIN: $KEYNAME\' "$BLACKBOXDATA/$(basename ${pubring_path})" "$BLACKBOXDATA/trustdb.gpg" "$BLACKBOXDATA/$BB_ADMINS_FILE"
