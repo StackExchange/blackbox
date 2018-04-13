@@ -21,15 +21,23 @@ source "${0%/*}/_blackbox_common.sh"
 change_to_vcs_root
 
 echo '========== FILES BEING SHREDDED:'
-while IFS= read <&99 -r encodedname; do
-  local name
-  name=$(echo $encodedname)
-  unencrypted_file=$(get_unencrypted_filename "$name")
-  encrypted_file=$(get_encrypted_filename "$name")
+
+exported_internal_shred_file() {
+  source "$1/_blackbox_common.sh"
+  unencrypted_file=$(get_unencrypted_filename "$2")
+  encrypted_file=$(get_encrypted_filename "$unencrypted_file")
   if [[ -f "$unencrypted_file" ]]; then
     echo "    $unencrypted_file"
     shred_file "$unencrypted_file"
   fi
-done 99<"$BB_FILES"
+}
+
+export -f exported_internal_shred_file
+
+DEREFERENCED_BIN_DIR="${0%/*}"
+MAX_PARALLEL_SHRED=10
+
+export IFS=
+xargs -I{} -n 1 -P $MAX_PARALLEL_SHRED bash -c "exported_internal_shred_file $DEREFERENCED_BIN_DIR {}" $DEREFERENCED_BIN_DIR/fake <"$BB_FILES"
 
 echo '========== DONE.'
