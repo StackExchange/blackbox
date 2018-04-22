@@ -1,22 +1,34 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli"
 )
 
+var dryRun bool
+
 func main() {
 	app := cli.NewApp()
 	app.Version = "2.0.0"
 	app.Usage = "Maintain encrypted files in a VCS (Git, Hg, Svn)"
 
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:        "dry-run, n",
+			Usage:       "show what would have been done",
+			Destination: &dryRun,
+		},
+	}
+
 	app.Commands = []cli.Command{
 		{
-			Name:    "initialize",
-			Aliases: []string{"init"},
-			Usage:   "Runs blackbox_initialize",
+			Name:     "initialize",
+			Aliases:  []string{"init"},
+			Category: "GETTING STARTED",
+			Usage:    "Runs blackbox_initialize",
 			Action: func(c *cli.Context) error {
 				return RunBash("blackbox_initialize", c.Args().First())
 			},
@@ -31,17 +43,31 @@ func main() {
 		},
 		{
 			Name:    "decrypt",
-			Aliases: []string{"de"},
+			Aliases: []string{"de", "start"},
 			Usage:   "Runs blackbox_edit_start",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "all, a",
+					Usage: "Runs blackbox_decrypt_all_files",
+				},
+				cli.BoolFlag{
+					Name:  "non-interactive",
+					Usage: "Runs blackbox_postdeploy",
+				},
+			},
 			Action: func(c *cli.Context) error {
+				if c.Bool("all") {
+					if c.Bool("non-interactive") {
+						return RunBash("blackbox_postdeploy", c.Args().First())
+					}
+					return RunBash("blackbox_decrypt_all_files", c.Args().First())
+				}
 				return RunBash("blackbox_edit_start", c.Args().First())
 			},
-			// TODO(tlim): Add --all flag to run blackbox_decrypt_all_files
-			// TODO(tlim): Add --non-interactive to run blackbox_postdeploy
 		},
 		{
 			Name:    "encrypt",
-			Aliases: []string{"en"},
+			Aliases: []string{"en", "end"},
 			Usage:   "Runs blackbox_edit_end",
 			Action: func(c *cli.Context) error {
 				return RunBash("blackbox_edit_end", c.Args().First())
@@ -83,8 +109,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "admin",
-			Usage: "Maintain the list of administrators",
+			Name:     "admin",
+			Category: "ADMINISTRATIVE",
+			Usage:    "Maintain the list of administrators",
 			Subcommands: []cli.Command{
 				{
 					Name:  "add",
@@ -110,9 +137,10 @@ func main() {
 			},
 		},
 		{
-			Name:    "register",
-			Aliases: []string{"reg"},
-			Usage:   "Maintain the list of files",
+			Name:     "register",
+			Aliases:  []string{"reg"},
+			Category: "ADMINISTRATIVE",
+			Usage:    "Maintain the list of files",
 			Subcommands: []cli.Command{
 				{
 					Name:  "add",
@@ -133,6 +161,28 @@ func main() {
 					Usage: "Runs blackbox_list_admins",
 					Action: func(c *cli.Context) error {
 						return RunBash("blackbox_list_files", c.Args().First())
+					},
+				},
+				{
+					Name:  "nlist",
+					Usage: "Lists the registered files",
+					Action: func(c *cli.Context) error {
+						if len(c.Args()) != 0 {
+							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+							return nil
+						}
+						return cmdList()
+					},
+				},
+				{
+					Name:  "status",
+					Usage: "Prints info about registered files",
+					Action: func(c *cli.Context) error {
+						if len(c.Args()) != 0 {
+							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+							return nil
+						}
+						return cmdStatus()
 					},
 				},
 			},

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -10,6 +11,10 @@ import (
 
 // RunBash runs a Bash command.
 func RunBash(command string, args ...string) error {
+	if dryRun {
+		fmt.Printf("DRY_RUN: Would run exec.Command(%v, %v)\n", command, args)
+		return nil
+	}
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
