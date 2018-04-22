@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/urfave/cli"
@@ -134,6 +133,17 @@ func main() {
 						return RunBash("blackbox_list_admins", c.Args().First())
 					},
 				},
+				{
+					Name:  "nlist",
+					Usage: "Runs blackbox_list_admins",
+					Action: func(c *cli.Context) error {
+						if len(c.Args()) != 0 {
+							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+							return nil
+						}
+						return cmdAdminList()
+					},
+				},
 			},
 		},
 		{
@@ -191,6 +201,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
 	}
 }
