@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -62,6 +63,41 @@ func main() {
 					return RunBash("blackbox_decrypt_all_files", c.Args().First())
 				}
 				return RunBash("blackbox_edit_start", c.Args().First())
+			},
+		},
+		{
+			Name:    "ndecrypt",
+			Aliases: []string{"de", "start"},
+			Usage:   "Runs blackbox_edit_start",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "all, a",
+					Usage: "All registered files",
+				},
+				cli.BoolFlag{
+					Name:  "non-interactive, b",
+					Usage: "Do not set up gpg-agent",
+				},
+				cli.StringFlag{
+					Name:  "set-group, g",
+					Usage: "Set group ownership",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				if !c.Bool("non-interactive") {
+					// gpg_agent_notice
+				}
+				if c.Bool("all") {
+					if len(c.Args()) != 0 {
+						return errors.New("Can't combined --all and filenames")
+					}
+				} else {
+					if len(c.Args()) == 0 {
+						return errors.New("At least one filename required (or --all)")
+					}
+
+				}
+				return cmdDecrypt(c.Bool("all"), c.Args(), c.String("set-group"))
 			},
 		},
 		{
@@ -181,7 +217,7 @@ func main() {
 							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
 							return nil
 						}
-						return cmdList()
+						return cmdRegList()
 					},
 				},
 				{
@@ -192,7 +228,7 @@ func main() {
 							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
 							return nil
 						}
-						return cmdStatus()
+						return cmdRegStatus()
 					},
 				},
 			},
