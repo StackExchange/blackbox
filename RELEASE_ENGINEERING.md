@@ -99,6 +99,7 @@ Submit the diff file as a bug as instructed. The instructions should look like t
 
 Step 3: Watch for the update to happen.
 
+
 Updating MacPorts (manual)
 ==========================
 
