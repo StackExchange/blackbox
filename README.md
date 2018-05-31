@@ -768,6 +768,7 @@ Here are other open source packages that do something similar to BlackBox. If yo
 
 git-crypt has the best git integration. Once set up it is nearly transparent to the users. However it only works with git.
 
+
 License
 =======
 
