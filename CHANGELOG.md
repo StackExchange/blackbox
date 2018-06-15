@@ -1,7 +1,36 @@
-Release v1.20170127
+Release v1.20180615
 
-* Starting CHANGELOG.
-
+* Standardize on .blackbox for config. Use keyrings/live for backwards compatibility.
+* Store keys in .blackbox directory (#218)
+* Suggest committing changes to pubring.gpg when running blackbox_removeadmin (#248)
+* Fix typo (#246)
+* Improve installation instructions (#244)
+* Fix replacing-expired-keys link in README (#241)
+* Fix problems when gpg2 is installed next to gpg (#237)
+* Many documentation corrections, updates, etc.
+* Exclude default keyring from import (#223)
+* .gitattributes not always updated (PR#146)
+* Fix bugs related to updating .gitattributes (PR#146)
+* Update readme with CircleCI link (#216)
+* Run the tests on a CI (#215)
+* Fixed Alpine compatibility (chmod) (#212)
+* direct repobase message to stderr (#204)
+* Improve Windows compatibility
+* NEW: .gitattributes Set Unix-only files to eol=lf
+* Silence 'not changed' output during keychain import (#200)
+* Improve FreeBSD compatibility
+* shred_file() outputs warning message to stderr. (#192)
+* Don't complain about GPG_AGENT_INFO if using newer gpg-agent (#189)
+* [FreeBSD] Fix use of chmod (#180)
+* Requiring a file to be entered to finish editing (#175)
+* Remove the key from the keyring when removing an admin (#173)
+* Add FreeBSD support (#172)
+* Add list admins commandline tool. (#170)
+ignore backup files and secring.gpg in $BLACKBOXDATA (#169)
+Allow parallel shredding of files (#167)
+* Add/improve Mingw support
+* Make "make confidence" less fragile
+* And a lot, lot more.
 
 Release v1.20170309
 
@@ -24,3 +53,7 @@ Release v1.20170611
 * blackbox_shred_all_files: BUGFIX: Does not shred files with spaces
 * blackbox_removeadmin: disable gpg's confirmation
 * Sync mk_rpm_fpmdir from master
+
+Release v1.20170127
+
+* Starting CHANGELOG.
