@@ -1,3 +1,7 @@
+Release v1.20180618
+
+* Restore `make manual-install` with warning. (#258)
+
 Release v1.20180615
 
 * Standardize on .blackbox for config. Use keyrings/live for backwards compatibility.
