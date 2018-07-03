@@ -59,6 +59,13 @@ symlinks-install:
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f /usr/local/bin/$$f; done
 	@echo 'Done.'
 
+manual-install:
+	@echo '***************************************************************'
+	@echo '*                      DEPRECATED                             *'
+	@echo '* `make manual-install` is now called `make symlinks-install` *'
+	@echo '***************************************************************'
+	$(MAKE) symlinks-install
+
 copy-install:
 	@echo 'Copying files from ./bin to /usr/local/bin'
 	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do cp `pwd`/$$f /usr/local/bin/$$f; done
