@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# blackbox_less -- Decrypt a file, less it, shred it
+# blackbox_view -- Decrypt a file, view it, shred it
 #
 set -e
 source "${0%/*}/_blackbox_common.sh"
@@ -13,7 +13,7 @@ for param in "$@" ; do
     "${BLACKBOX_HOME}/blackbox_edit_start" "$param"
     shreddable=1
   fi
-  less "$unencrypted_file"
+  ${PAGER:-less} "$unencrypted_file"
   if [[ $shreddable = 1 ]]; then
     shred_file "$unencrypted_file"
   fi
