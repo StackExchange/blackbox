@@ -99,6 +99,7 @@ Commands
 | `blackbox_edit_start <file>`        | Decrypt a file so it can be updated                                     |
 | `blackbox_edit_end <file>`          | Encrypt a file after blackbox_edit_start was used                       |
 | `blackbox_cat <file>`               | Decrypt and view the contents of a file                                 |
+| `blackbox_view <file>`              | Like blackbox_cat but pipes to `less` or $PAGER                         |
 | `blackbox_diff`                     | Diff decrypted files against their original crypted version             |
 | `blackbox_initialize`               | Enable blackbox for a GIT or HG repo                                    |
 | `blackbox_register_new_file <file>` | Encrypt a file for the first time                                       |
