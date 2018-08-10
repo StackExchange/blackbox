@@ -140,7 +140,7 @@ function fail_if_not_on_cryptlist() {
 
   if ! is_on_cryptlist "$name" ; then
     echo "ERROR: $name not found in $BB_FILES" >&2
-    echo "PWD=$(/bin/pwd)" >&2
+    echo "PWD=$(/usr/bin/env pwd)" >&2
     echo 'Exiting...' >&2
     exit 1
   fi

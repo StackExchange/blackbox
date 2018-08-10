@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 # The MIT License (MIT)
 
 # Copyright (c) 2014 Stack Exchange, Inc.
