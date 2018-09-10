@@ -50,7 +50,22 @@ Rather than one GPG passphrase for all the files, each person with access has th
 
 Automated processes often need access to all the decrypted files. This is easy too. For example, suppose Git is being used for Puppet files. The master needs access to the decrypted version of all the files. Simply set up a GPG key for the Puppet master (or the role account that pushes new files to the Puppet master) and have that user run `blackbox_postdeploy` after any files are updated.
 
-Getting started is easy. Just `cd` into a Git, Mercurial, Subversion or Perforce repository and run `blackbox_initialize`. After that, if a file is to be encrypted, run `blackbox_register_new_file` and you are done. Add and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`. To view and/or edit a file, run `blackbox_edit`; this will decrypt the file and open with whatever is specified by your $EDITOR environment variable. When you close the editor the file will automatically be encrypted again and the temporary plaintext file will be shredded. If you need to leave the file decrypted while you update you can use the`blackbox_edit_start` to decrypt the file and `blackbox_edit_end` when you want to "put it back in the box."
+Getting started is looks like this.
+First, if you don't have a GPG key, set it up using instructions
+such as:
+[Set up GPG key](https://help.github.com/articles/generating-a-new-gpg-key/).
+Now you are ready to go.
+`cd` into a Git, Mercurial, Subversion
+or Perforce repository and run `blackbox_initialize`. After that,
+if a file is to be encrypted, run `blackbox_register_new_file` and
+you are done. Add and remove keys with `blackbox_addadmin` and
+`blackbox_removeadmin`. To view and/or edit a file, run `blackbox_edit`;
+this will decrypt the file and open with whatever is specified by
+your $EDITOR environment variable. When you close the editor the
+file will automatically be encrypted again and the temporary plaintext
+file will be shredded. If you need to leave the file decrypted while
+you update you can use the`blackbox_edit_start` to decrypt the file
+and `blackbox_edit_end` when you want to "put it back in the box."
 
 Why is this important?
 ======================
@@ -73,6 +88,7 @@ Installation Instructions
 - *The Debian/Ubuntu way*: Check out the repo and make a DEB via `make packages-deb`; now you can distribute the DEB via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
 - *The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
 - *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
+- *The Nix Way*: `nix-env -i blackbox`
 
 Commands
 ========
@@ -83,6 +99,7 @@ Commands
 | `blackbox_edit_start <file>`        | Decrypt a file so it can be updated                                     |
 | `blackbox_edit_end <file>`          | Encrypt a file after blackbox_edit_start was used                       |
 | `blackbox_cat <file>`               | Decrypt and view the contents of a file                                 |
+| `blackbox_view <file>`              | Like blackbox_cat but pipes to `less` or $PAGER                         |
 | `blackbox_diff`                     | Diff decrypted files against their original crypted version             |
 | `blackbox_initialize`               | Enable blackbox for a GIT or HG repo                                    |
 | `blackbox_register_new_file <file>` | Encrypt a file for the first time                                       |
