@@ -150,6 +150,23 @@ func main() {
 			Subcommands: []cli.Command{
 				{
 					Name:  "add",
+					Usage: "Adds to blackbox admins",
+					Action: func(c *cli.Context) error {
+						if len(c.Args()) != 0 {
+							fmt.Fprintln(c.App.Writer, "ERROR: 'blackbox admin list' does not take any arguments")
+							return nil
+						}
+						return cmdAdminList()
+					},
+				{
+					Name:  "add",
+					Usage: "Adds adminstrator(s)",
+					Action: func(c *cli.Context) error {
+						return RunBash("blackbox_addadmin", c.Args().First())
+					},
+				},
+				{
+					Name:  "oadd",
 					Usage: "Runs blackbox_addadmin",
 					Action: func(c *cli.Context) error {
 						return RunBash("blackbox_addadmin", c.Args().First())
@@ -163,18 +180,18 @@ func main() {
 					},
 				},
 				{
-					Name:  "list",
+					Name:  "olist",
 					Usage: "Runs blackbox_list_admins",
 					Action: func(c *cli.Context) error {
 						return RunBash("blackbox_list_admins", c.Args().First())
 					},
 				},
 				{
-					Name:  "nlist",
-					Usage: "Runs blackbox_list_admins",
+					Name:  "list",
+					Usage: "Lists blackbox admins",
 					Action: func(c *cli.Context) error {
 						if len(c.Args()) != 0 {
-							fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+							fmt.Fprintln(c.App.Writer, "ERROR: 'blackbox admin list' does not take any arguments")
 							return nil
 						}
 						return cmdAdminList()

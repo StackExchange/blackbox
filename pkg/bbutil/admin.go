@@ -36,3 +36,28 @@ func (bbu *RepoInfo) Administrators() ([]Administrator, error) {
 
 	return r, nil
 }
+
+// AddAdministrators adds administrators by email address.
+func (bbu *RepoInfo) AddAdministrators([]string) (error) {
+	// If doesn't exist, create it.
+	:q
+
+	adminFilename := filepath.Join(bbu.BlackboxConfigDir, "blackbox-admins.txt")
+	d, err := ioutil.ReadFile(adminFilename)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not read the list of administrators")
+	}
+
+	// remove a trailing \n.
+	s := strings.TrimSuffix(string(d), "\n") // remove a single newline.
+	names := strings.Split(s, "\n")
+	if !sort.StringsAreSorted(names) {
+		log.Fatalf("Admin list is corrupted. It is not sorted; %q", adminFilename)
+	}
+	r := make([]Administrator, len(names))
+	for i, name := range names {
+		r[i].Name = name
+	}
+
+	return r, nil
+}

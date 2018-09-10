@@ -1,5 +1,7 @@
 package main
 
+// All the "blackbox admin" subcommands.
+
 import (
 	"fmt"
 
