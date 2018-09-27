@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_decrypt_file -- Decrypt one or more blackbox files.
+#
+
+set -e
+source "${0%/*}/_blackbox_common.sh"
+
+if [ $# -eq 0 ]; then
+  echo >&2 "Please provide at least one file to decrypt"
+  exit 1
+fi
+
+"${BLACKBOX_HOME}/blackbox_edit_start" "$@"
