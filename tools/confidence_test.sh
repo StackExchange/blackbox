@@ -5,6 +5,9 @@ export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/
 
 export LANG=C.UTF-8  # Required ro "gpg --export" to work properly.
 
+# TODO(tlim): The tests are hardcoded to this directory. This should be fixed.
+export BLACKBOXDATA=keyrings/live
+
 # This script requires many utilities, some are not
 # required by the usual blackbox scripts.  Test to make
 # sure we have them all.
