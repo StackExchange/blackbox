@@ -16,10 +16,13 @@ source "${0%/*}"/_stack_lib.sh
 : "${BLACKBOX_HOME:="$(cd "${0%/*}" ; pwd)"}" ;
 
 # What are the candidates for the blackbox data directory?
+#
+# The order of candidates matter. The first entry of the array
+# sets the default Blackbox directory for all new repositories.
 declare -a BLACKBOXDATA_CANDIDATES
 BLACKBOXDATA_CANDIDATES=(
-  'keyrings/live'
   '.blackbox'
+  'keyrings/live'
 )
 
 # If $EDITOR is not set, set it to "vi":
