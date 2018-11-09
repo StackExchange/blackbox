@@ -50,7 +50,7 @@ Rather than one GPG passphrase for all the files, each person with access has th
 
 Automated processes often need access to all the decrypted files. This is easy too. For example, suppose Git is being used for Puppet files. The master needs access to the decrypted version of all the files. Simply set up a GPG key for the Puppet master (or the role account that pushes new files to the Puppet master) and have that user run `blackbox_postdeploy` after any files are updated.
 
-Getting started is looks like this.
+Getting started it looks like this.
 First, if you don't have a GPG key, set it up using instructions
 such as:
 [Set up GPG key](https://help.github.com/articles/generating-a-new-gpg-key/).
@@ -70,7 +70,7 @@ and `blackbox_edit_end` when you want to "put it back in the box."
 Why is this important?
 ======================
 
-OBVIOUSLY we don't want secret things like SSL private keys and passwords to be leaked.
+Obviously, we don't want secret things like SSL private keys and passwords to be leaked.
 
 NOT SO OBVIOUSLY when we store "secrets" in a VCS repo like Git or Mercurial, suddenly we are less able to share our code with other people. Communication between subteams of an organization is hurt. You can't collaborate as well. Either you find yourself emailing individual files around (yuck!), making a special repo with just the files needed by your collaborators (yuck!!), or just deciding that collaboration isn't worth all that effort (yuck!!!).
 
@@ -83,11 +83,11 @@ Installation Instructions
 - *The hard way (automatic)*: `make copy-install` will copy the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`).
 - *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`) (useful when doing development)
 - *The MacPorts Way*: `sudo port install vcs_blackbox`
-- *The Homebrew Way*: `brew install blackbox`
+- *The Homebrew Way*: `brew install black box`
 - *The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
 - *The Debian/Ubuntu way*: Check out the repo and make a DEB via `make packages-deb`; now you can distribute the DEB via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
-- *The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
-- *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
+- *The Antigen Way*: Add `antigen bundle StackExchange/black box` to your .zshrc
+- *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your.zshrc where you're loading your other plugins.
 - *The Nix Way*: `nix-env -i blackbox`
 
 Commands
@@ -132,7 +132,7 @@ BlackBox automatically determines which VCS you are using and does the right thi
   - Cygwin (Thanks, Ben Drasin!) **See Note Below**
   - MinGW (git bash on windows) **See Note Below**
 
-To add or fix support for a VCS system, look for code at the end of `bin/_blackbox_common.sh`
+To add or fix support for a VCS system, look for the code at the end of `bin/_blackbox_common.sh`
 
 To add or fix support for a new operating system, look for the case statements in `bin/_blackbox_common.sh` and `bin/_stack_lib.sh` and maybe `tools/confidence_test.sh`
 
@@ -180,7 +180,7 @@ Normal operation:
   - Git Bash MINTTY returns a MinGW console.  So when you install make sure you pick `MINTTY` instead of windows console.  You'll be executing blackbox from the Git Bash prompt.
   - You need at least version 2.8.1 of Git for Windows.
 - [GnuWin32](https://sourceforge.net/projects/getgnuwin32/files/) - needed for various tools not least of which is mktemp which is used by blackbox
-  - after downloading the install just provides you with some batch files.  Because of prior issues at sourceforge and to make sure you get the latest version of each package the batch files handle the brunt of the work of getting the correct packages and installing them for you.
+  - after downloading the install just provides you with some batch files.  Because of prior issues at SourceForge and to make sure you get the latest version of each package the batch files handle the brunt of the work of getting the correct packages and installing them for you.
   - from a **windows command prompt** run `download.bat`  once it has completed run `install.bat` then add the path for those tools to your PATH (ex: `PATH=%PATH%;c:\GnuWin32\bin`)
 
 Development:
@@ -194,7 +194,7 @@ GPG has many different ways to encrypt a file. BlackBox uses the mode that lets 
 
 If you have 5 people ("admins") that should be able to access the secrets, each creates a GPG key and adds their public key to the keychain. The GPG command used to encrypt the file lists all 5 key names, and therefore any 1 key can decrypt the file.
 
-To remove someone's access, remove that admin's key name (i.e. email address) from the list of admins and re-encrypt all the files. They can still read the .gpg file (assuming they have access to the repository) but they can't decrypt it any more.
+To remove someone's access, remove that admin's key name (i.e. email address) from the list of admins and re-encrypt all the files. They can still read the .gpg file (assuming they have access to the repository) but they can't decrypt it anymore.
 
 *What if they kept a copy of the old repo before you removed access?* Yes, they can decrypt old versions of the file. This is why when an admin leaves the team, you should change all your passwords, SSL certs, and so on. You should have been doing that before BlackBox, right?
 
@@ -253,7 +253,7 @@ Small strings, such as passwords and API keys, are stored in a hiera yaml file, 
   - ...
 ```
 
-In blackbox.yaml specify:
+In Blackbox.yaml specify:
 
 ```
 ---
@@ -342,7 +342,7 @@ blackbox_addadmin tal@example.com
 When the command completes successfully, instructions on how to commit these changes will be output. Run the command as given to commit the changes. It will look like this:
 
 ```
-git commit -m'NEW ADMIN: tal@example.com' .blackbox/pubring.gpg .blackbox/trustdb.gpg .blackbox/blackbox-admins.txt
+git commit -m'NEW ADMIN: tal@example.com' .blackbox/pubring.gpg .blackbox/trustdb.gpg .blackbox/Blackbox-admins.txt
 ```
 
 Then push it to the repo:
@@ -428,7 +428,7 @@ Where is the configuration stored? .blackbox vs. keyrings/live
 ==============================================================
 
 Blackbox stores its configuration data in the `.blackbox` subdirectory.  Older
-repos use `keyrings/live`.  For backwards compatibility either will work.
+repo's use `keyrings/live`.  For backward compatibility either will work.
 
 All documentation refers to `.blackbox`.
 
@@ -449,7 +449,7 @@ The details:
 - First Blackbox checks `$BLACKBOXDATA`. If this environment variable is set, this is the directory that will be used. If it lists a directory that does not exist, Blackbox will print an error and exit.
 - If `$BLACKBOXDATA` is not set: (which is the typical use case)
   - Blackbox will first try `keyrings/live` and use it if it exists.
-  - Otherwise the default `.blackbox` will be used.  If `.blackbox` does not exist, Blackbox will print an error and exit.
+  - Otherwise, the default `.blackbox` will be used.  If `.blackbox` does not exist, Blackbox will print an error and exit.
 
 
 Enabling BlackBox For a Repo
@@ -508,7 +508,7 @@ ls -l foo.txt*
 
 You should only see `foo.txt.gpg` as `foo.txt` should be gone.
 
-The next step is to commit `foo.txt.gpg` and make sure another user can check out, view, and change the contents of the file. That is left as an exercise for the reader. If you are feel like taking a risk, don't commit `foo.txt.gpg` and delete it instead.
+The next step is to commit `foo.txt.gpg` and make sure another user can check out, view, and change the contents of the file. That is left as an exercise for the reader. If you feel like taking a risk, don't commit `foo.txt.gpg` and delete it instead.
 
 Set up automated users or "role accounts"
 =========================================
@@ -517,13 +517,13 @@ i.e. This is how a Puppet Master can have access to the unencrypted data.
 
 FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the configuration stored?"
 
-An automated user (a "role account") is one that that must be able to decrypt without a passphrase. In general you'll want to do this for the user that pulls the files from the repo to the master. This may be automated with Jenkins CI or other CI system.
+An automated user (a "role account") is one that that must be able to decrypt without a passphrase. In general, you'll want to do this for the user that pulls the files from the repo to the master. This may be automated with Jenkins CI or other CI system.
 
 GPG keys have to have a passphrase. However, passphrases are optional on subkeys. Therefore, we will create a key with a passphrase then create a subkey without a passphrase. Since the subkey is very powerful, it should be created on a very secure machine.
 
 There's another catch. The role account probably can't check files into Git/Mercurial. It probably only has read-only access to the repo. That's a good security policy. This means that the role account can't be used to upload the subkey public bits into the repo.
 
-Therefore, we will create the key/subkey on a secure machine as yourself. From there we can commit the public portions into the repo. Also from this account we will export the parts that the role account needs, copy them to where the role account can access them, and import them as the role account.
+Therefore, we will create the key/subkey on a secure machine as yourself. From there we can commit the public portions into the repo. Also from this account, we will export the parts that the role account needs, copy them to where the role account can access them, and import them as the role account.
 
 ProTip: If asked to generate entropy, consider running this on the same machine in another window: `sudo dd if=/dev/sda of=/dev/null`
 
@@ -557,7 +557,7 @@ Save the passphrase somewhere safe!
 Create a sub-key that has no password:
 
 ```
-$ gpg --homedir . --edit-key svc_deployacct
+$ gpg -- homedir. --edit-key svc_deployacct
 gpg> addkey
 (enter passphrase)
   Please select what kind of key you want:
@@ -654,7 +654,7 @@ find . -type f -print0 | xargs -0 shred -u
 rm -rf /tmp/NEWMASTER
 ```
 
-Also shred any other temporary files you may have made.
+Also, shred any other temporary files you may have made.
 
 Replacing expired keys
 ======================
@@ -751,7 +751,7 @@ FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the
 Using Blackbox without a repo
 =============================
 
-If the files are copied out of a repo they can still be decrypted and edited. Obviously edits, changes to keys, and such will be lost if they are made outside the repo. Also note that commands are most likely to only work if run from the base directory (i.e. the parent to the .blackbox directory).
+If the files are copied out of a repo they can still be decrypted and edited. Obviously, edits, changes to keys, and such will be lost if they are made outside the repo. Also, note that commands are most likely to only work if run from the base directory (i.e. the parent to the .blackbox directory).
 
 The following commands have been tested outside a repo:
 
@@ -784,7 +784,7 @@ GPG=gpg2 blackbox_postdeploy
 How to submit bugs or ask questions?
 ====================================
 
-We welcome questions, bug reports and feedback!
+We welcome questions, bug reports, and feedback!
 
 The best place to start is to join the [blackbox-project mailing list](https://groups.google.com/d/forum/blackbox-project) and ask there.
 
@@ -826,7 +826,7 @@ Here are other open source packages that do something similar to BlackBox. If yo
 - [Keyringer](https://keyringer.pw/)
 - [git-secret](https://github.com/sobolevn/git-secret)
 
-git-crypt has the best git integration. Once set up it is nearly transparent to the users. However it only works with git.
+git-crypt has the best git integration. Once set up it is nearly transparent to the users. However, it only works with git.
 
 
 License
