@@ -411,6 +411,12 @@ function md5sum_file() {
     Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
+    NetBSD )
+      md5 -q "$1"
+      ;;
+    SunOS )
+      digest -a md5 "$1"
+      ;;
     Linux | CYGWIN* | MINGW* )
       md5sum "$1" | awk '{ print $1 }'
       ;;
