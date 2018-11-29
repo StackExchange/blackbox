@@ -57,7 +57,7 @@ function create_self_deleting_tempfile() {
       : "${TMPDIR:=/tmp}" ;
       filename=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* | MINGW* )
+    Linux | CYGWIN* | MINGW* | NetBSD | SunOS )
       filename=$(mktemp)
       ;;
     * )
@@ -78,7 +78,7 @@ function create_self_deleting_tempdir() {
       : "${TMPDIR:=/tmp}" ;
       filename=$(mktemp -d -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* | MINGW* )
+    Linux | CYGWIN* | MINGW* | NetBSD | SunOS )
       filename=$(mktemp -d)
       ;;
     * )
@@ -102,7 +102,7 @@ function make_self_deleting_tempfile() {
       : "${TMPDIR:=/tmp}" ;
       name=$(mktemp -t _stacklib_.XXXXXXXX )
       ;;
-    Linux | CYGWIN* | MINGW* )
+    Linux | CYGWIN* | MINGW* | NetBSD | SunOS )
       name=$(mktemp)
       ;;
     * )
@@ -127,7 +127,7 @@ function make_tempdir() {
       # which needs to fit within sockaddr_un.sun_path (see unix(7)).
       name=$(mktemp -d -t SO )
       ;;
-    Linux | CYGWIN* | MINGW* )
+    Linux | CYGWIN* | MINGW* | NetBSD | SunOS )
       name=$(mktemp -d)
       ;;
     * )
@@ -160,14 +160,14 @@ function fail_if_not_running_as_root() {
 function fail_if_in_root_directory() {
   # Verify nobody has tricked us into being in "/".
   case $(uname -s) in
-    Darwin | FreeBSD )
+    Darwin | FreeBSD | NetBSD )
       if [[ $(stat -f'%i' / ) == $(stat -f'%i' . ) ]] ; then
         echo 'SECURITY ALERT: The current directory is the root directory.'
         echo 'Exiting...'
         exit 1
       fi
       ;;
-    Linux | CYGWIN* | MINGW* )
+    Linux | CYGWIN* | MINGW* | SunOS )
       if [[ $(stat -c'%i' / ) == $(stat -c'%i' . ) ]] ; then
         echo 'SECURITY ALERT: The current directory is the root directory.'
         echo 'Exiting...'
