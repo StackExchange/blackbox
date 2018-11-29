@@ -433,10 +433,13 @@ function cp_permissions() {
     Darwin )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
       ;;
-    FreeBSD )
+    FreeBSD | NetBSD )
       chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
       ;;
-    Linux | CYGWIN* | MINGW* )
+    SunOS )
+      chmod $( stat -c '%a' "$1" ) "${@:2}"
+      ;;
+    Linux | CYGWIN* | MINGW* | SunOS )
       if [[ -e /etc/alpine-release ]]; then
         chmod $( stat -c '%a' "$1" ) "${@:2}"
       else
