@@ -22,11 +22,14 @@ Table of Contents
 - [How to use the secrets with Puppet?](#how-to-use-the-secrets-with-puppet)
   - [Entire files](#entire-files)
   - [Small strings](#small-strings)
-- [How to enroll a new file into the system?](#how-to-enroll-a-new-file-into-the-system)
-- [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
-- [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
-- [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
-- [Enabling BlackBox For a Repo](#enabling-blackbox-for-a-repo)
+- File Management
+  - [How to enroll a new file into the system?](#how-to-enroll-a-new-file-into-the-system)
+  - [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
+- User Management
+  - [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
+  - [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
+- Repo Management
+  - [Enabling BlackBox For a Repo](#enabling-blackbox-for-a-repo)
 - [Set up automated users or &ldquo;role accounts&rdquo;](#set-up-automated-users-or-role-accounts)
 - [Replacing expired keys](#replacing-expired-keys)
 - [Some common errors](#some-common-errors)
@@ -366,6 +369,7 @@ Ask someone that already has access to re-encrypt the data files. This gives you
 Pre-check: Verify the new keys look good.
 
 ```
+git pull    # Or whatever is required for your system
 gpg --homedir=.blackbox --list-keys
 ```
 
