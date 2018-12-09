@@ -4,9 +4,15 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/blackbox/pkg/bbutil"
+	"github.com/urfave/cli"
 )
 
-func cmdRegList() error {
+func cmdRegList(c *cli.Context) error {
+	if len(c.Args()) != 0 {
+		fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+		return nil
+	}
+
 	bbu, err := bbutil.New()
 	if err != nil {
 		return err
@@ -21,7 +27,13 @@ func cmdRegList() error {
 	return nil
 }
 
-func cmdRegStatus() error {
+func cmdRegStatus(c *cli.Context) error {
+
+	if len(c.Args()) != 0 {
+		fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
+		return nil
+	}
+
 	bbu, err := bbutil.New()
 	if err != nil {
 		return err

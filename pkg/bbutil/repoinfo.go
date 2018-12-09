@@ -10,7 +10,7 @@ import (
 
 // Vcser is the interface that defines a plug-in VCS system.
 type Vcser interface {
-	Name() string        // Returns the name of this type.
+	Name() string        // Returns the name of this VCS type.
 	RepoBaseDir() string // Returns the full path leading to this repo.
 }
 

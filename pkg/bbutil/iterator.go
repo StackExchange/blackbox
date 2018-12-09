@@ -5,6 +5,7 @@ import (
 )
 
 // FileIterator return a list of files to process.
+
 func (bbu *RepoInfo) FileIterator(allFiles bool, fnames []string) ([]string, []bool, error) {
 	regfiles, err := bbu.RegisteredFiles()
 	if err != nil {

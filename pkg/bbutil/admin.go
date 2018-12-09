@@ -1,63 +1,21 @@
 package bbutil
 
-import (
-	"io/ioutil"
-	"log"
-	"path/filepath"
-	"sort"
-	"strings"
-
-	"github.com/pkg/errors"
-)
-
 // Administrator is a description of the admininstrators.
 type Administrator struct {
 	Name string
 }
 
-// Administrators returns the list of administrators.
+// Administrators returns the administrators of this repo.
 func (bbu *RepoInfo) Administrators() ([]Administrator, error) {
-	adminFilename := filepath.Join(bbu.BlackboxConfigDir, "blackbox-admins.txt")
-	d, err := ioutil.ReadFile(adminFilename)
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not read the list of administrators")
-	}
-
-	// remove a trailing \n.
-	s := strings.TrimSuffix(string(d), "\n") // remove a single newline.
-	names := strings.Split(s, "\n")
-	if !sort.StringsAreSorted(names) {
-		log.Fatalf("Admin list is corrupted. It is not sorted; %q", adminFilename)
-	}
-	r := make([]Administrator, len(names))
-	for i, name := range names {
-		r[i].Name = name
-	}
-
-	return r, nil
+	return plainListAdmins(bbu.BlackboxConfigDir)
 }
 
-// AddAdministrators adds administrators by email address.
-func (bbu *RepoInfo) AddAdministrators([]string) (error) {
-	// If doesn't exist, create it.
-	:q
+// AddAdmin adds an administrator to this repo.
+func (bbu *RepoInfo) AddAdmin(admin Administrator) error {
+	return plainAddAdmin(bbu.BlackboxConfigDir, admin)
+}
 
-	adminFilename := filepath.Join(bbu.BlackboxConfigDir, "blackbox-admins.txt")
-	d, err := ioutil.ReadFile(adminFilename)
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not read the list of administrators")
-	}
-
-	// remove a trailing \n.
-	s := strings.TrimSuffix(string(d), "\n") // remove a single newline.
-	names := strings.Split(s, "\n")
-	if !sort.StringsAreSorted(names) {
-		log.Fatalf("Admin list is corrupted. It is not sorted; %q", adminFilename)
-	}
-	r := make([]Administrator, len(names))
-	for i, name := range names {
-		r[i].Name = name
-	}
-
-	return r, nil
+// RemoveAdminByName removes an administrator from this repo.
+func (bbu *RepoInfo) RemoveAdminByName(admin Administrator) error {
+	return plainRemoveAdmin(bbu.BlackboxConfigDir, admin)
 }

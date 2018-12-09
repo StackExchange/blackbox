@@ -48,7 +48,7 @@ func FileStatus(basedir, file string) string {
 	es, eerr := os.Stat(e)
 	if perr == nil && eerr == nil {
 		if ps.ModTime().Before(es.ModTime()) {
-			return "ERROR_MOD"
+			return "GPGNEWER"
 		}
 		return "EDITING"
 	}
