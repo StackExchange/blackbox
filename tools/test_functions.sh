@@ -47,7 +47,7 @@ function assert_file_missing() {
 function assert_file_exists() {
   if [[ ! -e "$1" ]]; then
     echo "ASSERT FAILED: ${1} should exist."
-    echo "PWD=$(/bin/pwd -P)"
+    echo "PWD=$(/usr/bin/env pwd -P)"
     #echo "LS START"
     #ls -la
     #echo "LS END"
