@@ -39,7 +39,12 @@ export -f exported_internal_shred_file
 DEREFERENCED_BIN_DIR="${0%/*}"
 MAX_PARALLEL_SHRED=10
 
+bash_args=
+if bash --help | grep import-functions >/dev/null 2>/dev/null; then
+  bash_args=--import-functions
+fi
+
 export IFS=
-tr '\n' '\0' <"$BB_FILES" | xargs -0 -I{} -n 1 -P $MAX_PARALLEL_SHRED bash -c "exported_internal_shred_file $DEREFERENCED_BIN_DIR \"{}\"" $DEREFERENCED_BIN_DIR/fake
+tr '\n' '\0' <"$BB_FILES" | xargs -0 -I{} -P $MAX_PARALLEL_SHRED bash $bash_args -c "exported_internal_shred_file $DEREFERENCED_BIN_DIR \"{}\"" $DEREFERENCED_BIN_DIR/fake
 
 echo '========== DONE.'

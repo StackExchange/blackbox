@@ -134,6 +134,8 @@ BlackBox automatically determines which VCS you are using and does the right thi
   - MacOS X
   - Cygwin (Thanks, Ben Drasin!) **See Note Below**
   - MinGW (git bash on windows) **See Note Below**
+  - NetBSD
+  - SmartOS
 
 To add or fix support for a VCS system, look for code at the end of `bin/_blackbox_common.sh`
 

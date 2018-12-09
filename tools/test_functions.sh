@@ -24,6 +24,12 @@ function md5sum_file() {
     Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
+    NetBSD )
+      md5 -q "$1"
+      ;;
+    SunOS )
+      digest -a md5 "$1"
+      ;;
     Linux )
       md5sum "$1" | awk '{ print $1 }'
       ;;
@@ -72,10 +78,10 @@ function assert_file_group() {
   assert_file_exists "$file"
 
   case $(uname -s) in
-    Darwin|FreeBSD )
+    Darwin | FreeBSD | NetBSD )
       found=$(stat -f '%Dg' "$file")
       ;;
-    Linux )
+    Linux | SunOS )
       found=$(stat -c '%g' "$file")
       ;;
     CYGWIN* )
@@ -102,11 +108,11 @@ function assert_file_perm() {
   assert_file_exists "$file"
 
   case $(uname -s) in
-    Darwin|FreeBSD )
+    Darwin | FreeBSD | NetBSD )
       found=$(stat -f '%Sp' "$file")
       ;;
     # NB(tlim): CYGWIN hasn't been tested. It might be more like Darwin.
-    Linux | CYGWIN* )
+    Linux | CYGWIN* | SunOS )
       found=$(stat -c '%A' "$file")
       ;;
     * )
