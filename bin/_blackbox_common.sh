@@ -411,6 +411,12 @@ function md5sum_file() {
     Darwin | FreeBSD )
       md5 -r "$1" | awk '{ print $1 }'
       ;;
+    NetBSD )
+      md5 -q "$1"
+      ;;
+    SunOS )
+      digest -a md5 "$1"
+      ;;
     Linux | CYGWIN* | MINGW* )
       md5sum "$1" | awk '{ print $1 }'
       ;;
@@ -427,10 +433,13 @@ function cp_permissions() {
     Darwin )
       chmod $( stat -f '%p' "$1" ) "${@:2}"
       ;;
-    FreeBSD )
+    FreeBSD | NetBSD )
       chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
       ;;
-    Linux | CYGWIN* | MINGW* )
+    SunOS )
+      chmod $( stat -c '%a' "$1" ) "${@:2}"
+      ;;
+    Linux | CYGWIN* | MINGW* | SunOS )
       if [[ -e /etc/alpine-release ]]; then
         chmod $( stat -c '%a' "$1" ) "${@:2}"
       else
