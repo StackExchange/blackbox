@@ -18,10 +18,7 @@ pkg/bbutil.go:
     - EncryptedFilename(plainfilename string) (encryptedfilename string)
     - UnencryptedFilename(plainfilename string) (encryptedfilename string)
 
-file-level access
-
-pkg/admin:
-  - main.go -- generic admin manager
+  - admin.go -- generic admin manager
     - ListAdmins()
     - AddAdmins()
     - RemoveAdmins()
@@ -30,7 +27,7 @@ pkg/admin:
     - FileStatusAll()
     - IsOnFilelist()
     - IsNotOnFilelist()
-  - plain.go -- read/write blackbox-admins.txt
+  - adminplain.go -- read/write blackbox-admins.txt
     - listAdminsPlain()
     - addAdminsPlain()
     - removeAdminsPlain()
