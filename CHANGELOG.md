@@ -1,3 +1,15 @@
+Release v1.20181219
+
+* New OS support: Add support for NetBSD and SunOS (SmartOS)
+* Testing: Improve confidence test.
+* .blackbox is now the default config directory for new repos. (#272)
+* Add blackbox_decrypt_file (#270)
+* Improved compatibility: change"/bin/[x]" to "/usr/bin/env [x]" (#265)
+* Add blackbox_less. (#263)
+* add nix method of install (#261)
+* Linked setting up of GPG key (#260)
+
+
 Release v1.20180618
 
 * Restore `make manual-install` with warning. (#258)
