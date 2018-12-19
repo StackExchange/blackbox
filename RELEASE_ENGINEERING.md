@@ -25,6 +25,17 @@ Build Tasks
 Stable Releases
 ===============
 
+Step 0. Test the software
+
+Run this command to run the unit and system tests:
+
+```
+make test
+```
+
+NOTE: The tests require pinentry-tty. On macOS with NIX this
+can be installed via: `nix-env -i pinentry`
+
 Marking the software to be "stable":
 
 Step 1.  Update CHANGELOG.md
