@@ -72,6 +72,12 @@ git tag "$R"
 git push origin tag "$R"
 ```
 
+Step 4. Get credit!
+
+Record the fact that you did this release in your weekly accomplishments file.
+
+
+
 Updating MacPorts (automatic)
 =============================
 
