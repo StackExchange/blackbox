@@ -5,7 +5,7 @@ Safely store secrets in a VCS repo (i.e. Git, Mercurial, Subversion or Perforce)
 
 A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
-Join our mailing list: [https://groups.google.com/d/forum/blackbox-project](https://groups.google.com/d/forum/blackbox-project)
+Join our [mailing list](https://groups.google.com/d/forum/blackbox-project).
 
 Table of Contents
 =================
