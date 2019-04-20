@@ -336,7 +336,7 @@ If you don't already have a GPG key, here's how to generate one:
 gpg --gen-key
 ```
 
-Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a machine secure machine with little or no internet access, full-disk-encryption, etc. Your employer probably has rules about how to store such things.
+Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a secure machine with little or no internet access, full-disk-encryption, etc. Your employer probably has rules about how to store such things.
 
 Now that you have a GPG key, add yourself as an admin:
 
