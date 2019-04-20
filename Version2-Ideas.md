@@ -86,7 +86,7 @@ As long as the code is in `bash` the configuration files like `blackbox-files.tx
 How important is itto blackbox users that the system is written in "bash"?
 
 
-## ditch the project and use git-crypt
+## Ditch the project and use git-crypt
 
 People tell me that git-crypt is better because, as a plug-in, automagically supports "git diff", "git log" and "git blame".
 
