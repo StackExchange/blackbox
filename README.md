@@ -88,7 +88,7 @@ The ability to be open and transparent about our code, with the exception of a f
 Installation Instructions
 =========================
 
-- *The hard way (manual*: Copy all the files in "bin" to your "bin".
+- *The hard way (manual)*: Copy all the files in "bin" to your "bin".
 - *The hard way (automatic)*: `make copy-install` will copy the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`).
 - *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`) (useful when doing development)
 - *The MacPorts Way*: `sudo port install vcs_blackbox`
