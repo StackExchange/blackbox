@@ -336,7 +336,19 @@ If you don't already have a GPG key, here's how to generate one:
 gpg --gen-key
 ```
 
+WARNING: New versions of GPG generate keys which are not understood by
+old versions of GPG.  If you generate a key with a new version of GPG,
+this will cause problems for users of older versions of GPG.
+Therefore it is recommended that you either assure that everyone using
+Blackbox have the exact same version of GPG, or generate GPG keys
+using a version of GPG as old as the oldest version of GPG used by
+everyone using Blackbox.
+
 Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a secure machine with little or no internet access, full-disk-encryption, etc. Your employer probably has rules about how to store such things.
+
+FYI: If generating the key is slow, this is usually because the system
+isn't generating enough entropy.  Tip: Open another window on that
+machine and run this command: `ls -R /`
 
 Now that you have a GPG key, add yourself as an admin:
 
