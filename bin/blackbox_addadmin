@@ -19,7 +19,8 @@ KEYNAME="$1"
 # Add the email address to the BB_ADMINS file.  Remove any duplicates.
 # The file must exist for sort to act as we expect.
 touch "$BB_ADMINS"
-sort  -fdu -o "$BB_ADMINS" <(echo "$1") "$BB_ADMINS"
+echo "$1" >> "$BB_ADMINS"
+sort -fdu -o "$BB_ADMINS" "$BB_ADMINS"
 
 
 # Add the user's key to the keychain.
