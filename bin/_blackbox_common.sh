@@ -213,7 +213,8 @@ function add_filename_to_cryptlist() {
   else
     echo "========== Adding file to list."
     touch "$BB_FILES"
-    sort -u -o "$BB_FILES" <(echo "$name") "$BB_FILES"
+    echo "$name" >> "$BB_FILES"
+    sort -u -o "$BB_FILES" "$BB_FILES"
   fi
 }
 
