@@ -89,8 +89,8 @@ Installation Instructions
 =========================
 
 - *The hard way (manual)*: Copy all the files in "bin" to your "bin".
-- *The hard way (automatic)*: `make copy-install` will copy the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`).
-- *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`) (useful when doing development)
+- *The hard way (automatic)*: `make copy-install` will copy the bin files into $PREFIX/bin, default is /usr/local (uninstall with `make copy-uninstall`).
+- *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into $PREFIX/bin, default is /usr/local (uninstall with `make copy-uninstall`) (useful when doing development)
 - *The MacPorts Way*: `sudo port install vcs_blackbox`
 - *The Homebrew Way*: `brew install blackbox`
 - *The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
