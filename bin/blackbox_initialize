@@ -59,5 +59,5 @@ else
 	echo
 	echo
 	echo 'NEXT STEP: You need to manually check these in:'
-	echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' keyrings "$IGNOREFILE"
+	echo '     ' $VCS_TYPE commit -m\'INITIALIZE BLACKBOX\' "$BLACKBOXDATA" "$IGNOREFILE"
 fi

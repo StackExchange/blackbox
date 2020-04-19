@@ -53,20 +53,26 @@ Rather than one GPG passphrase for all the files, each person with access has th
 
 Automated processes often need access to all the decrypted files. This is easy too. For example, suppose Git is being used for Puppet files. The master needs access to the decrypted version of all the files. Simply set up a GPG key for the Puppet master (or the role account that pushes new files to the Puppet master) and have that user run `blackbox_postdeploy` after any files are updated.
 
-Getting started is looks like this.
-First, if you don't have a GPG key, set it up using instructions
-such as:
-[Set up GPG key](https://help.github.com/articles/generating-a-new-gpg-key/).
+Getting started
+---------------
+
+1. If you don't have a GPG key, set it up using instructions such as:
+[Set up GPG key](https://help.github.com/articles/generating-a-new-gpg-key/). \
 Now you are ready to go.
-`cd` into a Git, Mercurial, Subversion
-or Perforce repository and run `blackbox_initialize`. After that,
-if a file is to be encrypted, run `blackbox_register_new_file` and
-you are done. Add and remove keys with `blackbox_addadmin` and
-`blackbox_removeadmin`. To view and/or edit a file, run `blackbox_edit`;
+
+1. `cd` into a Git, Mercurial, Subversion or Perforce repository and run `blackbox_initialize`.
+
+1. If a file is to be encrypted, run `blackbox_register_new_file` and you are done.
+
+1. Add and remove keys with `blackbox_addadmin` and `blackbox_removeadmin`.
+
+1. To view and/or edit a file, run `blackbox_edit`;
 this will decrypt the file and open with whatever is specified by
-your $EDITOR environment variable. When you close the editor the
+your $EDITOR environment variable. \
+When you close the editor the
 file will automatically be encrypted again and the temporary plaintext
-file will be shredded. If you need to leave the file decrypted while
+file will be shredded. \
+If you need to leave the file decrypted while
 you update you can use the`blackbox_edit_start` to decrypt the file
 and `blackbox_edit_end` when you want to "put it back in the box."
 
@@ -82,9 +88,9 @@ The ability to be open and transparent about our code, with the exception of a f
 Installation Instructions
 =========================
 
-- *The hard way (manual*: Copy all the files in "bin" to your "bin".
-- *The hard way (automatic)*: `make copy-install` will copy the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`).
-- *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into /usr/local/bin (uninstall with `make usrlocal-uninstall`) (useful when doing development)
+- *The hard way (manual)*: Copy all the files in "bin" to your "bin".
+- *The hard way (automatic)*: `make copy-install` will copy the bin files into $PREFIX/bin, default is /usr/local (uninstall with `make copy-uninstall`).
+- *The symlinks way*: `make symlinks-install` will make symlinks of the bin files into $PREFIX/bin, default is /usr/local (uninstall with `make copy-uninstall`) (useful when doing development)
 - *The MacPorts Way*: `sudo port install vcs_blackbox`
 - *The Homebrew Way*: `brew install blackbox`
 - *The RPM way*: Check out the repo and make an RPM via `make packages-rpm`; now you can distribute the RPM via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
@@ -92,6 +98,7 @@ Installation Instructions
 - *The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
 - *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
 - *The Nix Way*: `nix-env -i blackbox`
+- *The Pkgsrc Way*: `pkgin in scm-blackbox`
 
 Commands
 ========
@@ -330,7 +337,19 @@ If you don't already have a GPG key, here's how to generate one:
 gpg --gen-key
 ```
 
-Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a machine secure machine with little or no internet access, full-disk-encryption, etc. Your employer probably has rules about how to store such things.
+WARNING: New versions of GPG generate keys which are not understood by
+old versions of GPG.  If you generate a key with a new version of GPG,
+this will cause problems for users of older versions of GPG.
+Therefore it is recommended that you either assure that everyone using
+Blackbox have the exact same version of GPG, or generate GPG keys
+using a version of GPG as old as the oldest version of GPG used by
+everyone using Blackbox.
+
+Pick defaults for encryption settings, 0 expiration. Pick a VERY GOOD passphrase. Store a backup of the private key someplace secure. For example, keep the backup copy on a USB drive that is locked in safe.  Or, at least put it on a secure machine with little or no internet access, full-disk-encryption, etc. Your employer probably has rules about how to store such things.
+
+FYI: If generating the key is slow, this is usually because the system
+isn't generating enough entropy.  Tip: Open another window on that
+machine and run this command: `ls -R /`
 
 Now that you have a GPG key, add yourself as an admin:
 

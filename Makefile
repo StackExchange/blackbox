@@ -1,5 +1,5 @@
 SHELL=/bin/sh
-
+PREFIX?=/usr/local
 PKGNAME=stack_blackbox
 BASEDIR?=$(HOME)
 OUTPUTDIR?="$(BASEDIR)/debbuild-${PKGNAME}"
@@ -9,9 +9,9 @@ all:
 	@echo '  make update             Update any generated files'
 	@echo '  make packages-rpm       Make RPM packages'
 	@echo '  make packages-deb       Make DEB packages'
-	@echo '  make symlinks-install   Make symlinks in /usr/local/bin/'
-	@echo '  make copy-install       Copy "bin" files to /usr/local/bin/'
-	@echo '  make usrlocal-uninstall Remove blackbox files from /usr/local/bin/'
+	@echo '  make symlinks-install   Make symlinks in ${PREFIX}/bin/'
+	@echo '  make copy-install       Copy "bin" files to ${PREFIX}/bin/'
+	@echo '  make copy-uninstall     Remove blackbox files from ${PREFIX}/bin/'
 	@echo '  make test               Run tests'
 
 install:
@@ -55,8 +55,8 @@ unlock-rpm:
 # Manual install
 #
 symlinks-install:
-	@echo 'Symlinking files from ./bin to /usr/local/bin'
-	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f /usr/local/bin/$$f; done
+	@echo "Symlinking files from ./bin to ${PREFIX}/bin"
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do ln -fs `pwd`/$$f $(PREFIX)/bin/$$f; done
 	@echo 'Done.'
 
 manual-install:
@@ -67,13 +67,13 @@ manual-install:
 	$(MAKE) symlinks-install
 
 copy-install:
-	@echo 'Copying files from ./bin to /usr/local/bin'
-	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do cp `pwd`/$$f /usr/local/bin/$$f; done
+	@echo "Copying files from ./bin to ${PREFIX}/bin"
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do cp `pwd`/$$f $(PREFIX)/bin/$$f; done
 	@echo 'Done.'
 
-usrlocal-uninstall:
-	@echo 'Removing blackbox files from /usr/local/bin'
-	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do rm /usr/local/bin/$$f; done
+copy-uninstall:
+	@echo "Removing blackbox files from ${PREFIX}/bin"
+	@cd bin && for f in `find . -type f -iname "*" ! -iname "Makefile"`; do rm $(PREFIX)/bin/$$f; done
 	@echo 'Done.'
 
 #
@@ -142,6 +142,6 @@ test: confidence
 confidence:
 	@if [ -e ~/.gnupg ]; then echo ERROR: '~/.gnupg should not exist. If it does, bugs may polute your .gnupg configuration. If the code has no bugs everything will be fine. Do you feel lucky?'; false ; fi
 	@if which >/dev/null gpg-agent ; then pkill gpg-agent ; rm -rf /tmp/tmp.* ; fi
-	@export PATH="$(PWD)/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:$(PATH)" ; tools/auto_system_test
+	@export PATH="$(PWD)/bin:$(PREFIX)/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:$(PATH)" ; tools/auto_system_test
 	@if which >/dev/null gpg-agent ; then pkill gpg-agent ; fi
 	@if [ -e ~/.gnupg ]; then echo ERROR: '~/.gnupg was created which means the scripts might be poluting GnuPG configuration.  Fix this bug.'; false ; fi
