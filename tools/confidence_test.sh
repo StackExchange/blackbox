@@ -160,6 +160,7 @@ blackbox_register_new_file secret.txt
 assert_file_missing secret.txt
 assert_file_exists secret.txt.gpg
 assert_line_exists '/secret.txt' .gitignore
+assert_line_exists 'secret.txt' keyrings/live/blackbox-files.txt
 
 PHASE 'She cats secrets.txt.gpg.'
 make_self_deleting_tempfile catsecret

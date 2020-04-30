@@ -366,13 +366,22 @@ function enumerate_blackbox_repos() {
   done
 }
 
+# Resolve the absolute path of a relative one
+# Adapted from https://unix.stackexchange.com/a/483514
+function abs() {
+  local _pwd bn
+  [ -d "${1}" ] && _pwd="${1}"
+  [ -f "${1}" ] && { _pwd=$(dirname "${1}") ;  bn=/$(basename "${1}") ;}
+  pushd "$_pwd" >/dev/null || exit
+  echo "$(pwd)${bn}"
+  popd >/dev/null || exit
+}
+
 # Output the path of a file relative to the repo base
 function vcs_relative_path() {
-  # Usage: vcs_relative_path file
-  local name="$1"
-  #python -c 'import os ; print(os.path.relpath("'"$(pwd -P)"'/'"$name"'", "'"$REPOBASE"'"))'
-  local p=$( printf "%s" "$( pwd -P )/${1}" | sed 's#//*#/#g' )
-  local name="${p#$REPOBASE}"
+  local name
+  name=$(abs "$1")
+  name="${name#$REPOBASE}"
   name=$( printf "%s" "$name" | sed 's#^/##g' | sed 's#/$##g' )
   printf "%s" "$name"
 }
