@@ -2,6 +2,7 @@ Table of Contents:
 ==================
 
 -	[Branches and Tags:](#branches-and-tags)
+-	[Testing:](#testing)
 -	[Build Tasks](#build-tasks)
 -	[Stable Releases](#stable-releases)
 -	[Production Releases](#production-releases)
@@ -18,6 +19,25 @@ There are 3 branches/tags:
 -	**tag production:** Burned in long enough that we are confident it can be widely adopted.
 
 If you are packaging BlackBox for distribution, you should track the *tag production*. You might also want to provide a separate package that tracks *tag stable:* for early adopters.
+
+Testing
+=======
+
+Tips:
+
+* macOS: `brew install gpg pinentry`
+* FreeBSD: `pkg install gpg gmake`
+* CentOS7: `yum install gpg`
+
+To run a suite of tests:
+
+```
+cd ~/src/github.com/StackExchange/blackbox
+make test
+```
+
+FYI: For FreeBSD, use `gmake test`
+
 
 Build Tasks
 ===========
