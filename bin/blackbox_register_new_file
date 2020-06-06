@@ -29,6 +29,7 @@ function register_new_file() {
   prepare_keychain
   encrypt_file "$unencrypted_file" "$encrypted_file"
   add_filename_to_cryptlist "$unencrypted_file"
+  vcs_ignore "$unencrypted_file"
 
   # Is the unencrypted file already in HG? (ie. are we correcting a bad situation)
   SECRETSEXPOSED=$(is_in_vcs "${unencrypted_file}")
@@ -41,7 +42,6 @@ function register_new_file() {
     vcs_add "$encrypted_file"
   fi
 
-  vcs_ignore "$unencrypted_file"
   echo 'NOTE: "already tracked!" messages are safe to ignore.'
   vcs_add "$BB_FILES" "$encrypted_file"
   vcs_commit "registered in blackbox: ${unencrypted_file}" "$BB_FILES" "$encrypted_file" "$(vcs_ignore_file_path)"

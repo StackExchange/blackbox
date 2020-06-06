@@ -19,40 +19,93 @@ These are the things I'd like to change someday.
 There should be one program, with subcommands that have names that make more sense:
 
 * `blackbox init`
-* `blackbox register <filename> <...>`
-* `blackbox deregister <filename> <...>`
-* `blackbox edit <filename> <...>`
-* `blackbox decrypt <filename> <...>`
-* `blackbox encrypt <filename> <...>`
+* `blackbox admin add <key>`
+* `blackbox admin remove <key>`
+* `blackbox admin list`
+* `blackbox files add`
+* `blackbox files list`
+* `blackbox files remove`
+* `blackbox encrypt <filename> ...`
+* `blackbox decrypt <filename> ...`
 * `blackbox decrypt_all`
-* `blackbox addadmin <key>`
-* `blackbox removeadmin <key>`
-* `blackbox cat <filename> <...>`
-* `blackbox diff <filename> <...>`
-* `blackbox list_files`
-* `blackbox list_admins`
+* `blackbox cat <filename> ...`
+* `blackbox edit <filename> ...`
+* `blackbox reencrypt_all`
 * `blackbox shred_all`
-* `blackbox update_all`
-* `blackbox whatsnew`
+* `blackbox diff <filename> ...`
+* `blackbox files unchanged`
+* `blackbox files changed`
 
-Backwards compatibility: The old commands would simply call the new commands.
+Flags where appropriate
+
+* -verbose -v
+* -noshred
+* -debug
+
+Backwards compatibility: The old scripts will be rewritten to use the new commands.
 
 ## Change the "keyrings" directory
 
-The name "keyrings" was unfortunate.  First, it should probably begin with a ".".  Second, it stores more than just keyrings.  Lastly, I'm finding that in most cases we want many repos to refer to the same keyring, which is not supported very well.
+The name `keyrings` was unfortunate.  First, it should probably begin with a `.`.  Second, it stores more than just keyrings.  Lastly, I'm finding that in most cases we want many repos to refer to the same keyring, which is not supported very well.
 
 A better system would be:
 
 1. If `$BLACKBOX_CONFIG` is set, use that directory.
-2. If the repo base directory has a file called ".blackbox_external", read that file as if you are reading `$BLACKBOX_CONFIG`
-3. If the repo base directory has a "keyrings" directory, use that.
-4. If the repo base directory has a ".blackboxconfig" directory, use that.
+2. If the repo base directory has a file called `.blackbox_external`, read that file as if you are reading `$BLACKBOX_CONFIG`
+3. If the repo base directory has a `keyrings` directory, use that.
+4. If the repo base directory has a `.blackbox` directory, use that.
 
-Some thoughts on .blackbox_external:
-I'm not sure what the format should be, but I want it to be simple and expandable.  It should support support "../../dir/name" and "/long/path".  However some day we may want to include a Git URL and have the system automatically get the keychain from it. That means the format has to be something like directory:../dir/name so that later we can add git:the_url.
+Some thoughts on `.blackbox_external`:
+I'm not sure what the format should be, but I want it to be simple and expandable.  It should support support `../../dir/name` and `/long/path`.  However some day we may want to include a Git URL and have the system automatically get the keychain from it. That means the format has to be something like directory:../dir/name so that later we can add git:the-url.
 
+NOTE: Maybe `.blackbox_external` should be `.blackbox/BLACKBOX_CONFIG`?
 
-Backwards compatibility: "keyrings" would be checked before .blackbox
+Backwards compatibility: `keyrings` would be checked before `.blackbox`.
+
+## System Test
+
+There needs to be a very complete system test.  The `make test` we
+have now is great for something written in bash.
+
+It should be easy to make tests. Perhaps a directory of files, each
+specifying a test.  We could make a little language for writing tests.
+
+    # This test becomes the user "alice" and verifies that she
+    # can encrypt a file, and decrypt it, with full fidelity.
+    BECOME alice a
+    BASH echo "foo contents" >foo.txt
+    SHOULD_NOT_EXIST foo.txt.gpg
+    BASH blackbox encrypt foo.txt
+    SHOULD_NOT_EXIST foo.txt
+    SHOULD_EXIST foo.txt.gpg
+    BASH_WITH_PASSWORD a blackbox decrypt foo.txt
+    SHOULD_EXIST foo.txt.gpg
+    SHOULD_EXIST foo.txt
+    SHOULD_CONTAIN foo.txt "foo contents\n"
+
+## Plug-in support
+
+There should plug-ins support for:
+
+Repo type:
+
+* Git -- Using /usr/bin/git or git.exe
+* Subversion
+* Mercurial
+* None (repoless)
+* Autodetect
+
+Encryption software:
+
+* GnuPG -- using /usr/bin/gpg{,2} or gpg.exe
+* golang.org/x/crypto/openpgp
+
+## JSON or .txt
+
+The files in .blackbox are mostly .txt files.  Instead we should
+define a .json format, and only read the .txt file is the .json file
+doesn't exist.
+
 
 ## Repo-less mode
 
@@ -62,33 +115,34 @@ I prefer the file commits to be automatic because when they were manual, people 
 
 That said, I'm willing to have a "repo-less" mode.
 
-When this mode is triggered, no add/commit/ignore tasks are done.  The search for the keyrings directory still uses `$BLACKBOX_CONFIG` but if that is unset it looks for .blackbox_config in the current directory, then recursively ".." until we hit "/".
+When this mode is triggered, no add/commit/ignore tasks are done.  The search for the keyrings directory still uses `$BLACKBOX_CONFIG` but if that is unset it looks for `.blackbox_config` in the current directory, then recursively `..` until we hit `/`.
 
 I think (but I'm not sure) this would benefit the entire system because it would force us to re-think what VCS actions are done when.
 
-I think (but I'm not sure) that a simple way to implement this would be to add an environment variable that overrides the automatic VCS detection. When set to "none", all VCS operations would basically become no-ops.  (This could be done by writing a plug-in that does nothing for all the vcs_* calls)
+I think (but I'm not sure) that a simple way to implement this would be to add an environment variable that overrides the automatic VCS detection. When set to "none", all VCS operations would basically become no-ops.  (This could be done by writing a plug-in that does nothing for all the `vcs_*` calls)
 
-Backwards compatibility: This would add a "none" VCS, not remove any existing functionality.
+
+Backwards compatibility: This would add a `none` VCS, not remove any existing functionality.
 
 
 ## Is "bash" the right language?
 
-`bash` is fairly universal. It even exists on Windows.  However it is not the right language for large systems. Writing the acceptance tests is quite a bear.  Managing ".gitignore" files in bash is impossible and the current implementation fails in many cases.
+`bash` is fairly universal. It even exists on Windows.  However it is not the right language for large systems. Writing the acceptance tests is quite a bear.  Managing `.gitignore` files in bash is impossible and the current implementation fails in many cases.
 
 `python` is my second favorite language. It would make the code cleaner and more testable. However it is not installed everywhere.  I would also want to write it in Python3 (why start a new project in Python2?) but sadly Python3 is less common.  It is a chicken vs. egg situation.
 
-`go` is my favorite language. I could probably rewrite this in go in a weekend. However, now the code is compiled, not interpreted. Therefore we lose the ability to just "git clone" and have the tools you want.  Not everyone has a Go compiler installed on every machine.
+`go` is my favorite language. I could probably rewrite this in go in a weekend. However, now the code is compiled, not interpreted. Therefore we lose the ability to just `git clone` and have the tools you want.  Not everyone has a Go compiler installed on every machine.
 
 The system is basically unusable on Windows without Cygwin or MINGW.  A rewrite in python or go would make it work better on Windows, which currently requires Cygwin or MinGW (which is a bigger investment than installing Python). On the other hand, maybe Ubuntu-on-Windows makes that a non-issue.
 
 As long as the code is in `bash` the configuration files like `blackbox-files.txt` and `blackbox-admins.txt` have problems.  Filenames with carriage returns aren't supported.  If this was in Python/Go/etc. those files could be json or some format with decent quoting and we could handle funny file names better. On the other hand, maybe it is best that we don't support funny filenames... we shouldn't enable bad behavior.
 
-How important is itto blackbox users that the system is written in "bash"?
+How important is itto blackbox users that the system is written in `bash`?
 
 
 ## Ditch the project and use git-crypt
 
-People tell me that git-crypt is better because, as a plug-in, automagically supports "git diff", "git log" and "git blame".
+People tell me that git-crypt is better because, as a plug-in, automagically supports `git diff`, `git log` and `git blame`.
 
 However, I've never used it so I don't have any idea whether git-crypt is any better than blackbox.
 

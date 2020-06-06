@@ -161,6 +161,11 @@ assert_file_missing secret.txt
 assert_file_exists secret.txt.gpg
 assert_line_exists '/secret.txt' .gitignore
 
+PHASE 'She cats secrets.txt.gpg.'
+make_self_deleting_tempfile catsecret
+blackbox_cat secret.txt.gpg > $catsecret
+assert_line_exists 'this is my secret' $catsecret
+
 PHASE 'She decrypts secrets.txt.'
 blackbox_edit_start secret.txt
 assert_file_exists secret.txt

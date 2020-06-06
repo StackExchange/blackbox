@@ -1,3 +1,27 @@
+Release v1.20200429
+
+NOTE: While there is now support for NetBSD and SunOS/SmartOS, the
+release process only tests on macOS and CentOS7 because that's all I
+have access to.
+
+* Fix tools that break when ".." or "." are used in a path (#304)
+* Respect PREFIX variable for copy-install (#294)
+* Documentation: Add pkgsrc install instructions (#292)
+* Improve support for Windows (#291)
+* Clarify gpg version usage (#290)
+* Many documentation fixes
+* DOCUMENTATION: Promote 'getting started' to a section, enumerate steps (#283)
+* Commit changes to gitignore when deregistering (#282)
+* Add support for NetBSD and SunOS (SmartOS)
+* Defend against ShellShock
+* .blackbox is now the default config directory for new repos. (#272)
+* Add blackbox_decrypt_file (#270)
+* Improved compatibility: change"/bin/[x]" to "/usr/bin/env [x]" (#265)
+* Add blackbox_less. (#263)
+* add nix method of install (#261)
+* Linked setting up of GPG key (#260)
+
+
 Release v1.20180618
 
 * Restore `make manual-install` with warning. (#258)
