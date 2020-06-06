@@ -1,4 +1,5 @@
-// package bbutil
+package bbutil
+
 //
 // // Administrator is a description of the admininstrators.
 // type Administrator struct {

@@ -1,6 +1,7 @@
 package main
 
-// All the "blackbox admin" subcommands.
+// Processes the flags and arguments and calls the appropriate
+// business logic.
 
 import (
 	"fmt"
@@ -19,10 +20,23 @@ func init() {
 	}
 }
 
+func allOrSomeFiles(c *cli.Context) error {
+	if c.Bool("all") {
+		if c.Args().Present() {
+			return fmt.Errorf("Can not specify filenames and --all")
+		}
+	} else {
+		if !c.Args().Present() {
+			return fmt.Errorf("Must specify at least one file name")
+		}
+	}
+	return nil
+}
+
 // Keep these functions in alphabetical order.
 
 func cmdAdminAdd(c *cli.Context) error {
-	if c.Args().Present() {
+	if !c.Args().Present() {
 		return fmt.Errorf(
 			"Must specify at least one admin's GnuPG user-id (i.e. email address)")
 	}
@@ -31,91 +45,168 @@ func cmdAdminAdd(c *cli.Context) error {
 }
 
 func cmdAdminList(c *cli.Context) error {
-	if !c.Args().Present() {
+	if c.Args().Present() {
 		return fmt.Errorf("This command takes zero arguments")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.AdminList(bx)
+	return bx.AdminList()
 }
 
 func cmdAdminRemove(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if !c.Args().Present() {
+		return fmt.Errorf("Must specify at least one admin's GnuPG user-id (i.e. email address)")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.AdminRemove(c.Args().Slice())
 }
 
 func cmdCat(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if !c.Args().Present() {
+		return fmt.Errorf("Must specify at least one file name")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Cat(c.Args().Slice())
 }
 
 func cmdDecrypt(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
+	bulk := false
+	if c.Bool("all") {
+		bulk = c.Bool("bulk") // Only applies to --all
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Decrypt(c.Args().Slice(),
+		c.Bool("overwrite"),
+		bulk,
+		c.String("group"),
+	)
 }
 
 func cmdDiff(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Diff(c.Args().Slice())
 }
 
 func cmdEdit(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if !c.Args().Present() {
+		return fmt.Errorf("Must specify at least one file name")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Edit(c.Args().Slice())
 }
 
 func cmdEncrypt(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
+	bulk := false
+	if c.Bool("all") {
+		bulk = c.Bool("bulk") // Only applies to --all
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Encrypt(c.Args().Slice(), bulk, c.String("group"), c.Bool("overwrite"))
 }
 
 func cmdFileAdd(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if !c.Args().Present() {
+		return fmt.Errorf("Must specify at least one file name")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.FileAdd(c.Args().Slice(), c.Bool("overwrite"))
 }
 
 func cmdFileList(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if c.Args().Present() {
+		return fmt.Errorf("This command takes zero arguments")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.FileList()
 }
 
 func cmdFileRemove(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if !c.Args().Present() {
+		return fmt.Errorf("Must specify at least one file name")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.FileRemove(c.Args().Slice())
 }
 
 func cmdInfo(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if c.Args().Present() {
+		return fmt.Errorf("This command takes zero arguments")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Info()
 }
 
 func cmdInit(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if c.Args().Present() {
+		return fmt.Errorf("This command takes zero arguments")
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Init()
 }
 
 func cmdReencrypt(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Reencrypt(c.Args().Slice())
 }
 
 func cmdShred(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
+	bx := box.NewFromFlags(c)
+	return bx.Shred(c.Args().Slice())
 }
 
-func cmdStatusAll(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
-}
+func cmdStatus(c *cli.Context) error {
+	if err := allOrSomeFiles(c); err != nil {
+		return err
+	}
 
-func cmdStatusChanged(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
-}
+	mode := box.Itemized
 
-func cmdStatusUnchanged(c *cli.Context) error {
-	logErr.Println("NOT IMPLEMENTED")
-	return nil
+	if c.Bool("all") {
+		if c.Args().Present() {
+			return fmt.Errorf("Can not specify filenames and --all")
+		}
+		if mode != box.Itemized {
+			return fmt.Errorf("--all can not be mixed with other flags")
+		}
+		mode = box.All
+	}
+
+	if c.Bool("changed") {
+		if c.Args().Present() {
+			return fmt.Errorf("Can not specify filenames and --changed")
+		}
+		if mode != box.Itemized {
+			return fmt.Errorf("--changed can not be mixed with other flags")
+		}
+		mode = box.Changed
+	}
+
+	if c.Bool("unchanged") {
+		if c.Args().Present() {
+			return fmt.Errorf("Can not specify filenames and --unchanged")
+		}
+		if mode != box.Itemized {
+			return fmt.Errorf("--unchanged can not be mixed with other flags")
+		}
+		mode = box.Unchanged
+	}
+
+	bx := box.NewFromFlags(c)
+	return bx.Status(c.Args().Slice(), mode, c.Bool("name-only"))
 }
 
 //func cmdInfo(c *cli.Context) error {

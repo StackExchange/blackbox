@@ -145,23 +145,9 @@ func flags() *cli.App {
 			Usage:    "Print status of files",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "name-only", Usage: "Show only names of the files"},
-			},
-			Subcommands: []*cli.Command{
-				{
-					Name:   "all",
-					Usage:  "All registered files",
-					Action: func(c *cli.Context) error { return cmdStatusAll(c) },
-				},
-				{
-					Name:   "changed",
-					Usage:  "Only include files that are newer than their .gpg file",
-					Action: func(c *cli.Context) error { return cmdStatusChanged(c) },
-				},
-				{
-					Name:   "unchanged",
-					Usage:  "Only include files that 'status changed' wouldn't list",
-					Action: func(c *cli.Context) error { return cmdStatusUnchanged(c) },
-				},
+				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
+				&cli.BoolFlag{Name: "changed", Usage: "Only files newer than their .gpg"},
+				&cli.BoolFlag{Name: "unchanged", Usage: "Only files older than their .gpg"},
 			},
 		},
 

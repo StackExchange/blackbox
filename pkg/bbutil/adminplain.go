@@ -1,4 +1,5 @@
-// package bbutil
+package bbutil
+
 //
 // import (
 // 	"io/ioutil"

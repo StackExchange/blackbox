@@ -1,4 +1,5 @@
-// package bbgit
+package bbgit
+
 //
 // import (
 // 	"os/exec"

@@ -1,5 +1,5 @@
-// package bbutil
-//
+package bbutil
+
 // import (
 // 	"sort"
 // )
