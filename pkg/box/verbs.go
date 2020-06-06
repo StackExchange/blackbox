@@ -9,10 +9,12 @@ func (bx *box) AdminAdd([]string) error {
 }
 
 func (bx *box) AdminList() error {
-	admins, err := bx.GetAdmins()
+
+	admins, err := bx.getAdmins()
 	if err != nil {
 		return err
 	}
+
 	for _, v := range admins {
 		fmt.Println(v)
 	}
@@ -56,12 +58,23 @@ func (bx *box) FileRemove(names []string) error {
 }
 
 func (bx *box) Info() error {
-	fmt.Println("VCS:")
-	//fmt.Printf("\tName: %q\n", bbu.Vcs.Name())
-	//fmt.Printf("\tRepoBaseDir: %q\n", bbu.Vcs.RepoBaseDir())
-	//fmt.Print("REPO:\n")
-	//fmt.Printf("\tRepoBaseDir: %q\n", bbu.RepoBaseDir)
-	//fmt.Printf("\tBlackboxConfigDir: %q\n", bbu.BlackboxConfigDir)
+
+	_, err := bx.getAdmins()
+	if err != nil {
+		logErr.Printf("getAdmins error: %v", err)
+	}
+
+	_, err = bx.getFiles()
+	if err != nil {
+		logErr.Printf("getFiles error: %v", err)
+	}
+
+	fmt.Println("BLACKBOX:")
+	fmt.Printf("bx.ConfigDir=%q\n", bx.ConfigDir)
+	//fmt.Printf("bx.Admins=%q\n", bx.Admins)
+	fmt.Printf("len(bx.Admins)=%v\n", len(bx.Admins))
+	//fmt.Printf("bx.Files=%q\n", bx.Files)
+	fmt.Printf("len(bx.Files)=%v\n", len(bx.Files))
 
 	return nil
 }
