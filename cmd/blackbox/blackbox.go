@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/StackExchange/blackbox/crypters"
+	_ "github.com/StackExchange/blackbox/crypters/_all"
 	_ "github.com/StackExchange/blackbox/vcs"
 	_ "github.com/StackExchange/blackbox/vcs/_all"
 )

@@ -26,6 +26,7 @@ var Catalog []*Item
 
 // Register a new VCS.
 func Register(name string, priority int, newfn NewFnSig) {
+	//fmt.Printf("VCS registered: %v\n", name)
 	item := &Item{
 		Name:     name,
 		New:      newfn,

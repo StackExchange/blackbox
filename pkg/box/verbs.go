@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/StackExchange/blackbox/pkg/bbutil"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -40,7 +41,47 @@ func (bx *Box) Cat([]string) error {
 }
 
 // Decrypt decrypts a file.
-func (bx *Box) Decrypt(names []string, overwrite bool, bulk bool, setgroup string) error {
+func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup string) error {
+	var err error
+
+	err = bx.getFiles()
+	if err != nil {
+		return err
+	}
+
+	groupchange := false
+	gid := -1
+	if setgroup != "" {
+		gid, err = parseGroup(setgroup)
+		if err != nil {
+			return fmt.Errorf("Invalid group name or gid: %w", err)
+		}
+	}
+
+	if len(names) == 0 {
+		names = bx.Files
+	}
+	for _, name := range names {
+		if !bx.FilesSet[name] {
+			logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+		}
+		if (!overwrite) && bbutil.FileExistsOrProblem(name) {
+			logErr.Printf("Skipping %q: Will not overwrite existing file", name)
+			continue
+		}
+		if bx.Crypter == nil {
+			fmt.Printf("NO CRYPTER!!!\n")
+		}
+		err := bx.Crypter.Decrypt(name, overwrite)
+		if err != nil {
+			logErr.Printf("%q: %v", name, err)
+			continue
+		}
+		if groupchange {
+			os.Chown(name, -1, gid)
+		}
+	}
+
 	return fmt.Errorf("NOT IMPLEMENTED: Decrypt")
 }
 
@@ -66,11 +107,11 @@ func (bx *Box) FileAdd(names []string, overwrite bool) error {
 
 // FileList lists the files.
 func (bx *Box) FileList() error {
-	files, err := bx.getFiles()
+	err := bx.getFiles()
 	if err != nil {
 		return err
 	}
-	for _, v := range files {
+	for _, v := range bx.Files {
 		fmt.Println(v)
 	}
 	return nil
@@ -89,7 +130,7 @@ func (bx *Box) Info() error {
 		logErr.Printf("getAdmins error: %v", err)
 	}
 
-	_, err = bx.getFiles()
+	err = bx.getFiles()
 	if err != nil {
 		logErr.Printf("getFiles error: %v", err)
 	}
@@ -124,7 +165,7 @@ func (bx *Box) Shred(names []string) error {
 // Status prints the status of files.
 func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 
-	_, err := bx.getFiles()
+	err := bx.getFiles()
 	if err != nil {
 		return err
 	}

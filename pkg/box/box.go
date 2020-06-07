@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/StackExchange/blackbox/crypters"
 	"github.com/StackExchange/blackbox/pkg/bbutil"
 	"github.com/StackExchange/blackbox/vcs"
 	"github.com/urfave/cli/v2"
@@ -21,10 +22,15 @@ type Box struct {
 	RepoBaseDir string // Base directory of the repo.
 	ConfigDir   string // Path to the .blackbox config directory.
 	//
-	Admins  []string // If non-empty, the list of admins.
-	Files   []string // If non-empty, the list of files.
-	Vcs     vcs.Vcs  // Handle for VCS access.
-	VcsName string   // name of the VCS
+	Admins       []string        // If non-empty, the list of admins.
+	Files        []string        // If non-empty, the list of files.
+	FilesSet     map[string]bool // If non-nil, a set of Files.
+	IsRegistered map[string]bool //
+	//
+	Vcs         vcs.Vcs          // Interface access to the VCS.
+	VcsName     string           // name of the VCS
+	Crypter     crypters.Crypter // Inteface access to GPG.
+	CrypterName string           // Name of the crypter in use.
 }
 
 // StatusMode is a type of query.
@@ -64,13 +70,36 @@ func NewFromFlags(c *cli.Context) *Box {
 	for _, v := range vcs.Catalog {
 		h, err = v.New()
 		if err != nil {
-			return nil
+			return nil // No idea how that would happen.
 		}
 		if h.Discover(bx.RepoBaseDir) {
 			bx.Vcs = h
 			bx.VcsName = v.Name
 			break
 		}
+	}
+	// We can assume something was found because "none" always says yes.
+
+	// Pick a crypto backend (GnuPG, go-openpgp, etc.)
+	//var cbe crypters.Crypter
+	var chandle crypters.Crypter
+	for _, v := range crypters.Catalog {
+		//fmt.Printf("Trying %v %v\n", v.Name)
+		if strings.ToLower(v.Name) == strings.ToLower(c.String("crypto")) {
+			//fmt.Printf("CRYPTER = %v\n", v.Name)
+			chandle, err = v.New()
+			if err != nil {
+				return nil // No idea how that would happen.
+			}
+			bx.Crypter = chandle
+			bx.CrypterName = v.Name
+			//fmt.Printf("USING! %v\n", v.Name)
+			break
+		}
+	}
+	if bx.Crypter == nil {
+		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the default\n")
+		os.Exit(1)
 	}
 
 	return bx
@@ -155,9 +184,10 @@ func (bx *Box) getAdmins() ([]string, error) {
 	return nil, fmt.Errorf("getAdmins can't load admin list")
 }
 
-func (bx *Box) getFiles() ([]string, error) {
+// getFiles populates Files and FileMap.
+func (bx *Box) getFiles() error {
 	if len(bx.Files) != 0 {
-		return bx.Files, nil
+		return nil
 	}
 
 	// TODO(tlim): Try the json file.
@@ -165,14 +195,17 @@ func (bx *Box) getFiles() ([]string, error) {
 	// Try the legacy file:
 	fn := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
 	b, err := ioutil.ReadFile(fn)
-	c := strings.TrimSpace(string(b))
-	if err == nil {
-		bx.Files = strings.Split(c, "\n")
-		return bx.Files, nil
-	}
-	if !os.IsNotExist(err) {
-		return nil, fmt.Errorf("getFiles can't open %q: %v", fn, err)
+	if err != nil {
+		return fmt.Errorf("getFiles can't read %q: %v", fn, err)
 	}
 
-	return nil, fmt.Errorf("getFiles can't load file list")
+	c := strings.TrimSpace(string(b))
+
+	bx.Files = strings.Split(c, "\n")
+	bx.FilesSet = make(map[string]bool)
+	for _, s := range bx.Files {
+		bx.FilesSet[s] = true
+	}
+
+	return nil
 }

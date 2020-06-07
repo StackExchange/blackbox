@@ -9,14 +9,19 @@ func flags() *cli.App {
 	app.Version = "2.0.0"
 	app.Usage = "Maintain encrypted files in a VCS (Git, Hg, Svn)"
 
-	//	app.Flags = []cli.Flag{
-	//		&cli.BoolFlag{
-	//			Name:        "dry-run",
-	//			Aliases:     []string{"n"},
-	//			Usage:       "show what would have been done",
-	//			Destination: &dryRun,
-	//		},
-	//	}
+	app.Flags = []cli.Flag{
+		//		&cli.BoolFlag{
+		//			Name:        "dry-run",
+		//			Aliases:     []string{"n"},
+		//			Usage:       "show what would have been done",
+		//			Destination: &dryRun,
+		//		},
+		&cli.StringFlag{
+			Name:  "crypto",
+			Usage: "Crypto back-end plugin",
+			Value: "GnuPG",
+		},
+	}
 
 	app.Commands = []*cli.Command{
 
