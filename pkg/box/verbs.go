@@ -60,7 +60,14 @@ func (bx *Box) FileAdd(names []string, overwrite bool) error {
 
 // FileList lists the files.
 func (bx *Box) FileList() error {
-	return fmt.Errorf("NOT IMPLEMENTED: FileList")
+	files, err := bx.getFiles()
+	if err != nil {
+		return err
+	}
+	for _, v := range files {
+		fmt.Println(v)
+	}
+	return nil
 }
 
 // FileRemove de-enrolls files.
