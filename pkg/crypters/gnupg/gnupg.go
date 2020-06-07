@@ -3,7 +3,7 @@ package gnupg
 import (
 	"fmt"
 
-	"github.com/StackExchange/blackbox/crypters"
+	"github.com/StackExchange/blackbox/v2/pkg/crypters"
 )
 
 func init() {

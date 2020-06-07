@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/blackbox/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/olekukonko/tablewriter"
 )
 

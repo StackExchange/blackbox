@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/StackExchange/blackbox/pkg/box"
+	"github.com/StackExchange/blackbox/v2/pkg/box"
 	"github.com/urfave/cli/v2"
 )
 

@@ -1,18 +1,18 @@
-package crypters
+package vcs
 
 import (
 	"sort"
 
-	"github.com/StackExchange/blackbox/models"
+	"github.com/StackExchange/blackbox/v2/models"
 )
 
-// Crypter is the handle
-type Crypter interface {
-	models.Crypter
+// Vcs is the handle
+type Vcs interface {
+	models.Vcs
 }
 
 // NewFnSig function signature needed by reg.
-type NewFnSig func() (Crypter, error)
+type NewFnSig func() (Vcs, error)
 
 // Item stores one item
 type Item struct {
@@ -26,7 +26,7 @@ var Catalog []*Item
 
 // Register a new VCS.
 func Register(name string, priority int, newfn NewFnSig) {
-	//fmt.Printf("CRYPTER registered: %v\n", name)
+	//fmt.Printf("VCS registered: %v\n", name)
 	item := &Item{
 		Name:     name,
 		New:      newfn,

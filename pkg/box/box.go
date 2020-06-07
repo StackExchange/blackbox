@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/StackExchange/blackbox/crypters"
-	"github.com/StackExchange/blackbox/pkg/bbutil"
-	"github.com/StackExchange/blackbox/vcs"
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/crypters"
+	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 	"github.com/urfave/cli/v2"
 )
 

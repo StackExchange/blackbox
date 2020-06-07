@@ -3,8 +3,8 @@ package git
 import (
 	"path/filepath"
 
-	"github.com/StackExchange/blackbox/pkg/bbutil"
-	"github.com/StackExchange/blackbox/vcs"
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
 
 func init() {

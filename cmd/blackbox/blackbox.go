@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/StackExchange/blackbox/crypters"
-	_ "github.com/StackExchange/blackbox/crypters/_all"
-	_ "github.com/StackExchange/blackbox/vcs"
-	_ "github.com/StackExchange/blackbox/vcs/_all"
+	_ "github.com/StackExchange/blackbox/v2/pkg/crypters"
+	_ "github.com/StackExchange/blackbox/v2/pkg/crypters/_all"
+	_ "github.com/StackExchange/blackbox/v2/pkg/vcs"
+	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
 )
 
 var dryRun bool

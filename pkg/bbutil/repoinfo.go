@@ -4,8 +4,8 @@ package bbutil
 // 	"os"
 // 	"path/filepath"
 //
-// 	"github.com/StackExchange/blackbox/pkg/bbgit"
-// 	"github.com/StackExchange/blackbox/pkg/bbnone"
+// 	"github.com/StackExchange/blackbox/v2/pkg/bbgit"
+// 	"github.com/StackExchange/blackbox/v2/pkg/bbnone"
 // )
 //
 // // Vcser is the interface that defines a plug-in VCS system.
