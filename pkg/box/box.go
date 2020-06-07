@@ -10,10 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	// "github.com/StackExchange/blackbox/vcs"
+	"github.com/StackExchange/blackbox/vcs"
 	"github.com/urfave/cli/v2"
 )
 
-type box struct {
+// Box describes what we know about a box.
+type Box struct {
 	//
 	RepoBaseDir string // Base directory of the repo.
 	ConfigDir   string // Path to the .blackbox config directory.
@@ -22,12 +25,17 @@ type box struct {
 	Files  []string // If non-empty, the list of files.
 }
 
+// StatusMode is a type of query.
 type StatusMode int
 
 const (
-	Itemized StatusMode = iota
+	// Itemized is blah
+	Itemized StatusMode = iota // Individual files by name
+	// All files is blah
 	All
+	// Unchanged is blah
 	Unchanged
+	// Changed is blah
 	Changed
 )
 
@@ -37,8 +45,9 @@ func init() {
 	logErr = log.New(os.Stderr, "", 0)
 }
 
-func NewFromFlags(c *cli.Context) *box {
-	bx := &box{}
+// NewFromFlags creates a box using items from flags.
+func NewFromFlags(c *cli.Context) *Box {
+	bx := &Box{}
 
 	repoBaseDir, configDir, err := findBaseAndConfigDir()
 	if err != nil {
@@ -47,6 +56,13 @@ func NewFromFlags(c *cli.Context) *box {
 	}
 	bx.RepoBaseDir = repoBaseDir
 	bx.ConfigDir = configDir
+
+	// Discover which kind of VCS is in use.
+	//	vcsName, vcsHandle := discoverVCS()
+	fmt.Printf("VCS len = %v\n", len(vcs.Catalog))
+	for i, v := range vcs.Catalog {
+		fmt.Printf("VCS[%v] = %q %q", i, v.Name, v.Priority)
+	}
 
 	return bx
 }
@@ -119,7 +135,7 @@ func findBaseAndConfigDir() (repodir, configdir string, err error) {
 	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
 }
 
-func (bx *box) getAdmins() ([]string, error) {
+func (bx *Box) getAdmins() ([]string, error) {
 	if len(bx.Admins) != 0 {
 		return bx.Admins, nil
 	}
@@ -141,7 +157,7 @@ func (bx *box) getAdmins() ([]string, error) {
 	return nil, fmt.Errorf("getAdmins can't load admin list")
 }
 
-func (bx *box) getFiles() ([]string, error) {
+func (bx *Box) getFiles() ([]string, error) {
 	if len(bx.Files) != 0 {
 		return bx.Files, nil
 	}

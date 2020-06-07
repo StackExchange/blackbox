@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+
+	_ "github.com/StackExchange/blackbox/vcs"
+	_ "github.com/StackExchange/blackbox/vcs/_all"
 )
 
 var dryRun bool

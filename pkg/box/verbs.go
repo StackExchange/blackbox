@@ -4,11 +4,11 @@ package box
 
 import "fmt"
 
-func (bx *box) AdminAdd([]string) error {
+func (bx *Box) AdminAdd([]string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: AdminAdd")
 }
 
-func (bx *box) AdminList() error {
+func (bx *Box) AdminList() error {
 
 	admins, err := bx.getAdmins()
 	if err != nil {
@@ -21,43 +21,43 @@ func (bx *box) AdminList() error {
 	return nil
 }
 
-func (bx *box) AdminRemove([]string) error {
+func (bx *Box) AdminRemove([]string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: AdminRemove")
 }
 
-func (bx *box) Cat([]string) error {
+func (bx *Box) Cat([]string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Cat")
 }
 
-func (bx *box) Decrypt(names []string, overwrite bool, bulk bool, setgroup string) error {
+func (bx *Box) Decrypt(names []string, overwrite bool, bulk bool, setgroup string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Decrypt")
 }
 
-func (bx *box) Diff([]string) error {
+func (bx *Box) Diff([]string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Diff")
 }
 
-func (bx *box) Edit([]string) error {
+func (bx *Box) Edit([]string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Edit")
 }
 
-func (bx *box) Encrypt(names []string, bulk bool, setgroup string, overwrite bool) error {
+func (bx *Box) Encrypt(names []string, bulk bool, setgroup string, overwrite bool) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Encrypt")
 }
 
-func (bx *box) FileAdd(names []string, overwrite bool) error {
+func (bx *Box) FileAdd(names []string, overwrite bool) error {
 	return fmt.Errorf("NOT IMPLEMENTED: FileAdd")
 }
 
-func (bx *box) FileList() error {
+func (bx *Box) FileList() error {
 	return fmt.Errorf("NOT IMPLEMENTED: FileList")
 }
 
-func (bx *box) FileRemove(names []string) error {
+func (bx *Box) FileRemove(names []string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: FileRemove")
 }
 
-func (bx *box) Info() error {
+func (bx *Box) Info() error {
 
 	_, err := bx.getAdmins()
 	if err != nil {
@@ -79,18 +79,18 @@ func (bx *box) Info() error {
 	return nil
 }
 
-func (bx *box) Init() error {
+func (bx *Box) Init() error {
 	return fmt.Errorf("NOT IMPLEMENTED: Init")
 }
 
-func (bx *box) Reencrypt(names []string) error {
+func (bx *Box) Reencrypt(names []string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Reencrypt")
 }
 
-func (bx *box) Shred(names []string) error {
+func (bx *Box) Shred(names []string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Shred")
 }
 
-func (bx *box) Status(names []string, mode StatusMode, nameOnly bool) error {
+func (bx *Box) Status(names []string, mode StatusMode, nameOnly bool) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Status")
 }
