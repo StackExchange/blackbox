@@ -27,7 +27,7 @@ func allOrSomeFiles(c *cli.Context) error {
 		}
 	} else {
 		if !c.Args().Present() {
-			return fmt.Errorf("Must specify at least one file name")
+			return fmt.Errorf("Must specify at least one file name or --all")
 		}
 	}
 	return nil
@@ -169,87 +169,13 @@ func cmdShred(c *cli.Context) error {
 }
 
 func cmdStatus(c *cli.Context) error {
-	if err := allOrSomeFiles(c); err != nil {
-		return err
+
+	if c.Bool("all") && c.Args().Present() {
+		return fmt.Errorf("Can not specify filenames and --all")
 	}
-
-	mode := box.Itemized
-
-	if c.Bool("all") {
-		if c.Args().Present() {
-			return fmt.Errorf("Can not specify filenames and --all")
-		}
-		if mode != box.Itemized {
-			return fmt.Errorf("--all can not be mixed with other flags")
-		}
-		mode = box.All
-	}
-
-	if c.Bool("changed") {
-		if c.Args().Present() {
-			return fmt.Errorf("Can not specify filenames and --changed")
-		}
-		if mode != box.Itemized {
-			return fmt.Errorf("--changed can not be mixed with other flags")
-		}
-		mode = box.Changed
-	}
-
-	if c.Bool("unchanged") {
-		if c.Args().Present() {
-			return fmt.Errorf("Can not specify filenames and --unchanged")
-		}
-		if mode != box.Itemized {
-			return fmt.Errorf("--unchanged can not be mixed with other flags")
-		}
-		mode = box.Unchanged
-	}
-
 	bx := box.NewFromFlags(c)
-	return bx.Status(c.Args().Slice(), mode, c.Bool("name-only"))
+	return bx.Status(c.Args().Slice(), c.Bool("name-only"), c.String("type"))
 }
-
-//func cmdInfo(c *cli.Context) error {
-//
-//	// GPG version
-//	// VCS name
-//	// keys directory
-//
-//	bbu, err := bbutil.New()
-//	if err != nil {
-//		return err
-//	}
-//
-//	fmt.Print("VCS:\n")
-//	fmt.Printf("\tName: %q\n", bbu.Vcs.Name())
-//	fmt.Printf("\tRepoBaseDir: %q\n", bbu.Vcs.RepoBaseDir())
-//	fmt.Print("REPO:\n")
-//	fmt.Printf("\tRepoBaseDir: %q\n", bbu.RepoBaseDir)
-//	fmt.Printf("\tBlackboxConfigDir: %q\n", bbu.BlackboxConfigDir)
-//
-//	return nil
-//}
-
-//func cmdAdminList(c *cli.Context) error {
-//
-//	if len(c.Args()) != 0 {
-//		fmt.Fprintln(c.App.Writer, "ERROR: 'blackbox admin list' does not take any arguments")
-//		return nil
-//	}
-//
-//	bbu, err := bbutil.New()
-//	if err != nil {
-//		return err
-//	}
-//	names, err := bbu.Administrators()
-//	if err != nil {
-//		return err
-//	}
-//	for _, item := range names {
-//		fmt.Println(item.Name)
-//	}
-//	return nil
-//}
 
 // func cmdDecrypt(allFiles bool, filenames []string, group string) error {
 // 	bbu, err := bbutil.New()

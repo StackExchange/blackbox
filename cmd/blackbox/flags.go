@@ -146,9 +146,9 @@ func flags() *cli.App {
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "name-only", Usage: "Show only names of the files"},
 				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
-				&cli.BoolFlag{Name: "changed", Usage: "Only files newer than their .gpg"},
-				&cli.BoolFlag{Name: "unchanged", Usage: "Only files older than their .gpg"},
+				&cli.StringFlag{Name: "type", Usage: "only list if status matching this string"},
 			},
+			Action: func(c *cli.Context) error { return cmdStatus(c) },
 		},
 
 		{

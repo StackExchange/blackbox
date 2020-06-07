@@ -39,24 +39,3 @@ package bbutil
 //
 // 	return r, nil
 // }
-//
-// // FileStatus returns the status of a file.
-// func FileStatus(basedir, file string) string {
-// 	p := filepath.Join(basedir, file)
-// 	e := p + ".gpg"
-// 	ps, perr := os.Stat(p)
-// 	es, eerr := os.Stat(e)
-// 	if perr == nil && eerr == nil {
-// 		if ps.ModTime().Before(es.ModTime()) {
-// 			return "GPGNEWER"
-// 		}
-// 		return "EDITING"
-// 	}
-// 	if eerr == nil {
-// 		return "ENCRYPTED"
-// 	}
-// 	if os.IsExist(perr) {
-// 		return "ERROR_NOGPG"
-// 	}
-// 	return "ERROR_NOEXIST"
-// }
