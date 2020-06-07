@@ -21,8 +21,10 @@ type Box struct {
 	RepoBaseDir string // Base directory of the repo.
 	ConfigDir   string // Path to the .blackbox config directory.
 	//
-	Admins []string // If non-empty, the list of admins.
-	Files  []string // If non-empty, the list of files.
+	Admins  []string // If non-empty, the list of admins.
+	Files   []string // If non-empty, the list of files.
+	Vcs     vcs.Vcs  // Handle for VCS access.
+	VcsName string   // name of the VCS
 }
 
 // StatusMode is a type of query.
@@ -58,10 +60,17 @@ func NewFromFlags(c *cli.Context) *Box {
 	bx.ConfigDir = configDir
 
 	// Discover which kind of VCS is in use.
-	//	vcsName, vcsHandle := discoverVCS()
-	fmt.Printf("VCS len = %v\n", len(vcs.Catalog))
-	for i, v := range vcs.Catalog {
-		fmt.Printf("VCS[%v] = %q %q", i, v.Name, v.Priority)
+	var h vcs.Vcs
+	for _, v := range vcs.Catalog {
+		h, err = v.New()
+		if err != nil {
+			return nil
+		}
+		if h.Discover() {
+			bx.Vcs = h
+			bx.VcsName = v.Name
+			break
+		}
 	}
 
 	return bx

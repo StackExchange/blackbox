@@ -18,5 +18,5 @@ func newGit() (vcs.Vcs, error) {
 
 // Discover returns false.
 func (v VcsHandle) Discover() bool {
-	return false
+	return true
 }
