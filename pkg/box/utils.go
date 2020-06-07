@@ -1,5 +1,6 @@
-module box
+package box
 
+import "os"
 
 // FileStatus returns the status of a file.
 func FileStatus(name string) (string, error) {
@@ -37,8 +38,6 @@ func FileStatus(name string) (string, error) {
 	}
 	return "PLAINERROR", perr
 }
-
-
 
 // func isChanged(pname string) (bool, error) {
 // 	// if .gpg exists but not plainfile: unchanged
