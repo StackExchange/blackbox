@@ -12,7 +12,7 @@ type Vcs interface {
 }
 
 // NewFnSig function signature needed by reg.
-type NewFnSig func(int) (Vcs, error)
+type NewFnSig func() (Vcs, error)
 
 // Item stores one item
 type Item struct {

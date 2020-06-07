@@ -13,7 +13,7 @@ type VcsHandle struct {
 	Age int
 }
 
-func newNone() (*VcsHandle, error) {
+func newNone() (vcs.Vcs, error) {
 	return &VcsHandle{}, nil
 }
 

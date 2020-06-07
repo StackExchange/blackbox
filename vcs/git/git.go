@@ -12,7 +12,7 @@ func init() {
 type VcsHandle struct {
 }
 
-func newGit() (*VcsHandle, error) {
+func newGit() (vcs.Vcs, error) {
 	return &VcsHandle{}, nil
 }
 
