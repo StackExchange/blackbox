@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	// "github.com/StackExchange/blackbox/vcs"
+	"github.com/StackExchange/blackbox/pkg/bbutil"
 	"github.com/StackExchange/blackbox/vcs"
 	"github.com/urfave/cli/v2"
 )
@@ -66,7 +66,7 @@ func NewFromFlags(c *cli.Context) *Box {
 		if err != nil {
 			return nil
 		}
-		if h.Discover() {
+		if h.Discover(bx.RepoBaseDir) {
 			bx.Vcs = h
 			bx.VcsName = v.Name
 			break
@@ -74,17 +74,6 @@ func NewFromFlags(c *cli.Context) *Box {
 	}
 
 	return bx
-}
-
-func dirExists(path string) (bool, error) {
-	stat, err := os.Stat(path)
-	if err == nil {
-		return stat.IsDir(), nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return true, err
 }
 
 func findBaseAndConfigDir() (repodir, configdir string, err error) {
@@ -125,7 +114,7 @@ func findBaseAndConfigDir() (repodir, configdir string, err error) {
 		// Does relpath contain any of our directory names?
 		for _, c := range candidates {
 			t := filepath.Join(relpath, c)
-			d, err := dirExists(t)
+			d, err := bbutil.DirExists(t)
 			if err != nil {
 				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
 			}

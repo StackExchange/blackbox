@@ -34,5 +34,5 @@ func Register(name string, priority int, newfn NewFnSig) {
 	Catalog = append(Catalog, item)
 
 	// Keep the list sorted.
-	sort.Slice(Catalog, func(i, j int) bool { return Catalog[i].Priority < Catalog[j].Priority })
+	sort.Slice(Catalog, func(i, j int) bool { return Catalog[j].Priority < Catalog[i].Priority })
 }

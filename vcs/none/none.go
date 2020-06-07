@@ -17,7 +17,7 @@ func newNone() (vcs.Vcs, error) {
 	return &VcsHandle{}, nil
 }
 
-// Discover returns false
-func (v VcsHandle) Discover() bool {
-	return false
+// Discover returns true
+func (v VcsHandle) Discover(repobasedir string) bool {
+	return true
 }

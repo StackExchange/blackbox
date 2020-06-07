@@ -1,11 +1,14 @@
 package git
 
 import (
+	"path/filepath"
+
+	"github.com/StackExchange/blackbox/pkg/bbutil"
 	"github.com/StackExchange/blackbox/vcs"
 )
 
 func init() {
-	vcs.Register("GIT", 1, newGit)
+	vcs.Register("GIT", 100, newGit)
 }
 
 // VcsHandle is the handle
@@ -17,6 +20,11 @@ func newGit() (vcs.Vcs, error) {
 }
 
 // Discover returns false.
-func (v VcsHandle) Discover() bool {
-	return true
+func (v VcsHandle) Discover(repobasedir string) bool {
+	n := filepath.Join(repobasedir, ".git")
+	found, err := bbutil.DirExists(n)
+	if err != nil {
+		return false
+	}
+	return found
 }
