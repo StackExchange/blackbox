@@ -143,14 +143,18 @@ func (bx *Box) Info() error {
 		logErr.Printf("getFiles error: %v", err)
 	}
 
-	fmt.Println("BLACKBOX:")
-	fmt.Printf("bx.ConfigDir=%q\n", bx.ConfigDir)
 	//fmt.Printf("bx.Admins=%q\n", bx.Admins)
-	fmt.Printf("len(bx.Admins)=%v\n", len(bx.Admins))
 	//fmt.Printf("bx.Files=%q\n", bx.Files)
-	fmt.Printf("len(bx.Files)=%v\n", len(bx.Files))
-	fmt.Printf("bx.Vcs=%v\n", bx.Vcs)
-	fmt.Printf("bx.VcsName=%q\n", bx.VcsName)
+
+	fmt.Println("BLACKBOX:")
+	fmt.Printf("      ConfigDir: %q\n", bx.ConfigDir)
+	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
+	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
+	fmt.Printf("          Files: count=%v\n", len(bx.Files))
+	fmt.Printf("            Vcs: %v\n", bx.Vcs)
+	fmt.Printf("        VcsName: %q\n", bx.VcsName)
+	fmt.Printf("        Crypter: %v\n", bx.Crypter)
+	fmt.Printf("    CrypterName: %q\n", bx.CrypterName)
 
 	return nil
 }

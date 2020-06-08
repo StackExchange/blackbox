@@ -3,6 +3,7 @@ package gnupg
 import (
 	"os"
 	"os/exec"
+	"syscall"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/crypters"
@@ -41,9 +42,7 @@ func (crypt CrypterHandle) Decrypt(name string, overwrite bool, umask int) error
 		_ = os.Remove(name)
 	}
 
-	crypt.prepareKeyChain()
-
-	//oldumask := syscall.Umask(umask)
+	oldumask := syscall.Umask(umask)
 	err := bbutil.RunBash(crypt.GPGCmd,
 		"--use-agent",
 		"-q",
@@ -51,6 +50,6 @@ func (crypt CrypterHandle) Decrypt(name string, overwrite bool, umask int) error
 		"-o", name,
 		name+".gpg",
 	)
-	//syscall.Umask(oldumask)
+	syscall.Umask(oldumask)
 	return err
 }
