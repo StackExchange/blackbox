@@ -1,7 +1,7 @@
 package main
 
-// Processes the flags and arguments and calls the appropriate
-// business logic.
+// Now that cli.go has processed the flags, validate there are no
+// conflicts and drive to the business logic.
 
 import (
 	"fmt"
@@ -21,14 +21,11 @@ func init() {
 }
 
 func allOrSomeFiles(c *cli.Context) error {
-	if c.Bool("all") {
-		if c.Args().Present() {
-			return fmt.Errorf("Can not specify filenames and --all")
-		}
-	} else {
-		if !c.Args().Present() {
-			return fmt.Errorf("Must specify at least one file name or --all")
-		}
+	if c.Bool("all") && c.Args().Present() {
+		return fmt.Errorf("Can not specify filenames and --all")
+	}
+	if (!c.Args().Present()) && (!c.Bool("all")) {
+		return fmt.Errorf("Must specify at least one file name or --all")
 	}
 	return nil
 }
@@ -72,14 +69,18 @@ func cmdDecrypt(c *cli.Context) error {
 	if err := allOrSomeFiles(c); err != nil {
 		return err
 	}
-	bulk := false
-	if c.Bool("all") {
-		bulk = c.Bool("bulk") // Only applies to --all
+
+	// The default for --agentcheck is off normally, and on when using --all.
+	pauseNeeded := c.Bool("all")
+	// If the user used the flag, abide by it.
+	if c.IsSet("agentcheck") {
+		pauseNeeded = c.Bool("agentcheck")
 	}
+
 	bx := box.NewFromFlags(c)
 	return bx.Decrypt(c.Args().Slice(),
 		c.Bool("overwrite"),
-		bulk,
+		pauseNeeded,
 		c.String("group"),
 	)
 }
@@ -176,29 +177,6 @@ func cmdStatus(c *cli.Context) error {
 	bx := box.NewFromFlags(c)
 	return bx.Status(c.Args().Slice(), c.Bool("name-only"), c.String("type"))
 }
-
-// func cmdDecrypt(allFiles bool, filenames []string, group string) error {
-// 	bbu, err := bbutil.New()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	// prepare_keychain
-//
-// 	fnames, valid, err := bbu.FileIterator(allFiles, filenames)
-// 	if err != nil {
-// 		return errors.Wrap(err, "decrypt")
-// 	}
-// 	for i, filename := range fnames {
-// 		if valid[i] {
-// 			bbu.DecryptFile(filename, group, true)
-// 		} else {
-// 			fmt.Fprintf(os.Stderr, "SKIPPING: %q\n", filename)
-// 		}
-// 	}
-//
-// 	return nil
-// }
 
 // func cmdRegList(c *cli.Context) error {
 // 	if len(c.Args()) != 0 {

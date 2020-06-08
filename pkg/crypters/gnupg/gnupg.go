@@ -1,8 +1,10 @@
 package gnupg
 
 import (
-	"fmt"
+	"os"
+	"os/exec"
 
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/crypters"
 )
 
@@ -12,14 +14,43 @@ func init() {
 
 // CrypterHandle is the handle
 type CrypterHandle struct {
+	GPGCmd string // "gpg2" or "gpg"
 }
 
 func registerNew() (crypters.Crypter, error) {
-	return &CrypterHandle{}, nil
+
+	crypt := &CrypterHandle{}
+
+	// Which binary to use?
+	path, err := exec.LookPath("gpg2")
+	if err != nil {
+		path, err = exec.LookPath("gpg")
+		if err != nil {
+			path = "gpg2"
+		}
+	}
+	crypt.GPGCmd = path
+
+	return crypt, nil
 }
 
 // Decrypt decrypts a file, possibly overwriting the plaintext.
-func (crypt CrypterHandle) Decrypt(name string, overwrite bool) error {
-	fmt.Printf("WOULD decrypt %v (overwrite=%v)\n", name, overwrite)
-	return nil
+func (crypt CrypterHandle) Decrypt(name string, overwrite bool, umask int) error {
+
+	if overwrite {
+		_ = os.Remove(name)
+	}
+
+	crypt.prepareKeyChain()
+
+	//oldumask := syscall.Umask(umask)
+	err := bbutil.RunBash(crypt.GPGCmd,
+		"--use-agent",
+		"-q",
+		"--decrypt",
+		"-o", name,
+		name+".gpg",
+	)
+	//syscall.Umask(oldumask)
+	return err
 }

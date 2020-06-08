@@ -58,10 +58,15 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 		}
 	}
 
+	if bulkpause {
+		gpgAgentNotice()
+	}
+
 	if len(names) == 0 {
 		names = bx.Files
 	}
 	for _, name := range names {
+		fmt.Printf("========== DECRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
 			logErr.Printf("Skipping %q: File not registered with Blackbox", name)
 		}
@@ -69,20 +74,23 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 			logErr.Printf("Skipping %q: Will not overwrite existing file", name)
 			continue
 		}
-		if bx.Crypter == nil {
-			fmt.Printf("NO CRYPTER!!!\n")
-		}
-		err := bx.Crypter.Decrypt(name, overwrite)
+
+		// TODO(tlim) v1 detects zero-length files and removes them, even
+		// if overwrite is disabled. I don't think anyone has ever used that
+		// feature. That said, we could immplement that here.
+
+		err := bx.Crypter.Decrypt(name, overwrite, bx.Umask)
 		if err != nil {
 			logErr.Printf("%q: %v", name, err)
 			continue
 		}
+
 		if groupchange {
 			os.Chown(name, -1, gid)
 		}
 	}
 
-	return fmt.Errorf("NOT IMPLEMENTED: Decrypt")
+	return nil
 }
 
 // Diff ...

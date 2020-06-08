@@ -39,3 +39,36 @@ They layers look like this:
 | Interfaces | `pkg/*` | Interfaces and their implementations |
 
 At least that's the goal.  We'll see how well we can achieve this.
+
+
+Version 2.0
+===========
+
+Software architecture.
+
+We try to keep the command-line parsing separate from the business
+logic and all plug-ins.  This keeps things clean and easy to refactor.
+In fact layer 2 could be used as a stand-alone module for projects
+that want to embed blackbox actions.
+
+Layer 1: The command itself
+
+  * cmd/blackbox/blackbox.go -- main() not much more
+  * cmd/blackbox/cli.go      -- Set up and call the ufave/cli flag parser
+  * cmd/blackbox/drive.go    -- Check # of arguments, conflicting flags, and then call the businss logic layer
+
+Layer 2: The business logic
+
+  * pkg/box/box.go      -- The interface to accessing .blackbox (admins, files, etc.)
+  * pkg/box/verbs.go    -- Verbs called by Layer 1. Just the verbs
+  * pkg/box/boxutils.go -- Functions needed by the verbs
+
+Layer 3: The plug-ins
+
+  * pkg/vcs/...      -- Plug-ins for Git, (Mercurial, Subversion, Perforce,) and None
+  * pkg/crypters/... -- Plug-ins for PGP access: GnuPG, (go-openpgp, others in the future)
+
+Layer 4: Support functions for use by Layer 3
+
+  * pkg/bbutil/filestats.go -- File manipulations
+  * pkg/bbutil/runbash.go   -- Safely run external Linux commands

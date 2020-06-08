@@ -22,5 +22,8 @@ func RunBash(command string, args ...string) error {
 		log.Fatal(err)
 	}
 	err = cmd.Wait()
-	return fmt.Errorf("run_bash: %w", err)
+	if err != nil {
+		return fmt.Errorf("run_bash: %w", err)
+	}
+	return nil
 }

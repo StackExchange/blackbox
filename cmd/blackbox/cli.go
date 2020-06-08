@@ -1,5 +1,7 @@
 package main
 
+// cli.go -- Create urfave/cli datastructures and apply them.
+
 import (
 	"github.com/urfave/cli/v2"
 )
@@ -17,9 +19,16 @@ func flags() *cli.App {
 		//			Destination: &dryRun,
 		//		},
 		&cli.StringFlag{
-			Name:  "crypto",
-			Usage: "Crypto back-end plugin",
-			Value: "GnuPG",
+			Name:    "crypto",
+			Usage:   "Crypto back-end plugin",
+			Value:   "GnuPG",
+			EnvVars: []string{"BLACKBOX_FLAG_CRYPTO"},
+		},
+		&cli.IntFlag{
+			Name:    "umask",
+			Usage:   "umask to set when decrypting",
+			Value:   0o027,
+			EnvVars: []string{"BLACKBOX_FLAG_UMASK", "DECRYPT_UMASK"},
 		},
 	}
 
@@ -33,9 +42,9 @@ func flags() *cli.App {
 			Usage:   "Decrypt file(s)",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
-				&cli.BoolFlag{Name: "bulk", Usage: "Do not prompt to start gpg-agent"},
+				&cli.BoolFlag{Name: "agentcheck", Usage: "Do not check for gpg-agent when using --all"},
 				&cli.StringFlag{Name: "group", Usage: "Set group ownership"},
-				&cli.StringFlag{Name: "overwrite", Usage: "Overwrite plaintext if it exists"},
+				&cli.BoolFlag{Name: "overwrite", Usage: "Overwrite plaintext if it exists"},
 			},
 			Action: func(c *cli.Context) error { return cmdDecrypt(c) },
 		},

@@ -22,15 +22,16 @@ type Box struct {
 	RepoBaseDir string // Base directory of the repo.
 	ConfigDir   string // Path to the .blackbox config directory.
 	//
-	Admins       []string        // If non-empty, the list of admins.
-	Files        []string        // If non-empty, the list of files.
-	FilesSet     map[string]bool // If non-nil, a set of Files.
-	IsRegistered map[string]bool //
+	Admins   []string        // If non-empty, the list of admins.
+	Files    []string        // If non-empty, the list of files.
+	FilesSet map[string]bool // If non-nil, a set of Files.
 	//
 	Vcs         vcs.Vcs          // Interface access to the VCS.
 	VcsName     string           // name of the VCS
 	Crypter     crypters.Crypter // Inteface access to GPG.
 	CrypterName string           // Name of the crypter in use.
+	//
+	Umask int // umask to set when decrypting
 }
 
 // StatusMode is a type of query.
@@ -64,6 +65,7 @@ func NewFromFlags(c *cli.Context) *Box {
 	}
 	bx.RepoBaseDir = repoBaseDir
 	bx.ConfigDir = configDir
+	bx.Umask = c.Int("umask")
 
 	// Discover which kind of VCS is in use.
 	var h vcs.Vcs

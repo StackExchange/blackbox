@@ -1,6 +1,7 @@
 package box
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/user"
@@ -113,4 +114,21 @@ func parseGroup(userinput string) (int, error) {
 
 	// Give up.
 	return -1, err
+}
+
+func gpgAgentNotice() {
+	// Is gpg-agent configured?
+	if os.Getenv("GPG_AGENT_INFO") != "" {
+		return
+	}
+
+	// TODO(tlim): v1 verifies that "gpg-agent --version" outputs a version
+	// string that is 2.1.0 or higher.  It seems that 1.x is incompatible.
+
+	fmt.Println("WARNING: You probably want to run gpg-agent as")
+	fmt.Println("you will be asked for your passphrase many times.")
+	fmt.Println("Example: $ eval $(gpg-agent --daemon)")
+	fmt.Print("Press CTRL-C now to stop. ENTER to continue: ")
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
 }
