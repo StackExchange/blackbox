@@ -3,6 +3,10 @@
 
 Something like...
 
+
+This should accept VCS-type and --crypto flags.
+Then a shell script should run various combinations of VCS and crypters.
+
 # Startup
 * Create a repo (git, none)
 
