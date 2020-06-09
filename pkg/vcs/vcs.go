@@ -24,6 +24,22 @@ type Item struct {
 // Catalog is the list of registered vcs's.
 var Catalog []*Item
 
+// DetermineVcs polls the VCS plug-ins to determine the VCS of directory.
+// The first to succeed is returned.
+// It never returns nil, since "NONE" is always valid.
+func DetermineVcs(dir string) Vcs {
+	for _, v := range Catalog {
+		h, err := v.New()
+		if err != nil {
+			return nil // No idea how that would happen.
+		}
+		if h.Discover(dir) {
+			return h
+		}
+	}
+	return nil
+}
+
 // Register a new VCS.
 func Register(name string, priority int, newfn NewFnSig) {
 	//fmt.Printf("VCS registered: %v\n", name)

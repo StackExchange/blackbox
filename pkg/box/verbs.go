@@ -3,8 +3,11 @@ package box
 // This file implements the business logic related to a black box.
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
@@ -152,16 +155,52 @@ func (bx *Box) Info() error {
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
 	fmt.Printf("            Vcs: %v\n", bx.Vcs)
-	fmt.Printf("        VcsName: %q\n", bx.VcsName)
+	fmt.Printf("        VcsName: %q\n", bx.Vcs.Name())
 	fmt.Printf("        Crypter: %v\n", bx.Crypter)
-	fmt.Printf("    CrypterName: %q\n", bx.CrypterName)
+	fmt.Printf("    CrypterName: %q\n", bx.Crypter.Name())
 
 	return nil
 }
 
 // Init initializes a repo.
-func (bx *Box) Init() error {
-	return fmt.Errorf("NOT IMPLEMENTED: Init")
+func (bx *Box) Init(yes, vcsname string) error {
+	fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
+	if yes != "yes" {
+		fmt.Printf("Enable blackbox for this %v repo? (yes/no)", bx.Vcs.Name())
+		input := bufio.NewScanner(os.Stdin)
+		input.Scan()
+		b, _ := strconv.ParseBool(input.Text())
+		if !b {
+			fmt.Printf("As you wish. Exiting.")
+			return nil
+		}
+	}
+
+	// TODO(tom): Handle per-user repo names
+	bbdir := filepath.Join(bx.RepoBaseDir, ".blackbox")
+	err := os.Mkdir(bbdir, 0o750)
+	if err != nil {
+		return err
+	}
+
+	// touch blackbox-admins.txt
+	// touch blackbox-files.txt
+
+	// Tell vcs to make a "don't mess with cr/lf" file in.
+	// bbdir + blackbox-admins.txt (return file to commit.. .gitignore)
+	// bbdir + blackbox-files.txt (return file to commit)
+
+	// ignores := []string{
+	// 	"pubring.gpg~",
+	// 	"pubring.kbx~",
+	// 	"secring.gpg",
+	// }
+
+	// Tell vcs to suggest tracking:
+	// message: INITIALIZE BLACKBOX
+	// files: blackbox-admins.txt blackbox-files.txt
+
+	return nil
 }
 
 // Reencrypt decrypts and reencrypts files.
@@ -224,5 +263,22 @@ func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 		table.Render() // Send output
 	}
 
+	return nil
+}
+
+// TestingInitRepo initializes a repo.
+func (bx *Box) TestingInitRepo() error {
+	if bx.Vcs == nil {
+		fmt.Println("bx.Vcs is nil")
+		fmt.Printf("BLACKBOX_FLAG_VCS=%q\n", os.Getenv("BLACKBOX_FLAG_VCS"))
+		os.Exit(1)
+	}
+	err := bx.Vcs.TestingInitRepo()
+	if err != nil {
+		return err
+	}
+	if !bx.Vcs.Discover("") {
+		return fmt.Errorf("TestingInitRepo failed Discovery")
+	}
 	return nil
 }

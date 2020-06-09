@@ -146,11 +146,11 @@ func cmdInfo(c *cli.Context) error {
 }
 
 func cmdInit(c *cli.Context) error {
-	if c.Args().Present() {
-		return fmt.Errorf("This command takes zero arguments")
+	if c.Args().Len() > 1 {
+		return fmt.Errorf("This command takes one or two arguments")
 	}
-	bx := box.NewFromFlags(c)
-	return bx.Init()
+	bx := box.NewUninitialized()
+	return bx.Init(c.Args().First(), c.String("vcs"))
 }
 
 func cmdReencrypt(c *cli.Context) error {
@@ -170,7 +170,6 @@ func cmdShred(c *cli.Context) error {
 }
 
 func cmdStatus(c *cli.Context) error {
-
 	if c.Bool("all") && c.Args().Present() {
 		return fmt.Errorf("Can not specify filenames and --all")
 	}
@@ -178,45 +177,16 @@ func cmdStatus(c *cli.Context) error {
 	return bx.Status(c.Args().Slice(), c.Bool("name-only"), c.String("type"))
 }
 
-// func cmdRegList(c *cli.Context) error {
-// 	if len(c.Args()) != 0 {
-// 		fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
-// 		return nil
-// 	}
-//
-// 	bbu, err := bbutil.New()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	names, err := bbu.RegisteredFiles()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for _, item := range names {
-// 		fmt.Println(item.Name)
-// 	}
-// 	return nil
-// }
+// These are "secret" commands used by the integration tests.
 
-// func cmdRegStatus(c *cli.Context) error {
-//
-// 	if len(c.Args()) != 0 {
-// 		fmt.Fprintf(c.App.Writer, "ERROR: Command does not take any arguments\n")
-// 		return nil
-// 	}
-//
-// 	bbu, err := bbutil.New()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	names, err := bbu.RegisteredFiles()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	for _, item := range names {
-// 		s := bbutil.FileStatus(bbu.RepoBaseDir, item.Name)
-// 		fmt.Printf("%s\t%s\n", s, item.Name)
-// 	}
-// 	return nil
-// }
+func testingInit(c *cli.Context) error {
+	if c.Args().Present() {
+		return fmt.Errorf("No args required")
+	}
+	fmt.Printf(
+		"c.String(vcs) reports %q\n",
+		c.String("vcs"),
+	)
+	bx := box.NewBare(c.String("vcs"))
+	return bx.TestingInitRepo()
+}

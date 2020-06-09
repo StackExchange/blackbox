@@ -7,8 +7,10 @@ import (
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
 
+var pluginName = "GIT"
+
 func init() {
-	vcs.Register("GIT", 100, newGit)
+	vcs.Register(pluginName, 100, newGit)
 }
 
 // VcsHandle is the handle
@@ -19,6 +21,11 @@ func newGit() (vcs.Vcs, error) {
 	return &VcsHandle{}, nil
 }
 
+// Name returns my name.
+func (v VcsHandle) Name() string {
+	return pluginName
+}
+
 // Discover returns false.
 func (v VcsHandle) Discover(repobasedir string) bool {
 	n := filepath.Join(repobasedir, ".git")
@@ -27,4 +34,13 @@ func (v VcsHandle) Discover(repobasedir string) bool {
 		return false
 	}
 	return found
+}
+
+// The following are "secret" functions only used by the integration testing system.
+
+// TestingInitRepo initializes a repo.
+
+func (v VcsHandle) TestingInitRepo() error {
+	bbutil.RunBash("git", "init")
+	return nil
 }

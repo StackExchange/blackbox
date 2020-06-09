@@ -26,10 +26,8 @@ type Box struct {
 	Files    []string        // If non-empty, the list of files.
 	FilesSet map[string]bool // If non-nil, a set of Files.
 	//
-	Vcs         vcs.Vcs          // Interface access to the VCS.
-	VcsName     string           // name of the VCS
-	Crypter     crypters.Crypter // Inteface access to GPG.
-	CrypterName string           // Name of the crypter in use.
+	Vcs     vcs.Vcs          // Interface access to the VCS.
+	Crypter crypters.Crypter // Inteface access to GPG.
 	//
 	Umask int // umask to set when decrypting
 }
@@ -54,6 +52,34 @@ func init() {
 	logErr = log.New(os.Stderr, "", 0)
 }
 
+// NewUninitialized creates a box when nothing exists.
+// Useful for the "init" subcommand.
+func NewUninitialized() *Box {
+	return &Box{}
+}
+
+// NewBare creates a box in a bare environment, with no
+// autodiscovery of VCS.
+// Useful only in integration tests.
+func NewBare(vcsname string) *Box {
+	bx := &Box{}
+
+	// Set up the vcs
+	var vh vcs.Vcs
+	var err error
+	for _, v := range vcs.Catalog {
+		if strings.ToLower(v.Name) == strings.ToLower(vcsname) {
+			vh, err = v.New()
+			if err != nil {
+				return nil // No idea how that would happen.
+			}
+		}
+	}
+	bx.Vcs = vh
+
+	return bx
+}
+
 // NewFromFlags creates a box using items from flags.
 func NewFromFlags(c *cli.Context) *Box {
 	bx := &Box{}
@@ -68,37 +94,10 @@ func NewFromFlags(c *cli.Context) *Box {
 	bx.Umask = c.Int("umask")
 
 	// Discover which kind of VCS is in use.
-	var h vcs.Vcs
-	for _, v := range vcs.Catalog {
-		h, err = v.New()
-		if err != nil {
-			return nil // No idea how that would happen.
-		}
-		if h.Discover(bx.RepoBaseDir) {
-			bx.Vcs = h
-			bx.VcsName = v.Name
-			break
-		}
-	}
-	// We can assume something was found because "none" always says yes.
+	bx.Vcs = vcs.DetermineVcs(bx.RepoBaseDir)
 
 	// Pick a crypto backend (GnuPG, go-openpgp, etc.)
-	//var cbe crypters.Crypter
-	var chandle crypters.Crypter
-	for _, v := range crypters.Catalog {
-		//fmt.Printf("Trying %v %v\n", v.Name)
-		if strings.ToLower(v.Name) == strings.ToLower(c.String("crypto")) {
-			//fmt.Printf("CRYPTER = %v\n", v.Name)
-			chandle, err = v.New()
-			if err != nil {
-				return nil // No idea how that would happen.
-			}
-			bx.Crypter = chandle
-			bx.CrypterName = v.Name
-			//fmt.Printf("USING! %v\n", v.Name)
-			break
-		}
-	}
+	bx.Crypter = crypters.SearchByName(c.String("crypto"))
 	if bx.Crypter == nil {
 		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the default\n")
 		os.Exit(1)

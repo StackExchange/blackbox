@@ -2,6 +2,7 @@ package crypters
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/StackExchange/blackbox/v2/models"
 )
@@ -23,6 +24,24 @@ type Item struct {
 
 // Catalog is the list of registered vcs's.
 var Catalog []*Item
+
+// SearchByName returns a Crypter handle for name.
+// The search is case insensitive.
+func SearchByName(name string) Crypter {
+	name = strings.ToLower(name)
+	for _, v := range Catalog {
+		//fmt.Printf("Trying %v %v\n", v.Name)
+		if strings.ToLower(v.Name) == name {
+			chandle, err := v.New()
+			if err != nil {
+				return nil // No idea how that would happen.
+			}
+			//fmt.Printf("USING! %v\n", v.Name)
+			return chandle
+		}
+	}
+	return nil
+}
 
 // Register a new VCS.
 func Register(name string, priority int, newfn NewFnSig) {

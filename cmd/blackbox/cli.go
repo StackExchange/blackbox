@@ -19,6 +19,11 @@ func flags() *cli.App {
 		//			Destination: &dryRun,
 		//		},
 		&cli.StringFlag{
+			Name:    "vcs",
+			Usage:   "Use this VCS (GIT, NONE) rather than autodetect",
+			EnvVars: []string{"BLACKBOX_FLAG_VCS"},
+		},
+		&cli.StringFlag{
 			Name:    "crypto",
 			Usage:   "Crypto back-end plugin",
 			Value:   "GnuPG",
@@ -173,6 +178,13 @@ func flags() *cli.App {
 				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
 			},
 			Action: func(c *cli.Context) error { return cmdReencrypt(c) },
+		},
+
+		{
+			Name:     "testing_init",
+			Usage:    "For use with integration test",
+			Category: "INTEGRATION TEST",
+			Action:   func(c *cli.Context) error { return testingInit(c) },
 		},
 
 		//

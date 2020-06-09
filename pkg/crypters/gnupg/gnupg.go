@@ -9,8 +9,10 @@ import (
 	"github.com/StackExchange/blackbox/v2/pkg/crypters"
 )
 
+var pluginName = "GnuPG"
+
 func init() {
-	crypters.Register("GnuPG", 100, registerNew)
+	crypters.Register(pluginName, 100, registerNew)
 }
 
 // CrypterHandle is the handle
@@ -33,6 +35,11 @@ func registerNew() (crypters.Crypter, error) {
 	crypt.GPGCmd = path
 
 	return crypt, nil
+}
+
+// Name returns my name.
+func (crypt CrypterHandle) Name() string {
+	return pluginName
 }
 
 // Decrypt decrypts a file, possibly overwriting the plaintext.
