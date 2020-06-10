@@ -149,7 +149,8 @@ func cmdInit(c *cli.Context) error {
 	if c.Args().Len() > 1 {
 		return fmt.Errorf("This command takes one or two arguments")
 	}
-	bx := box.NewUninitialized()
+	bx := box.NewUninitialized(c.String("configdir"), c.String("team"))
+	fmt.Printf("cmdInit configdir=%q\n", bx.ConfigDir)
 	return bx.Init(c.Args().First(), c.String("vcs"))
 }
 
@@ -187,6 +188,6 @@ func testingInit(c *cli.Context) error {
 		"c.String(vcs) reports %q\n",
 		c.String("vcs"),
 	)
-	bx := box.NewBare(c.String("vcs"))
+	bx := box.NewForTestingInit(c.String("vcs"))
 	return bx.TestingInitRepo()
 }

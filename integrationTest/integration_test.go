@@ -41,34 +41,41 @@ func compile(t *testing.T) {
 }
 
 func setup(t *testing.T) {
-	compile(t)
 	fmt.Printf("flag.testvcs is %v\n", *vcsToTest)
 	vh := getVcs(t, *vcsToTest)
-	fmt.Printf("Using BLACKBOX_FLAG_VCS=%v\n", vh.Name())
-	os.Setenv("BLACKBOX_FLAG_VCS", vh.Name())
+	fmt.Printf("Using BLACKBOX_VCS=%v\n", vh.Name())
+	os.Setenv("BLACKBOX_VCS", vh.Name())
 
+	op, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	originPath = op
 }
 
 func TestInitInvalidArgs(t *testing.T) {
 	compile(t)
+
 	// Only zero or one args are permitted.
 	invalidArgs(t, "init", "one", "two")
 	invalidArgs(t, "init", "one", "two", "three")
 }
 
 func TestBasicCommands(t *testing.T) {
+	// These are basic tests that work on a fake repo.
+	// The repo has mostly real data, except any .gpg file
+	// is just garbage.
+	compile(t)
 	setup(t)
 	createDummyRepo(t, *vcsToTest)
 
 	// admin
-	checkOutput(t, "file", "list",
-		"000-admin-list.txt",
-	)
+	checkOutput(t, "admin", "list", "000-admin-list.txt")
 	invalidArgs(t, "admin", "list", "--all")
 	invalidArgs(t, "admin", "one")
 
 	// file
-	checkOutput(t, "000-file-list.txt", "file", "list")
+	checkOutput(t, "file", "list", "000-file-list.txt")
 	invalidArgs(t, "file", "list", "one")
 	invalidArgs(t, "file", "list", "--all")
 

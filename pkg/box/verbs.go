@@ -164,7 +164,11 @@ func (bx *Box) Info() error {
 
 // Init initializes a repo.
 func (bx *Box) Init(yes, vcsname string) error {
-	fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
+	//fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
+
+	fmt.Printf("team is: %q\n", bx.Team)
+	fmt.Printf("configdir will be: %q\n", bx.ConfigDir)
+
 	if yes != "yes" {
 		fmt.Printf("Enable blackbox for this %v repo? (yes/no)", bx.Vcs.Name())
 		input := bufio.NewScanner(os.Stdin)
@@ -176,17 +180,17 @@ func (bx *Box) Init(yes, vcsname string) error {
 		}
 	}
 
-	// TODO(tom): Handle per-user repo names
-	bbdir := filepath.Join(bx.RepoBaseDir, ".blackbox")
-	err := os.Mkdir(bbdir, 0o750)
+	err := os.Mkdir(bx.ConfigDir, 0o750)
 	if err != nil {
 		return err
 	}
 
-	// touch blackbox-admins.txt
-	// touch blackbox-files.txt
+	bbadmins := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
+	bbutil.TouchFile(bbadmins)
+	bbfiles := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
+	bbutil.TouchFile(bbfiles)
 
-	// Tell vcs to make a "don't mess with cr/lf" file in.
+	// FIXME(tlim) Tell vcs to make a "don't mess with cr/lf" file in.
 	// bbdir + blackbox-admins.txt (return file to commit.. .gitignore)
 	// bbdir + blackbox-files.txt (return file to commit)
 
@@ -270,7 +274,7 @@ func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 func (bx *Box) TestingInitRepo() error {
 	if bx.Vcs == nil {
 		fmt.Println("bx.Vcs is nil")
-		fmt.Printf("BLACKBOX_FLAG_VCS=%q\n", os.Getenv("BLACKBOX_FLAG_VCS"))
+		fmt.Printf("BLACKBOX_VCS=%q\n", os.Getenv("BLACKBOX_VCS"))
 		os.Exit(1)
 	}
 	err := bx.Vcs.TestingInitRepo()

@@ -21,19 +21,30 @@ func flags() *cli.App {
 		&cli.StringFlag{
 			Name:    "vcs",
 			Usage:   "Use this VCS (GIT, NONE) rather than autodetect",
-			EnvVars: []string{"BLACKBOX_FLAG_VCS"},
+			EnvVars: []string{"BLACKBOX_VCS"},
 		},
 		&cli.StringFlag{
 			Name:    "crypto",
 			Usage:   "Crypto back-end plugin",
 			Value:   "GnuPG",
-			EnvVars: []string{"BLACKBOX_FLAG_CRYPTO"},
+			EnvVars: []string{"BLACKBOX_CRYPTO"},
+		},
+		&cli.StringFlag{
+			Name:    "config",
+			Usage:   "Path to config",
+			Value:   ".blackbox",
+			EnvVars: []string{"BLACKBOX_CONFIGDIR", "BLACKBOXDATA"},
+		},
+		&cli.StringFlag{
+			Name:    "team",
+			Usage:   "Use .blackbox-$TEAM as the configdir",
+			EnvVars: []string{"BLACKBOX_TEAM"},
 		},
 		&cli.IntFlag{
 			Name:    "umask",
 			Usage:   "umask to set when decrypting",
 			Value:   0o027,
-			EnvVars: []string{"BLACKBOX_FLAG_UMASK", "DECRYPT_UMASK"},
+			EnvVars: []string{"BLACKBOX_UMASK", "DECRYPT_UMASK"},
 		},
 	}
 

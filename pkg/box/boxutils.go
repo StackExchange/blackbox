@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strconv"
+
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 )
 
 // FileStatus returns the status of a file.
@@ -114,6 +117,76 @@ func parseGroup(userinput string) (int, error) {
 
 	// Give up.
 	return -1, err
+}
+
+// GenerateConfigDir calculates configdir for uninitialized
+// repos where discovery won't work.
+// The result is an absolute path, unless Abs fails.
+// If --config is set, use that value no matter what.
+// Otherwise use .blackbox-$team or .blackbox (if no team).
+func GenerateConfigDir(configdir, team string) string {
+	// if configdir is set, use it.
+	if configdir != "" {
+		if p, err := filepath.Abs(configdir); err == nil {
+			return p
+		}
+		return configdir
+	}
+
+	var c string
+	if team == "" {
+		c = ".blackbox"
+	} else {
+		c = ".blackbox-" + team
+	}
+	if p, err := filepath.Abs(c); err == nil {
+		return p
+	}
+	return c
+}
+
+// FindConfigDir tests various places until it finds the config dir.
+func FindConfigDir(configdir, team string) (string, error) {
+	// if configdir is set, use it.
+	if configdir != "" {
+		if p, err := filepath.Abs(configdir); err == nil {
+			return p, nil
+		}
+		return configdir, nil
+	}
+
+	// Otherwise, search up the tree for the config dir.
+	candidates := []string{}
+	if team != "" {
+		candidates = append([]string{".blackbox-" + team}, candidates...)
+	} else {
+		candidates = append(candidates, ".blackbox")
+	}
+	candidates = append(candidates, "keyrings/live")
+	// Prevent an infinite loop by only doing "cd .." this many times
+	maxDirLevels := 100
+	relpath := ""
+	for i := 0; i < maxDirLevels; i++ {
+		// Does relpath contain any of our directory names?
+		for _, c := range candidates {
+			t := filepath.Join(relpath, c)
+			d, err := bbutil.DirExists(t)
+			if err != nil {
+				return "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
+			}
+			if d {
+				return filepath.Abs(relpath)
+			}
+		}
+		// If we are at the root, stop.
+		if abs, _ := filepath.Abs(relpath); abs == "/" {
+			break
+		}
+		// Try one directory up
+		relpath = filepath.Join("..", relpath)
+	}
+
+	return "", fmt.Errorf("No .blackbox directory found in cwd or above")
 }
 
 func gpgAgentNotice() {

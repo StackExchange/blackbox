@@ -51,6 +51,8 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# macOS
+.DS_Store
 
 # Blackbox
 bbintegration

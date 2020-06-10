@@ -19,8 +19,9 @@ import (
 // Box describes what we know about a box.
 type Box struct {
 	//
+	Team        string // Name of the team (i.e. .blackbox-$TEAM)
 	RepoBaseDir string // Base directory of the repo.
-	ConfigDir   string // Path to the .blackbox config directory.
+	ConfigDir   string // Path of the .blackbox config directory (Rel to RepoBseDir)
 	//
 	Admins   []string        // If non-empty, the list of admins.
 	Files    []string        // If non-empty, the list of files.
@@ -53,15 +54,18 @@ func init() {
 }
 
 // NewUninitialized creates a box when nothing exists.
-// Useful for the "init" subcommand.
-func NewUninitialized() *Box {
-	return &Box{}
+// Only for use with the "init" subcommand.
+func NewUninitialized(configdir, team string) *Box {
+	bx := &Box{}
+	bx.Team = team
+	bx.ConfigDir = GenerateConfigDir(configdir, team)
+	return bx
 }
 
-// NewBare creates a box in a bare environment, with no
+// NewForTestingInit creates a box in a bare environment, with no
 // autodiscovery of VCS.
 // Useful only in integration tests.
-func NewBare(vcsname string) *Box {
+func NewForTestingInit(vcsname string) *Box {
 	bx := &Box{}
 
 	// Set up the vcs
@@ -80,18 +84,44 @@ func NewBare(vcsname string) *Box {
 	return bx
 }
 
+/*
+
+test_init:
+
+* Generates .git in the current directory
+* We don't know or use configdir, team, etc.
+
+init:
+* Assumes the git repo was created already.
+* Finds VCS (search up the tree for .git, .hg, none)
+* If not found assume VCS=None, configdir=$pwd
+* Set repobase based on where .git was found.
+* If .blackbox/blackbox-team found, error.
+* Create .blackbox or .blackbox-$team in configdir
+
+post-init commands:
+* Assumes the git repo was created already.
+* Assumes .blackbox or .blackbox-$team exists.
+* Finds VCS & rebobase (search up the tree for .git, .hg, none)
+* If VCS=None, search for repobase by looking for .blackbox.
+* If .blackbox not found, error (needs init)
+
+*/
+
 // NewFromFlags creates a box using items from flags.
 func NewFromFlags(c *cli.Context) *Box {
 	bx := &Box{}
 
-	repoBaseDir, configDir, err := findBaseAndConfigDir()
-	if err != nil {
-		logErr.Println(err)
-		return bx
-	}
-	bx.RepoBaseDir = repoBaseDir
-	bx.ConfigDir = configDir
 	bx.Umask = c.Int("umask")
+	bx.Team = c.String("team")
+
+	// repoBaseDir, configDir, err := findBaseAndConfigDir()
+	// if err != nil {
+	// 	logErr.Println(err)
+	// 	return bx
+	// }
+	// bx.RepoBaseDir = repoBaseDir
+	// bx.ConfigDir = configDir
 
 	// Discover which kind of VCS is in use.
 	bx.Vcs = vcs.DetermineVcs(bx.RepoBaseDir)
@@ -103,67 +133,56 @@ func NewFromFlags(c *cli.Context) *Box {
 		os.Exit(1)
 	}
 
+	// Are we using .blackbox or what?
+	var err error
+	bx.ConfigDir, err = FindConfigDir(c.String("config"), c.String("team"))
+	if err != nil {
+		return nil
+	}
+
 	return bx
 }
 
-func findBaseAndConfigDir() (repodir, configdir string, err error) {
+// func findBaseAndConfigDir() (repodir, configdir string, err error) {
 
-	// If BLACKBOXDATA/BLACKBOX_CONFIGDIR is set, that is the config dir.
-	d := os.Getenv("BLACKBOXDATA")
-	c := os.Getenv("BLACKBOX_CONFIGDIR")
-	r := os.Getenv("BLACKBOX_REPOBASEDIR")
-	// If any of those are used, r must be set and one or both of d & c
-	// must be set. d is used before c.
-	if d != "" {
-		logErr.Printf("BLACKBOXDATA deprecated. Please use BLACKBOX_CONFIGDIR")
-	}
-	if (d != "") || (c != "") || (r != "") {
-		if (d != "") && (r != "") {
-			return r, d, nil
-		}
-		if (c != "") && (r != "") {
-			return r, c, nil
-		}
-		return c, r, fmt.Errorf("if BLACKBOX_REPOBASEDIR or BLACKBOX_REPOBASEDIR is used, BLACKBOX_REPOBASEDIR must be set")
-	}
+// 	// Otherwise, search up the tree for the config dir.
 
-	// Otherwise, search up the tree for the config dir.
+// 	candidates := []string{}
+// 	if team := os.Getenv("BLACKBOX_TEAM"); team != "" {
+// 		candidates = append([]string{".blackbox-" + team}, candidates...)
+// 	}
+// 	candidates = append(candidates, ".blackbox")
+// 	candidates = append(candidates, "keyrings/live")
 
-	candidates := []string{}
-	if team := os.Getenv("BLACKBOX_TEAM"); team != "" {
-		candidates = append([]string{".blackbox-" + team}, candidates...)
-	}
-	candidates = append(candidates, ".blackbox")
-	candidates = append(candidates, "keyrings/live")
+// 	// Prevent an infinite loop by only doing "cd .." this many times
+// 	maxDirLevels := 100
 
-	// Prevent an infinite loop by only doing "cd .." this many times
-	maxDirLevels := 100
+// 	relpath := ""
+// 	for i := 0; i < maxDirLevels; i++ {
+// 		// Does relpath contain any of our directory names?
+// 		for _, c := range candidates {
+// 			t := filepath.Join(relpath, c)
+// 			d, err := bbutil.DirExists(t)
+// 			if err != nil {
+// 				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
+// 			}
+// 			if d {
+// 				return relpath, t, nil
+// 			}
+// 		}
+// 		// If we are at the root, stop.
+// 		if abs, _ := filepath.Abs(relpath); abs == "/" {
+// 			break
+// 		}
+// 		// Try one directory up
+// 		relpath = filepath.Join("..", relpath)
+// 	}
 
-	relpath := ""
-	for i := 0; i < maxDirLevels; i++ {
-		// Does relpath contain any of our directory names?
-		for _, c := range candidates {
-			t := filepath.Join(relpath, c)
-			d, err := bbutil.DirExists(t)
-			if err != nil {
-				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
-			}
-			if d {
-				return relpath, t, nil
-			}
-		}
-		// If we are at the root, stop.
-		if abs, _ := filepath.Abs(relpath); abs == "/" {
-			break
-		}
-		// Try one directory up
-		relpath = filepath.Join("..", relpath)
-	}
-
-	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
-}
+// 	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
+// }
 
 func (bx *Box) getAdmins() ([]string, error) {
+	// Memoized
 	if len(bx.Admins) != 0 {
 		return bx.Admins, nil
 	}
@@ -172,17 +191,12 @@ func (bx *Box) getAdmins() ([]string, error) {
 
 	// Try the legacy file:
 	fn := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
-	b, err := ioutil.ReadFile(fn)
-	c := strings.TrimSpace(string(b))
-	if err == nil {
-		bx.Admins = strings.Split(c, "\n")
-		return bx.Admins, nil
+	logErr.Printf("Admins file: %q", fn)
+	a, err := bbutil.ReadFileLines(fn)
+	if err != nil {
+		return nil, fmt.Errorf("getAdmins can't load admins (%q): %v", fn, err)
 	}
-	if !os.IsNotExist(err) {
-		return nil, fmt.Errorf("getAdmins can't open %q: %v", fn, err)
-	}
-
-	return nil, fmt.Errorf("getAdmins can't load admin list")
+	return a, nil
 }
 
 // getFiles populates Files and FileMap.

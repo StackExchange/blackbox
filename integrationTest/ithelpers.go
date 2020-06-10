@@ -6,14 +6,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
 	"github.com/andreyvit/diff"
 )
+
+var originPath string
 
 func getVcs(t *testing.T, name string) vcs.Vcs {
 	t.Helper()
@@ -36,14 +38,26 @@ func getVcs(t *testing.T, name string) vcs.Vcs {
 // TestBasicCommands's helpers
 
 func createDummyRepo(t *testing.T, vcsname string) {
+	// This creates a repo with real data, except any .gpg file
+	// is just garbage.
+
 	t.Helper()
 	fmt.Printf("createDummyRepo()\n")
 
-	dir, err := ioutil.TempDir("", "repo")
+	var dir string
+	var err error
+	if false {
+		dir, err = ioutil.TempDir("", "repo")
+		defer os.RemoveAll(dir) // clean up
+	} else {
+		dir = "/tmp/repo"
+		os.RemoveAll(filepath.Join(dir, "."))
+		err = os.Mkdir(dir, 0o770)
+	}
 	if err != nil {
 		t.Fatalf("createDummyRepo: Could not make tempdir: %v", err)
 	}
-	defer os.RemoveAll(dir) // clean up
+	fmt.Printf("TESTING DIRECTORY: cd %v\n", dir)
 
 	os.Chdir(dir)
 
@@ -59,19 +73,10 @@ func createDummyRepo(t *testing.T, vcsname string) {
 	makeFile(t, "bar.txt.gpg", "V nz gur one.gkg svyr!")
 }
 
-func addLineSorted(t *testing.T, name string, newlines ...string) {
-	t.Helper()
-
-	contents, err := ioutil.ReadFile(name)
+func addLineSorted(t *testing.T, filename, line string) {
+	err := bbutil.AddLinesToSortedFile(filename, line)
 	if err != nil {
-		t.Fatalf("addLinesSorted can't read %q: %v", name, err)
-	}
-	lines := strings.Split(string(contents), "\n")
-	lines = append(lines, newlines...)
-	sort.Strings(lines)
-	err = ioutil.WriteFile(name, []byte(strings.Join(lines, "\n")), 0o666)
-	if err != nil {
-		t.Fatalf("addLinesSorted can't write %q: %v", name, err)
+		t.Fatalf("addLineSorted failed: %v", err)
 	}
 }
 
@@ -94,18 +99,18 @@ func checkOutput(t *testing.T, args ...string) {
 	name := args[n]
 	args = args[:n]
 
-	want, err := ioutil.ReadFile(filepath.Join("test_data", name))
-	if err != nil {
-		t.Fatalf("checkOutput can't read %v: %v", name, err)
-	}
-
-	cmd := exec.Command("blackbox", args...)
+	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
 	cmd.Stdout = nil
 	cmd.Stderr = os.Stderr
 	got, err := cmd.Output()
 	if err != nil {
 		t.Fatal(fmt.Errorf("checkOutput(%q): %w", args, err))
+	}
+
+	want, err := ioutil.ReadFile(filepath.Join(originPath, "test_data", name))
+	if err != nil {
+		t.Fatalf("checkOutput can't read %v: %v", name, err)
 	}
 
 	if w, g := string(want), string(got); w != g {
@@ -150,7 +155,10 @@ var pathToBlackBox string
 func PathToBlackBox() string { return pathToBlackBox }
 
 // SetPathToBlackBox sets the path.
-func SetPathToBlackBox(n string) { pathToBlackBox = n }
+func SetPathToBlackBox(n string) {
+	fmt.Printf("PathToBlackBox=%q\n", n)
+	pathToBlackBox = n
+}
 
 func runBB(t *testing.T, args ...string) {
 	t.Helper()
