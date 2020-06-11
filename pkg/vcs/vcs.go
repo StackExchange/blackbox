@@ -27,7 +27,7 @@ var Catalog []*Item
 // DetermineVcs polls the VCS plug-ins to determine the VCS of directory.
 // The first to succeed is returned.
 // It never returns nil, since "NONE" is always valid.
-func DetermineVcs(dir string) Vcs {
+func Discover(dir string) Vcs {
 	for _, v := range Catalog {
 		h, err := v.New()
 		if err != nil {

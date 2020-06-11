@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
@@ -34,6 +35,47 @@ func (v VcsHandle) Discover(repobasedir string) bool {
 		return false
 	}
 	return found
+}
+
+// SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
+func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
+	// Add to the .gitattributes in the same directory as the file.
+	for _, file := range files {
+		d, n := filepath.Split(file)
+		err := bbutil.TouchFile(filepath.Join(repobasedir, d, ".gitattributes"))
+		if err != nil {
+			return err
+		}
+		err = bbutil.AddLinesToFile(filepath.Join(repobasedir, d, ".gitattributes"),
+			fmt.Sprintf("%q text eol=lf", n))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IgnoreAnywhere tells the VCS to ignore these files anywhere rin the repo.
+func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
+	// Add to the .gitignore file in the repobasedir.
+	ignore := filepath.Join(repobasedir, ".gitignore")
+	err := bbutil.TouchFile(ignore)
+	if err != nil {
+		return err
+	}
+	return bbutil.AddLinesToFile(ignore, files...)
+}
+
+// SuggestTracking tells the VCS to suggest the user commit these files.
+func (v VcsHandle) SuggestTracking(repobasedir string, message string, files ...string) error {
+	fmt.Print(`
+NEXT STEP: You need to manually check these in:
+     git commit -m'INITIALIZE BLACKBOX'`)
+	for _, file := range files {
+		fmt.Print(fmt.Sprintf(" %q", file))
+	}
+	fmt.Println()
+	return nil
 }
 
 // The following are "secret" functions only used by the integration testing system.

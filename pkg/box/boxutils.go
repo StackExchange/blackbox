@@ -120,12 +120,11 @@ func parseGroup(userinput string) (int, error) {
 }
 
 // GenerateConfigDir calculates configdir for uninitialized
-// repos where discovery won't work.
-// The result is an absolute path, unless Abs fails.
-// If --config is set, use that value no matter what.
+// repos (where discovery won't work).
+// The result is an absolute path.
+// If --config is set, use that value (no matter what).
 // Otherwise use .blackbox-$team or .blackbox (if no team).
 func GenerateConfigDir(configdir, team string) string {
-	// if configdir is set, use it.
 	if configdir != "" {
 		if p, err := filepath.Abs(configdir); err == nil {
 			return p
@@ -133,10 +132,8 @@ func GenerateConfigDir(configdir, team string) string {
 		return configdir
 	}
 
-	var c string
-	if team == "" {
-		c = ".blackbox"
-	} else {
+	c := ".blackbox"
+	if team != "" {
 		c = ".blackbox-" + team
 	}
 	if p, err := filepath.Abs(c); err == nil {

@@ -175,7 +175,7 @@ func (bx *Box) Init(yes, vcsname string) error {
 		input.Scan()
 		b, _ := strconv.ParseBool(input.Text())
 		if !b {
-			fmt.Printf("As you wish. Exiting.")
+			fmt.Println("Ok. Maybe some other time.")
 			return nil
 		}
 	}
@@ -187,22 +187,23 @@ func (bx *Box) Init(yes, vcsname string) error {
 
 	bbadmins := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
 	bbutil.TouchFile(bbadmins)
+	bbadminsRel := filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt")
+	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbadminsRel)
+
 	bbfiles := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
 	bbutil.TouchFile(bbfiles)
+	bbfilesRel := filepath.Join(bx.ConfigDirRel, "blackbox-files.txt")
+	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbfilesRel)
 
-	// FIXME(tlim) Tell vcs to make a "don't mess with cr/lf" file in.
-	// bbdir + blackbox-admins.txt (return file to commit.. .gitignore)
-	// bbdir + blackbox-files.txt (return file to commit)
+	bx.Vcs.IgnoreAnywhere(bx.RepoBaseDir,
+		"pubring.gpg~",
+		"pubring.kbx~",
+		"secring.gpg",
+	)
 
-	// ignores := []string{
-	// 	"pubring.gpg~",
-	// 	"pubring.kbx~",
-	// 	"secring.gpg",
-	// }
-
-	// Tell vcs to suggest tracking:
-	// message: INITIALIZE BLACKBOX
-	// files: blackbox-admins.txt blackbox-files.txt
+	bx.Vcs.SuggestTracking(bx.RepoBaseDir, "INITIALIZE BLACKBOX",
+		bbadminsRel, bbfilesRel,
+	)
 
 	return nil
 }
@@ -271,7 +272,10 @@ func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 }
 
 // TestingInitRepo initializes a repo.
+// Uses bx.Vcs to create ".git" or whatever.
+// Uses bx.Vcs to discover what was created, testing its work.
 func (bx *Box) TestingInitRepo() error {
+
 	if bx.Vcs == nil {
 		fmt.Println("bx.Vcs is nil")
 		fmt.Printf("BLACKBOX_VCS=%q\n", os.Getenv("BLACKBOX_VCS"))

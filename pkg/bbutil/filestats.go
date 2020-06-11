@@ -78,9 +78,24 @@ func AddLinesToSortedFile(filename string, newlines ...string) error {
 	sort.Strings(lines)
 	contents := strings.Join(lines, "\n") + "\n"
 	//fmt.Printf("DEBUG: write=%q\n", contents)
-	err = ioutil.WriteFile(filename, []byte(contents), 0o666)
+	err = ioutil.WriteFile(filename, []byte(contents), 0o660)
 	if err != nil {
 		return fmt.Errorf("AddLinesToSortedFile can't write %q: %w", filename, err)
+	}
+	return nil
+}
+
+// AddLinesToFile adds lines to the end of a file.
+func AddLinesToFile(filename string, newlines ...string) error {
+	lines, err := ReadFileLines(filename)
+	if err != nil {
+		return fmt.Errorf("AddLinesToFile can't read %q: %w", filename, err)
+	}
+	lines = append(lines, newlines...)
+	contents := strings.Join(lines, "\n") + "\n"
+	err = ioutil.WriteFile(filename, []byte(contents), 0o660)
+	if err != nil {
+		return fmt.Errorf("AddLinesToFile can't write %q: %w", filename, err)
 	}
 	return nil
 }

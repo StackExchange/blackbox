@@ -18,19 +18,20 @@ import (
 
 // Box describes what we know about a box.
 type Box struct {
-	//
-	Team        string // Name of the team (i.e. .blackbox-$TEAM)
-	RepoBaseDir string // Base directory of the repo.
-	ConfigDir   string // Path of the .blackbox config directory (Rel to RepoBseDir)
-	//
+	// Paths:
+	Team         string // Name of the team (i.e. .blackbox-$TEAM) TODO(tlim): Can this be deleted?
+	RepoBaseDir  string // Abs path to the VCS repo.
+	ConfigDir    string // Abs path to the .blackbox (or whatever) directory.
+	ConfigDirRel string // Path to the .blackbox (or whatever) directory relative to RepoBaseDir
+	// Settings:
+	Umask int // umask to set when decrypting
+	// Cache of data gathered from .blackbox:
 	Admins   []string        // If non-empty, the list of admins.
 	Files    []string        // If non-empty, the list of files.
 	FilesSet map[string]bool // If non-nil, a set of Files.
-	//
+	// Handles to interfaces:
 	Vcs     vcs.Vcs          // Interface access to the VCS.
 	Crypter crypters.Crypter // Inteface access to GPG.
-	//
-	Umask int // umask to set when decrypting
 }
 
 // StatusMode is a type of query.
@@ -53,83 +54,29 @@ func init() {
 	logErr = log.New(os.Stderr, "", 0)
 }
 
-// NewUninitialized creates a box when nothing exists.
-// Only for use with the "init" subcommand.
-func NewUninitialized(configdir, team string) *Box {
-	bx := &Box{}
-	bx.Team = team
-	bx.ConfigDir = GenerateConfigDir(configdir, team)
-	return bx
-}
-
-// NewForTestingInit creates a box in a bare environment, with no
-// autodiscovery of VCS.
-// Useful only in integration tests.
-func NewForTestingInit(vcsname string) *Box {
-	bx := &Box{}
-
-	// Set up the vcs
-	var vh vcs.Vcs
-	var err error
-	for _, v := range vcs.Catalog {
-		if strings.ToLower(v.Name) == strings.ToLower(vcsname) {
-			vh, err = v.New()
-			if err != nil {
-				return nil // No idea how that would happen.
-			}
-		}
-	}
-	bx.Vcs = vh
-
-	return bx
-}
-
-/*
-
-test_init:
-
-* Generates .git in the current directory
-* We don't know or use configdir, team, etc.
-
-init:
-* Assumes the git repo was created already.
-* Finds VCS (search up the tree for .git, .hg, none)
-* If not found assume VCS=None, configdir=$pwd
-* Set repobase based on where .git was found.
-* If .blackbox/blackbox-team found, error.
-* Create .blackbox or .blackbox-$team in configdir
-
-post-init commands:
-* Assumes the git repo was created already.
-* Assumes .blackbox or .blackbox-$team exists.
-* Finds VCS & rebobase (search up the tree for .git, .hg, none)
-* If VCS=None, search for repobase by looking for .blackbox.
-* If .blackbox not found, error (needs init)
-
-*/
-
-// NewFromFlags creates a box using items from flags.
+// NewFromFlags creates a box using items from flags.  Nearly all subcommands use this.
 func NewFromFlags(c *cli.Context) *Box {
-	bx := &Box{}
+	/*
+				 Nearly all subcommands use this.  It is used with a VCS repo
+				 that has blackbox already initialized.
 
-	bx.Umask = c.Int("umask")
-	bx.Team = c.String("team")
-
-	// repoBaseDir, configDir, err := findBaseAndConfigDir()
-	// if err != nil {
-	// 	logErr.Println(err)
-	// 	return bx
-	// }
-	// bx.RepoBaseDir = repoBaseDir
-	// bx.ConfigDir = configDir
+				 Commands need:    How we populate it:
+			     bx.Vcs:           Discovered by calling each plug-in until succeeds.
+		       bx.ConfigDir:     Is discovered.
+		       bx.RepoBaseDir:   Is discovered.
+	*/
+	bx := &Box{
+		Umask: c.Int("umask"),
+		Team:  c.String("team"),
+	}
 
 	// Discover which kind of VCS is in use.
-	bx.Vcs = vcs.DetermineVcs(bx.RepoBaseDir)
+	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
 
 	// Pick a crypto backend (GnuPG, go-openpgp, etc.)
 	bx.Crypter = crypters.SearchByName(c.String("crypto"))
 	if bx.Crypter == nil {
-		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the default\n")
+		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the damn default\n")
 		os.Exit(1)
 	}
 
@@ -139,6 +86,53 @@ func NewFromFlags(c *cli.Context) *Box {
 	if err != nil {
 		return nil
 	}
+
+	return bx
+}
+
+// NewUninitialized creates a box in a pre-init situation.
+func NewUninitialized(configdir, team string) *Box {
+	/*
+		   This is for "blackbox init" (used before ".blackbox*" exists)
+
+			 Init needs:       How we populate it:
+			   bx.Vcs:           Discovered by calling each plug-in until succeeds.
+			   bx.ConfigDir:     Generated algorithmically (it doesn't exist yet).
+				 bx.RepoBaseDir:   Generated algorithmically (it doesn't exist yet).
+	*/
+	bx := &Box{
+		Team: team,
+	}
+	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
+	bx.ConfigDir = GenerateConfigDir(configdir, team)
+	return bx
+}
+
+// NewForTestingInit creates a box in a bare environment.
+func NewForTestingInit(vcsname string) *Box {
+	/*
+
+		This is for "blackbox test_init" (secret command used in integration tests; when nothing exists)
+
+		TestingInitRepo only uses bx.Vcs, so that's all we set.
+
+		Populates bx.Vcs by finding the provider named vcsname.
+	*/
+	bx := &Box{}
+
+	// Find the
+	var vh vcs.Vcs
+	var err error
+	vcsname = strings.ToLower(vcsname)
+	for _, v := range vcs.Catalog {
+		if strings.ToLower(v.Name) == vcsname {
+			vh, err = v.New()
+			if err != nil {
+				return nil // No idea how that would happen.
+			}
+		}
+	}
+	bx.Vcs = vh
 
 	return bx
 }

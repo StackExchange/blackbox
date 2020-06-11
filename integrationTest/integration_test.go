@@ -53,12 +53,16 @@ func setup(t *testing.T) {
 	originPath = op
 }
 
-func TestInitInvalidArgs(t *testing.T) {
+func TestInit(t *testing.T) {
 	compile(t)
 
 	// Only zero or one args are permitted.
 	invalidArgs(t, "init", "one", "two")
 	invalidArgs(t, "init", "one", "two", "three")
+
+	runBB(t, "init", "yes")
+	// Verify blackbox-files.txt is empty, permissions (0o640)
+	// Verify blackbox-admins.txt is empty, permissions (0o640)
 }
 
 func TestBasicCommands(t *testing.T) {
