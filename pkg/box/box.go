@@ -73,7 +73,7 @@ func NewFromFlags(c *cli.Context) *Box {
 	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
 
 	// Pick a crypto backend (GnuPG, go-openpgp, etc.)
-	bx.Crypter = crypters.SearchByName(c.String("crypto"))
+	bx.Crypter = crypters.SearchByName(c.String("crypto"), c.Bool("debug"))
 	if bx.Crypter == nil {
 		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the damn default\n")
 		os.Exit(1)

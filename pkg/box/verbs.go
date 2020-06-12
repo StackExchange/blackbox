@@ -134,7 +134,7 @@ func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
 		}
 		err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
-			bx.logErr.Printf("%q: %v", name, err)
+			bx.logErr.Printf("Failed to encrypt %q: %v", name, err)
 			continue
 		}
 		suggest = append(suggest, fmt.Sprintf("Updated: %q", name))

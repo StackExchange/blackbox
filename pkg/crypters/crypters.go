@@ -13,7 +13,7 @@ type Crypter interface {
 }
 
 // NewFnSig function signature needed by reg.
-type NewFnSig func() (Crypter, error)
+type NewFnSig func(debug bool) (Crypter, error)
 
 // Item stores one item
 type Item struct {
@@ -27,12 +27,12 @@ var Catalog []*Item
 
 // SearchByName returns a Crypter handle for name.
 // The search is case insensitive.
-func SearchByName(name string) Crypter {
+func SearchByName(name string, debug bool) Crypter {
 	name = strings.ToLower(name)
 	for _, v := range Catalog {
 		//fmt.Printf("Trying %v %v\n", v.Name)
 		if strings.ToLower(v.Name) == name {
-			chandle, err := v.New()
+			chandle, err := v.New(debug)
 			if err != nil {
 				return nil // No idea how that would happen.
 			}

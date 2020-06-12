@@ -57,3 +57,4 @@ docs/_build/
 # Blackbox
 bbintegration
 .*.swp
+/integrationTest/.blackbox
