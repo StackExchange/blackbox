@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,28 +12,29 @@ import (
 	"testing"
 	"time"
 
+	"github.com/StackExchange/blackbox/v2/pkg/bblog"
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
+
 	"github.com/andreyvit/diff"
 )
 
+var verbose = flag.Bool("verbose", false, "reveal stderr")
+
 var originPath string
+
+func init() {
+	testing.Init()
+	flag.Parse()
+}
 
 var logErr *log.Logger
 var logVerbose *log.Logger
 
 func init() {
-	if logErr == nil {
-		logErr = log.New(os.Stderr, "", 0)
-	}
-	if logVerbose == nil {
-		if *verbose {
-			logVerbose = log.New(os.Stderr, "", 0)
-		} else {
-			logVerbose = log.New(nil, "", 0)
-		}
-	}
+	logErr = bblog.GetErr()
+	logVerbose = bblog.GetDebug(*verbose)
 }
 
 func getVcs(t *testing.T, name string) vcs.Vcs {
@@ -216,7 +218,7 @@ func invalidArgs(t *testing.T, args ...string) {
 		logVerbose.Println("BAD")
 		t.Fatal(fmt.Errorf("invalidArgs(%q): wanted failure but got success", args))
 	}
-	logVerbose.Printf("GOOD (that's expected): err=%q\n", err)
+	logVerbose.Printf("^^^^ (correct error received): err=%q\n", err)
 }
 
 // TestAliceAndBob's helpers.

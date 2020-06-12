@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/StackExchange/blackbox/v2/pkg/bblog"
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/crypters"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
@@ -30,8 +31,10 @@ type Box struct {
 	Files    []string        // If non-empty, the list of files.
 	FilesSet map[string]bool // If non-nil, a set of Files.
 	// Handles to interfaces:
-	Vcs     vcs.Vcs          // Interface access to the VCS.
-	Crypter crypters.Crypter // Inteface access to GPG.
+	Vcs      vcs.Vcs          // Interface access to the VCS.
+	Crypter  crypters.Crypter // Inteface access to GPG.
+	logErr   *log.Logger
+	logDebug *log.Logger
 }
 
 // StatusMode is a type of query.
@@ -48,12 +51,6 @@ const (
 	Changed
 )
 
-var logErr *log.Logger
-
-func init() {
-	logErr = log.New(os.Stderr, "", 0)
-}
-
 // NewFromFlags creates a box using items from flags.  Nearly all subcommands use this.
 func NewFromFlags(c *cli.Context) *Box {
 	/*
@@ -66,8 +63,10 @@ func NewFromFlags(c *cli.Context) *Box {
 		       bx.RepoBaseDir:   Is discovered.
 	*/
 	bx := &Box{
-		Umask: c.Int("umask"),
-		Team:  c.String("team"),
+		Umask:    c.Int("umask"),
+		Team:     c.String("team"),
+		logErr:   bblog.GetErr(),
+		logDebug: bblog.GetDebug(c.Bool("verbose")),
 	}
 
 	// Discover which kind of VCS is in use.
@@ -185,7 +184,7 @@ func (bx *Box) getAdmins() error {
 
 	// Try the legacy file:
 	fn := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
-	logErr.Printf("Admins file: %q", fn)
+	bx.logDebug.Printf("Admins file: %q", fn)
 	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {
 		return fmt.Errorf("getAdmins can't load admins (%q): %v", fn, err)

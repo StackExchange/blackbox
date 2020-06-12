@@ -70,10 +70,10 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 	for _, name := range names {
 		fmt.Printf("========== DECRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
-			logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+			bx.logErr.Printf("Skipping %q: File not registered with Blackbox", name)
 		}
 		if (!overwrite) && bbutil.FileExistsOrProblem(name) {
-			logErr.Printf("Skipping %q: Will not overwrite existing file", name)
+			bx.logErr.Printf("Skipping %q: Will not overwrite existing file", name)
 			continue
 		}
 
@@ -87,7 +87,7 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 
 		err := bx.Crypter.Decrypt(name, bx.Umask, overwrite)
 		if err != nil {
-			logErr.Printf("%q: %v", name, err)
+			bx.logErr.Printf("%q: %v", name, err)
 			continue
 		}
 
@@ -130,11 +130,11 @@ func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
-			logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+			bx.logErr.Printf("Skipping %q: File not registered with Blackbox", name)
 		}
 		err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
-			logErr.Printf("%q: %v", name, err)
+			bx.logErr.Printf("%q: %v", name, err)
 			continue
 		}
 		suggest = append(suggest, fmt.Sprintf("Updated: %q", name))
@@ -178,12 +178,12 @@ func (bx *Box) Info() error {
 
 	err := bx.getFiles()
 	if err != nil {
-		logErr.Printf("Info: %v", err)
+		bx.logErr.Printf("Info: %v", err)
 	}
 
 	err = bx.getAdmins()
 	if err != nil {
-		logErr.Printf("Info: %v", err)
+		bx.logErr.Printf("Info: %v", err)
 	}
 
 	//fmt.Printf("bx.Admins=%q\n", bx.Admins)
@@ -206,8 +206,8 @@ func (bx *Box) Info() error {
 func (bx *Box) Init(yes, vcsname string) error {
 	//fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
 
-	fmt.Printf("team is: %q\n", bx.Team)
-	fmt.Printf("configdir will be: %q\n", bx.ConfigDir)
+	//fmt.Printf("team is: %q\n", bx.Team)
+	//fmt.Printf("configdir will be: %q\n", bx.ConfigDir)
 
 	if yes != "yes" {
 		fmt.Printf("Enable blackbox for this %v repo? (yes/no)", bx.Vcs.Name())

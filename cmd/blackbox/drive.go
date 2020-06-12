@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/StackExchange/blackbox/v2/pkg/bblog"
 	"github.com/StackExchange/blackbox/v2/pkg/box"
 	"github.com/urfave/cli/v2"
 )
@@ -146,7 +147,6 @@ func cmdInit(c *cli.Context) error {
 		return fmt.Errorf("This command takes one or two arguments")
 	}
 	bx := box.NewUninitialized(c.String("configdir"), c.String("team"))
-	fmt.Printf("cmdInit configdir=%q\n", bx.ConfigDir)
 	return bx.Init(c.Args().First(), c.String("vcs"))
 }
 
@@ -180,7 +180,9 @@ func testingInit(c *cli.Context) error {
 	if c.Args().Present() {
 		return fmt.Errorf("No args required")
 	}
-	fmt.Printf(
+
+	logDebug := bblog.GetDebug(c.Bool("debug"))
+	logDebug.Printf(
 		"c.String(vcs) reports %q\n",
 		c.String("vcs"),
 	)

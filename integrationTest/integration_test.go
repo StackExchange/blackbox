@@ -3,44 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 
-	"fmt"
-	"log"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"testing"
-
+	"github.com/StackExchange/blackbox/v2/pkg/bblog"
+	_ "github.com/StackExchange/blackbox/v2/pkg/bblog"
 	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
 )
 
-var verbose = flag.Bool("verbose", false, "reveal stderr")
 var vcsToTest = flag.String("testvcs", "GIT", "VCS to test")
 
 //var crypterToTest = flag.String("crypter", "GnuPG", "crypter to test")
 
-var logErr *log.Logger
-var logVerbose *log.Logger
-
 func init() {
 	testing.Init()
 	flag.Parse()
-
-	if logErr == nil {
-		logErr = log.New(os.Stderr, "", 0)
-	}
-	if logVerbose == nil {
-		if *verbose {
-			logVerbose = log.New(os.Stderr, "", 0)
-		} else {
-			logVerbose = log.New(nil, "", 0)
-		}
-	}
 }
 
 func compile(t *testing.T) {
@@ -65,9 +44,11 @@ func compile(t *testing.T) {
 }
 
 func setup(t *testing.T) {
-	logVerbose.Printf("flag.testvcs is %v", *vcsToTest)
+	logDebug := bblog.GetDebug(*verbose)
+
+	logDebug.Printf("flag.testvcs is %v", *vcsToTest)
 	vh := getVcs(t, *vcsToTest)
-	logVerbose.Printf("Using BLACKBOX_VCS=%v", vh.Name())
+	logDebug.Printf("Using BLACKBOX_VCS=%v", vh.Name())
 	os.Setenv("BLACKBOX_VCS", vh.Name())
 
 	op, err := os.Getwd()

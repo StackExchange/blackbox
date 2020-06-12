@@ -48,6 +48,10 @@ func flags() *cli.App {
 			Value:   syscall.Umask(syscall.Umask(0)),
 			EnvVars: []string{"BLACKBOX_UMASK", "DECRYPT_UMASK"},
 		},
+		&cli.BoolFlag{
+			Name:  "debug",
+			Usage: "Show debug output",
+		},
 	}
 
 	app.Commands = []*cli.Command{
