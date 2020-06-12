@@ -1,7 +1,6 @@
 package gnupg
 
 import (
-	"os"
 	"os/exec"
 	"syscall"
 
@@ -42,21 +41,43 @@ func (crypt CrypterHandle) Name() string {
 	return pluginName
 }
 
-// Decrypt decrypts a file, possibly overwriting the plaintext.
-func (crypt CrypterHandle) Decrypt(name string, overwrite bool, umask int) error {
+// Decrypt name+".gpg", possibly overwriting name.
+func (crypt CrypterHandle) Decrypt(filename string, umask int, overwrite bool) error {
 
-	if overwrite {
-		_ = os.Remove(name)
-	}
-
-	oldumask := syscall.Umask(umask)
-	err := bbutil.RunBash(crypt.GPGCmd,
+	a := []string{
 		"--use-agent",
 		"-q",
 		"--decrypt",
-		"-o", name,
-		name+".gpg",
-	)
+		"-o", filename,
+	}
+	if overwrite {
+		a = append(a, "--yes")
+	}
+	a = append(a, filename+".gpg")
+
+	oldumask := syscall.Umask(umask)
+	err := bbutil.RunBash(crypt.GPGCmd, a...)
 	syscall.Umask(oldumask)
+	return err
+}
+
+// Encrypt name, overwriting name+".gpg"
+func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []string) error {
+	a := []string{
+		"--use-agent",
+		"--yes",
+		"--trust-model=always",
+		"--encrypt",
+		"-o", filename + ".gpg",
+	}
+	for _, f := range receivers {
+		a = append(a, "-r", f)
+	}
+	a = append(a, filename)
+
+	oldumask := syscall.Umask(umask)
+	err := bbutil.RunBash(crypt.GPGCmd, a...)
+	syscall.Umask(oldumask)
+
 	return err
 }

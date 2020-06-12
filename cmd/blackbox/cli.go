@@ -3,6 +3,8 @@ package main
 // cli.go -- Create urfave/cli datastructures and apply them.
 
 import (
+	"syscall"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -43,7 +45,7 @@ func flags() *cli.App {
 		&cli.IntFlag{
 			Name:    "umask",
 			Usage:   "umask to set when decrypting",
-			Value:   0o027,
+			Value:   syscall.Umask(syscall.Umask(0)),
 			EnvVars: []string{"BLACKBOX_UMASK", "DECRYPT_UMASK"},
 		},
 	}
@@ -70,7 +72,7 @@ func flags() *cli.App {
 			Aliases: []string{"en", "end"},
 			Usage:   "Encrypts file(s)",
 			Flags: []cli.Flag{
-				&cli.BoolFlag{Name: "leave", Usage: "Do not remove plaintext version"},
+				&cli.BoolFlag{Name: "shred", Usage: "Remove plaintext afterwords"},
 			},
 			Action: func(c *cli.Context) error { return cmdEncrypt(c) },
 		},

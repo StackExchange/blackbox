@@ -33,6 +33,10 @@ func FileStatus(name string) (string, error) {
 		return "DECRYPTED", nil
 	}
 
+	if os.IsNotExist(perr) && os.IsNotExist(eerr) {
+		return "BOTHMISSING", nil
+	}
+
 	if eerr != nil {
 		if os.IsNotExist(eerr) {
 			return "GPGMISSING", nil

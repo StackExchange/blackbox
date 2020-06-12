@@ -175,10 +175,10 @@ func NewForTestingInit(vcsname string) *Box {
 // 	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
 // }
 
-func (bx *Box) getAdmins() ([]string, error) {
+func (bx *Box) getAdmins() error {
 	// Memoized
 	if len(bx.Admins) != 0 {
-		return bx.Admins, nil
+		return nil
 	}
 
 	// TODO(tlim): Try the json file.
@@ -188,9 +188,10 @@ func (bx *Box) getAdmins() ([]string, error) {
 	logErr.Printf("Admins file: %q", fn)
 	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {
-		return nil, fmt.Errorf("getAdmins can't load admins (%q): %v", fn, err)
+		return fmt.Errorf("getAdmins can't load admins (%q): %v", fn, err)
 	}
-	return a, nil
+	bx.Admins = a
+	return nil
 }
 
 // getFiles populates Files and FileMap.

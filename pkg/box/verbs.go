@@ -21,13 +21,12 @@ func (bx *Box) AdminAdd([]string) error {
 
 // AdminList lists the admin id's.
 func (bx *Box) AdminList() error {
-
-	admins, err := bx.getAdmins()
+	err := bx.getAdmins()
 	if err != nil {
 		return err
 	}
 
-	for _, v := range admins {
+	for _, v := range bx.Admins {
 		fmt.Println(v)
 	}
 	return nil
@@ -52,6 +51,10 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 		return err
 	}
 
+	if bulkpause {
+		gpgAgentNotice()
+	}
+
 	groupchange := false
 	gid := -1
 	if setgroup != "" {
@@ -59,10 +62,6 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 		if err != nil {
 			return fmt.Errorf("Invalid group name or gid: %w", err)
 		}
-	}
-
-	if bulkpause {
-		gpgAgentNotice()
 	}
 
 	if len(names) == 0 {
@@ -82,7 +81,11 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 		// if overwrite is disabled. I don't think anyone has ever used that
 		// feature. That said, we could immplement that here.
 
-		err := bx.Crypter.Decrypt(name, overwrite, bx.Umask)
+		// TODO(tlim) v1 takes the md5 has of the plaintext before it decrypts,
+		// then compares the new plaintext's md5. It prints "EXTRACTED" if
+		// there is a change.
+
+		err := bx.Crypter.Decrypt(name, bx.Umask, overwrite)
 		if err != nil {
 			logErr.Printf("%q: %v", name, err)
 			continue
@@ -107,8 +110,45 @@ func (bx *Box) Edit([]string) error {
 }
 
 // Encrypt encrypts a file.
-func (bx *Box) Encrypt(names []string, bulk bool, setgroup string, overwrite bool) error {
-	return fmt.Errorf("NOT IMPLEMENTED: Encrypt")
+func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
+	var err error
+
+	err = bx.getAdmins()
+	if err != nil {
+		return err
+	}
+
+	err = bx.getFiles()
+	if err != nil {
+		return err
+	}
+	if len(names) == 0 {
+		names = bx.Files
+	}
+
+	var suggest []string
+	for _, name := range names {
+		fmt.Printf("========== ENCRYPTING %q\n", name)
+		if !bx.FilesSet[name] {
+			logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+		}
+		err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
+		if err != nil {
+			logErr.Printf("%q: %v", name, err)
+			continue
+		}
+		suggest = append(suggest, fmt.Sprintf("Updated: %q", name))
+		if shred {
+			bx.Shred(name)
+		}
+	}
+
+	bx.Vcs.SuggestTracking(bx.RepoBaseDir,
+		strings.Join(names, "\n")+"\n",
+		names...,
+	)
+
+	return nil
 }
 
 // FileAdd enrolls files.
@@ -136,14 +176,14 @@ func (bx *Box) FileRemove(names []string) error {
 // Info prints debugging info.
 func (bx *Box) Info() error {
 
-	_, err := bx.getAdmins()
+	err := bx.getFiles()
 	if err != nil {
-		logErr.Printf("getAdmins error: %v", err)
+		logErr.Printf("Info: %v", err)
 	}
 
-	err = bx.getFiles()
+	err = bx.getAdmins()
 	if err != nil {
-		logErr.Printf("getFiles error: %v", err)
+		logErr.Printf("Info: %v", err)
 	}
 
 	//fmt.Printf("bx.Admins=%q\n", bx.Admins)
@@ -186,12 +226,12 @@ func (bx *Box) Init(yes, vcsname string) error {
 	}
 
 	bbadmins := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
-	bbutil.TouchFile(bbadmins)
+	bbutil.Touch(bbadmins)
 	bbadminsRel := filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt")
 	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbadminsRel)
 
 	bbfiles := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
-	bbutil.TouchFile(bbfiles)
+	bbutil.Touch(bbfiles)
 	bbfilesRel := filepath.Join(bx.ConfigDirRel, "blackbox-files.txt")
 	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbfilesRel)
 
@@ -214,7 +254,7 @@ func (bx *Box) Reencrypt(names []string) error {
 }
 
 // Shred shreds files.
-func (bx *Box) Shred(names []string) error {
+func (bx *Box) Shred(names ...string) error {
 	return fmt.Errorf("NOT IMPLEMENTED: Shred")
 }
 

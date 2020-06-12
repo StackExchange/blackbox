@@ -105,12 +105,8 @@ func cmdEncrypt(c *cli.Context) error {
 	if err := allOrSomeFiles(c); err != nil {
 		return err
 	}
-	bulk := false
-	if c.Bool("all") {
-		bulk = c.Bool("bulk") // Only applies to --all
-	}
 	bx := box.NewFromFlags(c)
-	return bx.Encrypt(c.Args().Slice(), bulk, c.String("group"), c.Bool("overwrite"))
+	return bx.Encrypt(c.Args().Slice(), c.Int("umask"), c.Bool("shred"))
 }
 
 func cmdFileAdd(c *cli.Context) error {
@@ -167,7 +163,7 @@ func cmdShred(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Shred(c.Args().Slice())
+	return bx.Shred(c.Args().Slice()...)
 }
 
 func cmdStatus(c *cli.Context) error {

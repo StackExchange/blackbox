@@ -3,10 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+
+	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
 )
 
 var verbose = flag.Bool("verbose", false, "reveal stderr")
@@ -14,9 +24,23 @@ var vcsToTest = flag.String("testvcs", "GIT", "VCS to test")
 
 //var crypterToTest = flag.String("crypter", "GnuPG", "crypter to test")
 
+var logErr *log.Logger
+var logVerbose *log.Logger
+
 func init() {
 	testing.Init()
 	flag.Parse()
+
+	if logErr == nil {
+		logErr = log.New(os.Stderr, "", 0)
+	}
+	if logVerbose == nil {
+		if *verbose {
+			logVerbose = log.New(os.Stderr, "", 0)
+		} else {
+			logVerbose = log.New(nil, "", 0)
+		}
+	}
 }
 
 func compile(t *testing.T) {
@@ -25,7 +49,7 @@ func compile(t *testing.T) {
 		return
 	}
 	// Make sure we have the latest binary
-	fmt.Println("Compiling")
+	fmt.Println("========== Compiling")
 	cmd := exec.Command("go", "build", "-o", "../bbintegration", "../cmd/blackbox")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -41,9 +65,9 @@ func compile(t *testing.T) {
 }
 
 func setup(t *testing.T) {
-	fmt.Printf("flag.testvcs is %v\n", *vcsToTest)
+	logVerbose.Printf("flag.testvcs is %v", *vcsToTest)
 	vh := getVcs(t, *vcsToTest)
-	fmt.Printf("Using BLACKBOX_VCS=%v\n", vh.Name())
+	logVerbose.Printf("Using BLACKBOX_VCS=%v", vh.Name())
 	os.Setenv("BLACKBOX_VCS", vh.Name())
 
 	op, err := os.Getwd()
@@ -61,8 +85,10 @@ func TestInit(t *testing.T) {
 	invalidArgs(t, "init", "one", "two", "three")
 
 	runBB(t, "init", "yes")
-	// Verify blackbox-files.txt is empty, permissions (0o640)
-	// Verify blackbox-admins.txt is empty, permissions (0o640)
+	assertFileEmpty(t, ".blackbox/blackbox-admins.txt")
+	assertFileEmpty(t, ".blackbox/blackbox-files.txt")
+	assertFilePerms(t, ".blackbox/blackbox-admins.txt", 0o640)
+	assertFilePerms(t, ".blackbox/blackbox-files.txt", 0o640)
 }
 
 func TestBasicCommands(t *testing.T) {
@@ -84,12 +110,20 @@ func TestBasicCommands(t *testing.T) {
 	invalidArgs(t, "file", "list", "--all")
 
 	// status
-
-	// reencrypt
-
-	// decrypt
+	createDummyFiles(t)
+	checkOutput(t, "status", "000-status.txt")
 
 	// encrypt
+	runBB(t, "encrypt", "foo.txt")
+	assertFileMissing(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+
+	// decrypt
+	runBB(t, "decrypt", "foo.txt")
+	assertFileExists(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+
+	// reencrypt
 
 	// edit
 	invalidArgs(t, "edit")

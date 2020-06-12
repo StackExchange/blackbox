@@ -33,8 +33,8 @@ func FileExistsOrProblem(path string) bool {
 	return true
 }
 
-// TouchFile updates the timestamp of a file.
-func TouchFile(name string) error {
+// Touch updates the timestamp of a file.
+func Touch(name string) error {
 	var err error
 	_, err = os.Stat(name)
 	if os.IsNotExist(err) {

@@ -5,5 +5,7 @@ type Crypter interface {
 	// Name returns the plug-in's canonical name.
 	Name() string
 	// Decrypt name+".gpg", possibly overwriting name.
-	Decrypt(filename string, overwrite bool, umask int) error
+	Decrypt(filename string, umask int, overwrite bool) error
+	// Encrypt name, overwriting name+".gpg"
+	Encrypt(filename string, umask int, receivers []string) error
 }

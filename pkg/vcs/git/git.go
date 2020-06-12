@@ -42,7 +42,7 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 	// Add to the .gitattributes in the same directory as the file.
 	for _, file := range files {
 		d, n := filepath.Split(file)
-		err := bbutil.TouchFile(filepath.Join(repobasedir, d, ".gitattributes"))
+		err := bbutil.Touch(filepath.Join(repobasedir, d, ".gitattributes"))
 		if err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 	// Add to the .gitignore file in the repobasedir.
 	ignore := filepath.Join(repobasedir, ".gitignore")
-	err := bbutil.TouchFile(ignore)
+	err := bbutil.Touch(ignore)
 	if err != nil {
 		return err
 	}
@@ -77,6 +77,10 @@ NEXT STEP: You need to manually check these in:
 	fmt.Println()
 	return nil
 }
+
+//echo "========== Encrypting: $unencrypted" >&2
+//$GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
+//echo '========== Encrypting: DONE' >&2
 
 // The following are "secret" functions only used by the integration testing system.
 
