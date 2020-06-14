@@ -28,6 +28,7 @@ Or in a function:
 var logErr *log.Logger
 var logDebug *log.Logger
 
+// GetErr returns a logger handle used for errors
 func GetErr() *log.Logger {
 	if logErr == nil {
 		logErr = log.New(os.Stderr, "", 0)
@@ -35,6 +36,7 @@ func GetErr() *log.Logger {
 	return logErr
 }
 
+// GetDebug returns a Logger handle used for debug info (output is discarded if viable=false)
 func GetDebug(visible bool) *log.Logger {
 	if visible {
 		logDebug = log.New(os.Stderr, "", 0)

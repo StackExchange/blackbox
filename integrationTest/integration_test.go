@@ -80,20 +80,24 @@ func TestBasicCommands(t *testing.T) {
 	setup(t)
 	createDummyRepo(t, *vcsToTest)
 
-	// admin
-	checkOutput(t, "admin", "list", "000-admin-list.txt")
-	invalidArgs(t, "admin", "list", "--all")
-	invalidArgs(t, "admin", "one")
+	phase("Alice creates a repo.  Creates secret.txt.")
+	makeFile(t, "secret.txt", "this is my secret")
 
-	// file
-	checkOutput(t, "file", "list", "000-file-list.txt")
-	invalidArgs(t, "file", "list", "one")
-	invalidArgs(t, "file", "list", "--all")
+	phase("Alice creates a GPG key...")
+	makeAdmin(t, "alice", "Alice Example", "alice@example.com")
+	become(t, "alice")
 
-	// status
-	createDummyFiles(t)
-	checkOutput(t, "status", "000-status.txt")
+	runBB(t, "admin", "add", "alice@example.com")
 
+}
+
+func TestAlice(t *testing.T) {
+	// Create an empty repo with a user named Alice who
+	// performs many operations.  All files are valid.
+	compile(t)
+	setup(t)
+	createDummyRepo(t, *vcsToTest)
+	createDummyFilesAdmin(t)
 	// encrypt
 	runBB(t, "encrypt", "foo.txt")
 	assertFileMissing(t, "foo.txt")

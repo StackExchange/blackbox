@@ -24,6 +24,16 @@ var verbose = flag.Bool("verbose", false, "reveal stderr")
 
 var originPath string
 
+type userinfo struct {
+	name      string
+	dir       string // .gnupg-$name
+	agentInfo string // GPG_AGENT_INFO
+	email     string
+	fullname  string
+}
+
+var users = map[string]*userinfo{}
+
 func init() {
 	testing.Init()
 	flag.Parse()
@@ -72,7 +82,7 @@ func createDummyRepo(t *testing.T, vcsname string) {
 	} else {
 		dir = "/tmp/repo"
 		os.RemoveAll(filepath.Join(dir, "."))
-		err = os.Mkdir(dir, 0o770)
+		err = os.Mkdir(dir, 0o000)
 	}
 	if err != nil {
 		t.Fatalf("createDummyRepo: Could not make tempdir: %v", err)
@@ -83,6 +93,9 @@ func createDummyRepo(t *testing.T, vcsname string) {
 
 	runBB(t, "testing_init") // Runs "git init" and then vcs.Discover()
 	runBB(t, "init", "yes")
+}
+
+func createDummyFilesAdmin(t *testing.T) {
 	addLineSorted(t, ".blackbox/blackbox-admins.txt", "user1@example.com")
 	addLineSorted(t, ".blackbox/blackbox-admins.txt", "user2@example.com")
 	addLineSorted(t, ".blackbox/blackbox-files.txt", "foo.txt")
@@ -93,7 +106,7 @@ func createDummyRepo(t *testing.T, vcsname string) {
 	makeFile(t, "bar.txt.gpg", "V nz gur one.gkg svyr!")
 }
 
-func createDummyFiles(t *testing.T) {
+func createFilesStatus(t *testing.T) {
 	// This creates a few files with real plaintext but fake cyphertext.
 	// There are a variety of timestamps to enable many statuses.
 	t.Helper()
@@ -126,16 +139,18 @@ func createDummyFiles(t *testing.T) {
 	makeFile(t, "status-GPGMISSING.txt", "File with GPGMISSING in it.")
 	// gpg file intentionally missing.
 
+	// Plaintext intentionally missing. ("status-BOTHMISSING.txt")
+	// gpg file intentionally missing. ("status-BOTHMISSING.txt.gpg")
+
+	// NB(tlim): commented out.  I can't think of an error I can reproduce.
 	// makeFile(t, "status-PLAINERROR.txt", "File with PLAINERROR in it.")
 	// makeFile(t, "status-PLAINERROR.txt.gpg", "Svyr jvgu CYNVAREEBE va vg.")
 	// setFilePerms(t, "status-PLAINERROR.txt", 0o000)
 
+	// NB(tlim): commented out.  I can't think of an error I can reproduce.
 	// makeFile(t, "status-GPGERROR.txt", "File with GPGERROR in it.")
 	// makeFile(t, "status-GPGERROR.txt.gpg", "Svyr jvgu TCTREEBE va vg.")
 	// setFilePerms(t, "status-GPGERROR.txt.gpg", 0o000)
-
-	// Plaintext intentionally missing. ("status-BOTHMISSING.txt")
-	// gpg file intentionally missing. ("status-BOTHMISSING.txt.gpg")
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -177,10 +192,8 @@ func setFilePerms(t *testing.T, name string, perms int) {
 func checkOutput(t *testing.T, args ...string) {
 	t.Helper()
 
-	// Pop off the last arg. Use it as the filename for expected output.
-	n := len(args) - 1
-	name := args[n]
-	args = args[:n]
+	// Pop off the last arg. Use it as the filename.
+	name, args := args[len(args)-1], args[:len(args)-1]
 
 	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
@@ -270,6 +283,82 @@ func phase(msg string) {
 	logVerbose.Println("********************")
 	logVerbose.Println("********************")
 }
+
+func makeAdmin(t *testing.T, name, fullname, email string) {
+	testing.Init()
+
+	dir, err := filepath.Abs(filepath.Join(os.Getenv("HOME"), ".gnupg-"+name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Mkdir(dir, 0o077)
+
+	u := &userinfo{
+		name:     name,
+		dir:      dir,
+		fullname: fullname,
+		email:    email,
+	}
+	users[name] = u
+
+	// GNUPGHOME=u.dir
+	// echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
+	os.Setenv("GNUPGHOME", u.dir)
+	out, err := bbutil.RunBashOutput("gpg-agent", "--homedir", u.dir, "--daemon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	u.agentInfo = strings.TrimSpace(out)
+
+	os.Setenv("GNUPGHOME", u.dir)
+	// Generate key:
+	bbutil.RunBash("gpg",
+		"--homedir", u.dir,
+		"--batch",
+		"--passphrase", "",
+		"--quick-generate-key", "u.email",
+	)
+}
+
+func become(t *testing.T, name string) {
+	testing.Init()
+	u := users[name]
+
+	os.Setenv("GNUPGHOME", u.dir)
+	os.Setenv("GPG_AGENT_INFO", u.agentInfo)
+	bbutil.RunBash("git", "config", "user.name", u.name)
+	bbutil.RunBash("git", "config", "user.email", u.fullname)
+}
+
+//	// Get fingerprint:
+//	// Retrieve fingerprint of generated key.
+//	// Use it to extract the secret/public keys.
+//	// (stolen from https://raymii.org/s/articles/GPG_noninteractive_batch_sign_trust_and_send_gnupg_keys.html)
+//
+//	// fpr=`gpg --homedir /tmp/blackbox_createrole --fingerprint --with-colons "$ROLE_NAME" | awk -F: '/fpr:/ {print $10}' | head -n 1`
+//	var fpr string
+//	bbutil.RunBashOutput("gpg",
+//		"--homedir", "/tmp/blackbox_createrole",
+//		"--fingerprint",
+//		"--with-colons",
+//		u.email,
+//	)
+//	for i, l := range string.Split(out, "\n") {
+//		if string.HasPrefix(l, "fpr:") {
+//			fpr = strings.Split(l, ":")[9]
+//		}
+//		break
+//	}
+//
+//	// Create key key:
+//	// gpg --homedir "$gpghomedir" --batch --passphrase '' --quick-add-key "$fpr" rsa encr
+//	bbutil.RunBash("gpg",
+//		"--homedir", u.dir,
+//		"--batch",
+//		"--passphrase", "",
+//		"--quick-add-key", fpr,
+//		"rsa", "encr",
+//	)
 
 // function md5sum_file() {
 //   # Portably generate the MD5 hash of file $1.

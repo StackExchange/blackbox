@@ -78,14 +78,9 @@ NEXT STEP: You need to manually check these in:
 	return nil
 }
 
-//echo "========== Encrypting: $unencrypted" >&2
-//$GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
-//echo '========== Encrypting: DONE' >&2
-
 // The following are "secret" functions only used by the integration testing system.
 
 // TestingInitRepo initializes a repo.
-
 func (v VcsHandle) TestingInitRepo() error {
 	bbutil.RunBash("git", "init")
 	return nil

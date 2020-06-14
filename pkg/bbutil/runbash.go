@@ -9,10 +9,6 @@ import (
 
 // RunBash runs a Bash command.
 func RunBash(command string, args ...string) error {
-	//if dryRun {
-	//	fmt.Printf("DRY_RUN: Would run exec.Command(%v, %v)\n", command, args)
-	//	return nil
-	//}
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -23,7 +19,19 @@ func RunBash(command string, args ...string) error {
 	}
 	err = cmd.Wait()
 	if err != nil {
-		return fmt.Errorf("run_bash: %w", err)
+		return fmt.Errorf("RunBash err=%w", err)
 	}
 	return nil
+}
+
+// RunBash runs a Bash command.
+func RunBashOutput(command string, args ...string) (string, error) {
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("RunBashOutput err=%w", err)
+	}
+	return string(out), err
 }
