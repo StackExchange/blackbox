@@ -13,15 +13,15 @@ To use this, include the following lines in your .go file.
 var logErr *log.Logger
 var logDebug *log.Logger
 func init() {
-  logErr = bblog.GetLogErr()
-  logDebug = bblog.GetLogDebug(verbose)
+  logErr = bblog.GetErr()
+  logDebug = bblog.GetDebug(verbose)
 }
 
 Or in a function:
 
-  logErr := bblog.GetLogErr()
-  logDebug := bblog.GetLogDebug(verbose)
-	logDebug.Printf("whatever")
+  logErr := bblog.GetErr()
+  logDebug := bblog.GetDebug(verbose)
+	logDebug.Printf("whatever: %v", err)
 
 */
 

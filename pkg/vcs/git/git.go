@@ -82,6 +82,7 @@ NEXT STEP: You need to manually check these in:
 
 // TestingInitRepo initializes a repo.
 func (v VcsHandle) TestingInitRepo() error {
-	bbutil.RunBash("git", "init")
-	return nil
+	fmt.Println("RUNNING GIT INIT")
+	return bbutil.RunBash("git", "init")
+
 }

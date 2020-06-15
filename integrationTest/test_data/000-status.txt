@@ -1,8 +1,6 @@
 +-------------+------------------------+
 |   STATUS    |          NAME          |
 +-------------+------------------------+
-| ENCRYPTED   | bar.txt                |
-| ENCRYPTED   | foo.txt                |
 | BOTHMISSING | status-BOTHMISSING.txt |
 | DECRYPTED   | status-DECRYPTED.txt   |
 | ENCRYPTED   | status-ENCRYPTED.txt   |

@@ -16,13 +16,12 @@ import (
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
+	"github.com/TomOnTime/hind"
 
 	"github.com/andreyvit/diff"
 )
 
 var verbose = flag.Bool("verbose", false, "reveal stderr")
-
-var originPath string
 
 type userinfo struct {
 	name      string
@@ -40,18 +39,18 @@ func init() {
 }
 
 var logErr *log.Logger
-var logVerbose *log.Logger
+var logDebug *log.Logger
 
 func init() {
 	logErr = bblog.GetErr()
-	logVerbose = bblog.GetDebug(*verbose)
+	logDebug = bblog.GetDebug(*verbose)
 }
 
 func getVcs(t *testing.T, name string) vcs.Vcs {
 	t.Helper()
 	// Set up the vcs
 	for _, v := range vcs.Catalog {
-		logVerbose.Printf("Testing vcs: %v == %v", name, v.Name)
+		logDebug.Printf("Testing vcs: %v == %v", name, v.Name)
 		if strings.ToLower(v.Name) == strings.ToLower(name) {
 			h, err := v.New()
 			if err != nil {
@@ -59,7 +58,7 @@ func getVcs(t *testing.T, name string) vcs.Vcs {
 			}
 			return h
 		}
-		logVerbose.Println("...Nope.")
+		logDebug.Println("...Nope.")
 
 	}
 	return nil
@@ -67,32 +66,52 @@ func getVcs(t *testing.T, name string) vcs.Vcs {
 
 // TestBasicCommands's helpers
 
-func createDummyRepo(t *testing.T, vcsname string) {
+func makeHomeDir(t *testing.T, testname string) {
+	t.Helper()
+	var homedir string
+	var err error
+
+	if false {
+		// Make a random location that is deleted later
+		homedir, err = ioutil.TempDir("", filepath.Join("bbhome-"+testname))
+		defer os.RemoveAll(homedir) // clean up
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		// Make a predictable location. wipe and re-use
+		homedir = "/tmp/bbhome-" + testname
+		os.RemoveAll(homedir)
+		err = os.Mkdir(homedir, 0o770)
+		if err != nil {
+			t.Fatal(fmt.Errorf("mk-home %q: %v", homedir, err))
+		}
+	}
+
+	err = os.Setenv("HOME", homedir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logDebug.Printf("TESTING DIR HOME: cd %v\n", homedir)
+
+	repodir := filepath.Join(homedir, "repo")
+	err = os.Mkdir(repodir, 0o770)
+	if err != nil {
+		t.Fatal(fmt.Errorf("mk-repo %q: %v", repodir, err))
+	}
+	err = os.Chdir(repodir)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func populateDummyRepo(t *testing.T, vcsname string) {
 	// This creates a repo with real data, except any .gpg file
 	// is just garbage.
 
 	t.Helper()
-	logVerbose.Printf("createDummyRepo()\n")
+	logDebug.Printf("populateDummyRepo()\n")
 
-	var dir string
-	var err error
-	if false {
-		dir, err = ioutil.TempDir("", "repo")
-		defer os.RemoveAll(dir) // clean up
-	} else {
-		dir = "/tmp/repo"
-		os.RemoveAll(filepath.Join(dir, "."))
-		err = os.Mkdir(dir, 0o000)
-	}
-	if err != nil {
-		t.Fatalf("createDummyRepo: Could not make tempdir: %v", err)
-	}
-	logVerbose.Printf("TESTING DIRECTORY: cd %v\n", dir)
-
-	os.Chdir(dir)
-
-	runBB(t, "testing_init") // Runs "git init" and then vcs.Discover()
-	runBB(t, "init", "yes")
 }
 
 func createDummyFilesAdmin(t *testing.T) {
@@ -187,13 +206,15 @@ func setFilePerms(t *testing.T, name string, perms int) {
 	}
 }
 
+var originPath string // CWD when program started.
+
 // checkOutput runs blackbox with args, the last arg is the filename
 // of the expected output. Error if output is not expected.
 func checkOutput(t *testing.T, args ...string) {
 	t.Helper()
 
 	// Pop off the last arg. Use it as the filename.
-	name, args := args[len(args)-1], args[:len(args)-1]
+	name, args := args[hind.G(args)], args[:hind.G(args)]
 
 	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
@@ -219,7 +240,7 @@ func checkOutput(t *testing.T, args ...string) {
 func invalidArgs(t *testing.T, args ...string) {
 	t.Helper()
 
-	logVerbose.Printf("invalidArgs(%q): \n", args)
+	logDebug.Printf("invalidArgs(%q): \n", args)
 	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
 	if *verbose {
@@ -228,17 +249,17 @@ func invalidArgs(t *testing.T, args ...string) {
 	}
 	err := cmd.Run()
 	if err == nil {
-		logVerbose.Println("BAD")
+		logDebug.Println("BAD")
 		t.Fatal(fmt.Errorf("invalidArgs(%q): wanted failure but got success", args))
 	}
-	logVerbose.Printf("^^^^ (correct error received): err=%q\n", err)
+	logDebug.Printf("^^^^ (correct error received): err=%q\n", err)
 }
 
 // TestAliceAndBob's helpers.
 
 func setupUser(t *testing.T, user, passphrase string) {
 	t.Helper()
-	logVerbose.Printf("DEBUG: setupUser %q %q\n", user, passphrase)
+	logDebug.Printf("DEBUG: setupUser %q %q\n", user, passphrase)
 }
 
 var pathToBlackBox string
@@ -248,14 +269,14 @@ func PathToBlackBox() string { return pathToBlackBox }
 
 // SetPathToBlackBox sets the path.
 func SetPathToBlackBox(n string) {
-	logVerbose.Printf("PathToBlackBox=%q\n", n)
+	logDebug.Printf("PathToBlackBox=%q\n", n)
 	pathToBlackBox = n
 }
 
 func runBB(t *testing.T, args ...string) {
 	t.Helper()
 
-	logVerbose.Printf("runBB(%q)\n", args)
+	logDebug.Printf("runBB(%q)\n", args)
 	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
 	cmd.Stdout = os.Stdout
@@ -277,11 +298,11 @@ func runBB(t *testing.T, args ...string) {
 // }
 
 func phase(msg string) {
-	logVerbose.Println("********************")
-	logVerbose.Println("********************")
-	logVerbose.Printf("********* %v\n", msg)
-	logVerbose.Println("********************")
-	logVerbose.Println("********************")
+	logDebug.Println("********************")
+	logDebug.Println("********************")
+	logDebug.Printf("********* %v\n", msg)
+	logDebug.Println("********************")
+	logDebug.Println("********************")
 }
 
 func makeAdmin(t *testing.T, name, fullname, email string) {
@@ -291,7 +312,7 @@ func makeAdmin(t *testing.T, name, fullname, email string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Mkdir(dir, 0o077)
+	os.Mkdir(dir, 0o700)
 
 	u := &userinfo{
 		name:     name,

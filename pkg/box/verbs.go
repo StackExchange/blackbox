@@ -279,7 +279,13 @@ func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 	var tcData bool
 
 	for _, name := range flist {
-		stat, err := FileStatus(name)
+		var stat string
+		var err error
+		if _, ok := bx.FilesSet[name]; ok {
+			stat, err = FileStatus(name)
+		} else {
+			stat, err = "NOTREG", nil
+		}
 		if (match == "") || (stat == match) {
 			if err == nil {
 				data = append(data, []string{stat, name})
@@ -321,9 +327,13 @@ func (bx *Box) TestingInitRepo() error {
 		fmt.Printf("BLACKBOX_VCS=%q\n", os.Getenv("BLACKBOX_VCS"))
 		os.Exit(1)
 	}
+	fmt.Printf("ABOUT TO CALL TestingInitRepo\n")
+	fmt.Printf("vcs = %v\n", bx.Vcs.Name())
 	err := bx.Vcs.TestingInitRepo()
+	fmt.Printf("RETURNED from TestingInitRepo: %v\n", err)
+	fmt.Println(os.Getwd())
 	if err != nil {
-		return err
+		return fmt.Errorf("TestingInitRepo returned: %w", err)
 	}
 	if !bx.Vcs.Discover("") {
 		return fmt.Errorf("TestingInitRepo failed Discovery")

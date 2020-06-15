@@ -148,10 +148,16 @@ func GenerateConfigDir(configdir, team string) string {
 
 // FindConfigDir tests various places until it finds the config dir.
 func FindConfigDir(configdir, team string) (string, error) {
+
 	// if configdir is set, use it.
 	if configdir != "" {
-		if p, err := filepath.Abs(configdir); err == nil {
-			return p, nil
+		logDebug.Printf("CONFIG IS SET. NOT DISCOVERING: %q\n", configdir)
+		_, err := os.Stat(configdir)
+		if err != nil {
+			return "", fmt.Errorf("config dir %q error: %v", configdir, err)
+		}
+		if _, err := filepath.Abs(configdir); err != nil {
+			return "", fmt.Errorf("config dir abs %q error: %v", configdir, err)
 		}
 		return configdir, nil
 	}
@@ -164,6 +170,9 @@ func FindConfigDir(configdir, team string) (string, error) {
 		candidates = append(candidates, ".blackbox")
 	}
 	candidates = append(candidates, "keyrings/live")
+
+	logDebug.Printf("DEBUG: candidates = %q\n", candidates)
+
 	// Prevent an infinite loop by only doing "cd .." this many times
 	maxDirLevels := 100
 	relpath := ""
@@ -171,12 +180,13 @@ func FindConfigDir(configdir, team string) (string, error) {
 		// Does relpath contain any of our directory names?
 		for _, c := range candidates {
 			t := filepath.Join(relpath, c)
+			logDebug.Printf("Trying %q\n", t)
 			d, err := bbutil.DirExists(t)
 			if err != nil {
 				return "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
 			}
 			if d {
-				return filepath.Abs(relpath)
+				return filepath.Abs(t)
 			}
 		}
 		// If we are at the root, stop.

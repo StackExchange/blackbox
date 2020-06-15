@@ -1,4 +1,6 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/TomOnTime/hind v0.0.0-20200614150227-473623602965 h1:XlKWFR4yjGVmKa6AoUntvu0G2in7DGcbd+dQFGuoA6s=
+github.com/TomOnTime/hind v0.0.0-20200614150227-473623602965/go.mod h1:k+NmgLkBQBiBOGbFJkqGcCCb2rD5OnsWQHIkza8PAWQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=

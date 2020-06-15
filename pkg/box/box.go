@@ -17,6 +17,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var logErr *log.Logger
+var logDebug *log.Logger
+
 // Box describes what we know about a box.
 type Box struct {
 	// Paths:
@@ -62,6 +65,10 @@ func NewFromFlags(c *cli.Context) *Box {
 		       bx.ConfigDir:     Is discovered.
 		       bx.RepoBaseDir:   Is discovered.
 	*/
+
+	logErr = bblog.GetErr()
+	logDebug = bblog.GetDebug(c.Bool("debug"))
+
 	bx := &Box{
 		Umask:    c.Int("umask"),
 		Team:     c.String("team"),

@@ -1,10 +1,12 @@
 package none
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
 
-var pluginName = "GIT"
+var pluginName = "NONE"
 
 func init() {
 	vcs.Register(pluginName, 0, newNone)
@@ -48,5 +50,6 @@ func (v VcsHandle) SuggestTracking(repobasedir string, message string, files ...
 
 // TestingInitRepo initializes a repo.
 func (v VcsHandle) TestingInitRepo() error {
+	fmt.Println("VCS=none, TestingInitRepo")
 	return nil
 }

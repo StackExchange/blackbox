@@ -20,6 +20,12 @@ var vcsToTest = flag.String("testvcs", "GIT", "VCS to test")
 func init() {
 	testing.Init()
 	flag.Parse()
+
+	op, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	originPath = op
 }
 
 func compile(t *testing.T) {
@@ -51,15 +57,11 @@ func setup(t *testing.T) {
 	logDebug.Printf("Using BLACKBOX_VCS=%v", vh.Name())
 	os.Setenv("BLACKBOX_VCS", vh.Name())
 
-	op, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	originPath = op
 }
 
 func TestInit(t *testing.T) {
 	compile(t)
+	makeHomeDir(t, "init")
 
 	// Only zero or one args are permitted.
 	invalidArgs(t, "init", "one", "two")
@@ -72,13 +74,51 @@ func TestInit(t *testing.T) {
 	assertFilePerms(t, ".blackbox/blackbox-files.txt", 0o640)
 }
 
-func TestBasicCommands(t *testing.T) {
+func TestList(t *testing.T) {
+	compile(t)
+	makeHomeDir(t, "init")
+
+	runBB(t, "init", "yes")
+	createDummyFilesAdmin(t)
+	checkOutput(t, "admin", "list", "000-admin-list.txt")
+	checkOutput(t, "file", "list", "000-file-list.txt")
+
+	invalidArgs(t, "file", "list", "extra")
+	invalidArgs(t, "admin", "list", "extra")
+}
+
+func TestStatus(t *testing.T) {
+	compile(t)
+	makeHomeDir(t, "init")
+
+	runBB(t, "init", "yes")
+	createFilesStatus(t)
+	checkOutput(t, "status", "000-status.txt")
+}
+
+func TestStatus_notreg(t *testing.T) {
+	compile(t)
+	makeHomeDir(t, "init")
+
+	runBB(t, "init", "yes")
+	createFilesStatus(t)
+	checkOutput(t, "status", "status-ENCRYPTED.txt", "blah.txt",
+		"status-noreg.txt")
+}
+
+// TestBasicCommands tests of the basic functions, using a fake homedir and repo.
+// The files are full of garbage, not real encrypted data.
+func TestBasic(t *testing.T) {
 	// These are basic tests that work on a fake repo.
 	// The repo has mostly real data, except any .gpg file
 	// is just garbage.
 	compile(t)
 	setup(t)
-	createDummyRepo(t, *vcsToTest)
+	makeHomeDir(t, "Basic")
+
+	runBB(t, "testing_init") // Runs "git init" or equiv
+	assertFileExists(t, ".git")
+	runBB(t, "init", "yes") // Creates .blackbox or equiv
 
 	phase("Alice creates a repo.  Creates secret.txt.")
 	makeFile(t, "secret.txt", "this is my secret")
@@ -96,8 +136,8 @@ func TestAlice(t *testing.T) {
 	// performs many operations.  All files are valid.
 	compile(t)
 	setup(t)
-	createDummyRepo(t, *vcsToTest)
-	createDummyFilesAdmin(t)
+	populateDummyRepo(t, *vcsToTest)
+
 	// encrypt
 	runBB(t, "encrypt", "foo.txt")
 	assertFileMissing(t, "foo.txt")

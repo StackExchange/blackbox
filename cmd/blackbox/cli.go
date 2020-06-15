@@ -32,9 +32,9 @@ func flags() *cli.App {
 			EnvVars: []string{"BLACKBOX_CRYPTO"},
 		},
 		&cli.StringFlag{
-			Name:    "config",
-			Usage:   "Path to config",
-			Value:   ".blackbox",
+			Name:  "config",
+			Usage: "Path to config",
+			//Value:   ".blackbox",
 			EnvVars: []string{"BLACKBOX_CONFIGDIR", "BLACKBOXDATA"},
 		},
 		&cli.StringFlag{
