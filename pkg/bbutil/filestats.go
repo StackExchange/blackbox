@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"sort"
 	"strings"
 	"time"
@@ -47,6 +48,36 @@ func Touch(name string) error {
 
 	currentTime := time.Now().Local()
 	return os.Chtimes(name, currentTime, currentTime)
+}
+
+// ShredFiles securely erases a list of files.
+func ShredFiles(names []string) error {
+	var path, flag string
+	var err error
+	if path, err = exec.LookPath("shred"); err == nil {
+		flag = "-u"
+	} else if path, err = exec.LookPath("srm"); err == nil {
+		flag = "-f"
+	} else if path, err = exec.LookPath("rm"); err == nil {
+		flag = "-f"
+		// FIXME(tlim): Test if "rm -P $tempfile" returns a error.
+		// If it doesn't, flag = "-Pf"
+	}
+
+	// TODO(tlim) DO the shredding in parallel like in v1.
+
+	for _, n := range names {
+		fmt.Printf("SHREDDING (%q, %q): %q\n", path, flag, n)
+		e := RunBash(path, flag, n)
+		if e != nil {
+			err = e
+			fmt.Printf("ERROR: %v", e)
+		} else {
+			fmt.Println()
+		}
+	}
+	fmt.Println("DONE.")
+	return err
 }
 
 // ReadFileLines is like ioutil.ReadFile() but returns an []string.

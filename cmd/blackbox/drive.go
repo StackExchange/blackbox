@@ -34,12 +34,12 @@ func allOrSomeFiles(c *cli.Context) error {
 // Keep these functions in alphabetical order.
 
 func cmdAdminAdd(c *cli.Context) error {
-	if !c.Args().Present() {
+	if c.NArg() == 0 || c.NArg() > 2 {
 		return fmt.Errorf(
-			"Must specify at least one admin's GnuPG user-id (i.e. email address)")
+			"Must specify one admin's GnuPG user-id (i.e. email address) and optionally the directory of the pubkey data (default ~/.GnuPG)")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.AdminAdd(c.Args().Slice())
+	return bx.AdminAdd(c.Args().Get(0), c.Args().Get(1))
 }
 
 func cmdAdminList(c *cli.Context) error {
@@ -115,7 +115,7 @@ func cmdFileAdd(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.FileAdd(c.Args().Slice(), c.Bool("overwrite"))
+	return bx.FileAdd(c.Args().Slice(), c.Bool("shred"))
 }
 
 func cmdFileList(c *cli.Context) error {
@@ -163,7 +163,7 @@ func cmdShred(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Shred(c.Args().Slice()...)
+	return bx.Shred(c.Args().Slice())
 }
 
 func cmdStatus(c *cli.Context) error {

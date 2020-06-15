@@ -1,6 +1,7 @@
 package bbutil
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -24,7 +25,7 @@ func RunBash(command string, args ...string) error {
 	return nil
 }
 
-// RunBash runs a Bash command.
+// RunBashOutput runs a Bash command, captures output.
 func RunBashOutput(command string, args ...string) (string, error) {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
@@ -34,4 +35,18 @@ func RunBashOutput(command string, args ...string) (string, error) {
 		return "", fmt.Errorf("RunBashOutput err=%w", err)
 	}
 	return string(out), err
+}
+
+// RunBashInput runs a Bash command, sends input on stdin.
+func RunBashInput(input string, command string, args ...string) error {
+
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = bytes.NewBuffer([]byte(input))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("RunBashInput err=%w", err)
+	}
+	return err
 }

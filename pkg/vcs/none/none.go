@@ -42,7 +42,7 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 }
 
 // SuggestTracking tells the VCS to suggest the user commit these files.
-func (v VcsHandle) SuggestTracking(repobasedir string, message string, files ...string) error {
+func (v VcsHandle) SuggestTracking(repobasedir string, message string, files []string) error {
 	return nil
 }
 

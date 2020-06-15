@@ -1,6 +1,7 @@
 package gnupg
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"syscall"
@@ -69,13 +70,15 @@ func (crypt CrypterHandle) Decrypt(filename string, umask int, overwrite bool) e
 }
 
 // Encrypt name, overwriting name+".gpg"
-func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []string) error {
+func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []string) (string, error) {
+	crypt.logDebug.Printf("Encrypt(%q, %d, %q)", filename, umask, receivers)
+	encrypted := filename + ".gpg"
 	a := []string{
 		"--use-agent",
 		"--yes",
 		"--trust-model=always",
 		"--encrypt",
-		"-o", filename + ".gpg",
+		"-o", encrypted,
 	}
 	for _, f := range receivers {
 		a = append(a, "-r", f)
@@ -87,5 +90,41 @@ func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []strin
 	err := bbutil.RunBash(crypt.GPGCmd, a...)
 	syscall.Umask(oldumask)
 
-	return err
+	return encrypted, err
+}
+
+// AddNewKey extracts keyname from sourcedir's GnuPG chain to destdir keychain.
+// It returns a list of files that may have changed.
+func (crypt CrypterHandle) AddNewKey(keyname, sourcedir, destdir string) ([]string, error) {
+
+	// $GPG --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
+	args := []string{
+		"--export",
+		"-a",
+	}
+	if sourcedir != "" {
+		args = append(args, "--homedir", sourcedir)
+	}
+	args = append(args, keyname)
+	crypt.logDebug.Printf("ADDNEWKEY: Extracting key=%v: gpg, %v\n", keyname, args)
+	pubkey, err := bbutil.RunBashOutput("gpg", args...)
+	if len(pubkey) == 0 {
+		return nil, fmt.Errorf("Nothing found when %q exported from %q", keyname, sourcedir)
+	}
+
+	// $GPG --no-permission-warning --homedir="$KEYRINGDIR" --import "$pubkeyfile"
+	args = []string{
+		"--no-permission-warning",
+		"--homedir", destdir,
+		"--import",
+	}
+	crypt.logDebug.Printf("ADDNEWKEY: Importing: gpg %v\n", args)
+	err = bbutil.RunBashInput(pubkey, "gpg", args...)
+	if err != nil {
+		return nil, fmt.Errorf("AddNewKey failed: %w", err)
+	}
+
+	// Suggest: ${pubring_path} trustdb.gpg  blackbox-admins.txt
+
+	return nil, nil
 }

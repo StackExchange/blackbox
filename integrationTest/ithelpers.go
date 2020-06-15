@@ -105,16 +105,9 @@ func makeHomeDir(t *testing.T, testname string) {
 	}
 }
 
-func populateDummyRepo(t *testing.T, vcsname string) {
+func createDummyFilesAdmin(t *testing.T) {
 	// This creates a repo with real data, except any .gpg file
 	// is just garbage.
-
-	t.Helper()
-	logDebug.Printf("populateDummyRepo()\n")
-
-}
-
-func createDummyFilesAdmin(t *testing.T) {
 	addLineSorted(t, ".blackbox/blackbox-admins.txt", "user1@example.com")
 	addLineSorted(t, ".blackbox/blackbox-admins.txt", "user2@example.com")
 	addLineSorted(t, ".blackbox/blackbox-files.txt", "foo.txt")
@@ -305,7 +298,7 @@ func phase(msg string) {
 	logDebug.Println("********************")
 }
 
-func makeAdmin(t *testing.T, name, fullname, email string) {
+func makeAdmin(t *testing.T, name, fullname, email string) string {
 	testing.Init()
 
 	dir, err := filepath.Abs(filepath.Join(os.Getenv("HOME"), ".gnupg-"+name))
@@ -337,8 +330,10 @@ func makeAdmin(t *testing.T, name, fullname, email string) {
 		"--homedir", u.dir,
 		"--batch",
 		"--passphrase", "",
-		"--quick-generate-key", "u.email",
+		"--quick-generate-key", u.email,
 	)
+
+	return u.dir
 }
 
 func become(t *testing.T, name string) {

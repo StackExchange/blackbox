@@ -4,10 +4,10 @@ package box
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bblog"
@@ -194,9 +194,13 @@ func (bx *Box) getAdmins() error {
 	bx.logDebug.Printf("Admins file: %q", fn)
 	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {
-		return fmt.Errorf("getAdmins can't load admins (%q): %v", fn, err)
+		return fmt.Errorf("getAdmins can't load %q: %v", fn, err)
+	}
+	if !sort.StringsAreSorted(a) {
+		return fmt.Errorf("file corrupt. Lines not sorted: %v", fn)
 	}
 	bx.Admins = a
+
 	return nil
 }
 
@@ -210,15 +214,17 @@ func (bx *Box) getFiles() error {
 
 	// Try the legacy file:
 	fn := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
-	b, err := ioutil.ReadFile(fn)
+	bx.logDebug.Printf("Files file: %q", fn)
+	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {
-		return fmt.Errorf("getFiles can't read %q: %v", fn, err)
+		return fmt.Errorf("getFiles can't load %q: %v", fn, err)
 	}
+	if !sort.StringsAreSorted(a) {
+		return fmt.Errorf("file corrupt. Lines not sorted: %v", fn)
+	}
+	bx.Files = a
 
-	c := strings.TrimSpace(string(b))
-
-	bx.Files = strings.Split(c, "\n")
-	bx.FilesSet = make(map[string]bool)
+	bx.FilesSet = make(map[string]bool, len(bx.Files))
 	for _, s := range bx.Files {
 		bx.FilesSet[s] = true
 	}

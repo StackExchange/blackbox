@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -15,8 +16,36 @@ import (
 )
 
 // AdminAdd adds admins.
-func (bx *Box) AdminAdd([]string) error {
-	return fmt.Errorf("NOT IMPLEMENTED: AdminAdd")
+func (bx *Box) AdminAdd(nom string, sdir string) error {
+	err := bx.getAdmins()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("ADMINS=%q\n", bx.Admins)
+
+	// Check for duplicates.
+	if i := sort.SearchStrings(bx.Admins, nom); i < len(bx.Admins) && bx.Admins[i] == nom {
+		return fmt.Errorf("Admin %v already an admin", nom)
+	}
+
+	sugg, err := bx.Crypter.AddNewKey(nom, sdir, bx.ConfigDir)
+	if err != nil {
+		return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
+	}
+
+	// TODO(tlim): Try the json file.
+
+	// Try the legacy file:
+	fn := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
+	bx.logDebug.Printf("Admins file: %q", fn)
+	err = bbutil.AddLinesToSortedFile(fn, nom)
+	if err != nil {
+		return fmt.Errorf("could not update file (%q,%q): %v", fn, nom, err)
+	}
+
+	bx.Vcs.SuggestTracking(bx.RepoBaseDir, "NEW ADMIN: "+nom, sugg)
+	return nil
 }
 
 // AdminList lists the admin id's.
@@ -126,34 +155,91 @@ func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
 		names = bx.Files
 	}
 
-	var suggest []string
+	var suggestMsg []string
+	var suggestFiles []string
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
 			bx.logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+			continue
 		}
-		err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
+		s, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
 			bx.logErr.Printf("Failed to encrypt %q: %v", name, err)
 			continue
 		}
-		suggest = append(suggest, fmt.Sprintf("Updated: %q", name))
+		suggestMsg = append(suggestMsg, name)
+		suggestFiles = append(suggestFiles, s)
 		if shred {
-			bx.Shred(name)
+			bx.Shred([]string{name})
 		}
 	}
 
-	bx.Vcs.SuggestTracking(bx.RepoBaseDir,
-		strings.Join(names, "\n")+"\n",
-		names...,
-	)
+	if len(suggestFiles) != 0 {
+		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
+			"ENCRYPTED "+strings.Join(suggestMsg, " "),
+			suggestFiles,
+		)
+	}
 
 	return nil
 }
 
 // FileAdd enrolls files.
-func (bx *Box) FileAdd(names []string, overwrite bool) error {
-	return fmt.Errorf("NOT IMPLEMENTED: FileAdd")
+func (bx *Box) FileAdd(names []string, shred bool) error {
+	bx.logDebug.Printf("FileAdd(shred=%v, %v)", shred, names)
+
+	// Check for dups.
+	// Encrypt them all.
+	// If that succeeds, add to the blackbox-files.txt file.
+	// (optionally) shred the plaintext.
+
+	err := bx.getAdmins()
+	if err != nil {
+		return err
+	}
+	err = bx.getFiles()
+	if err != nil {
+		return err
+	}
+
+	// Check for duplicates.
+	for _, n := range names {
+		if i := sort.SearchStrings(bx.Files, n); i < len(bx.Files) && bx.Files[i] == n {
+			return fmt.Errorf("file %q already registered", n)
+		}
+	}
+
+	// Encrypt
+	var encryptedNames []string
+	for _, name := range names {
+		s, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
+		if err != nil {
+			return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
+		}
+		encryptedNames = append(encryptedNames, s)
+	}
+
+	// TODO(tlim): Try the json file.
+
+	// Try the legacy file:
+	fn := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
+	bx.logDebug.Printf("Files file: %q", fn)
+	err = bbutil.AddLinesToSortedFile(fn, names...)
+	if err != nil {
+		return fmt.Errorf("could not update file (%q,%q): %v", fn, names, err)
+	}
+
+	err = bx.Shred(names)
+	if err != nil {
+		bx.logErr.Printf("Error while shredding: %v", err)
+	}
+
+	bx.Vcs.SuggestTracking(
+		bx.RepoBaseDir,
+		"NEW FILES: "+strings.Join(names, " "),
+		encryptedNames)
+	return nil
 }
 
 // FileList lists the files.
@@ -242,7 +328,7 @@ func (bx *Box) Init(yes, vcsname string) error {
 	)
 
 	bx.Vcs.SuggestTracking(bx.RepoBaseDir, "INITIALIZE BLACKBOX",
-		bbadminsRel, bbfilesRel,
+		[]string{bbadminsRel, bbfilesRel},
 	)
 
 	return nil
@@ -254,8 +340,19 @@ func (bx *Box) Reencrypt(names []string) error {
 }
 
 // Shred shreds files.
-func (bx *Box) Shred(names ...string) error {
-	return fmt.Errorf("NOT IMPLEMENTED: Shred")
+func (bx *Box) Shred(names []string) error {
+
+	err := bx.getFiles()
+	// Calling getFiles() has the benefit of making sure we are in a repo.
+	if err != nil {
+		return err
+	}
+
+	if len(names) == 0 {
+		names = bx.Files
+	}
+
+	return bbutil.ShredFiles(names)
 }
 
 // Status prints the status of files.

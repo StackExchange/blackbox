@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/andreyvit/diff"
 )
 
 func assertFileMissing(t *testing.T, name string) {
@@ -38,6 +40,19 @@ func assertFileEmpty(t *testing.T, name string) {
 	}
 	if len(c) != 0 {
 		t.Fatalf("got=%v want=%v: %v", len(c), 0, name)
+	}
+}
+
+func assertFileContents(t *testing.T, name string, contents string) {
+	t.Helper()
+	c, err := ioutil.ReadFile(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if w, g := contents, string(c); w != g {
+		t.Errorf("assertFileContents(%q) mismatch (-got +want):\n%s",
+			name, diff.LineDiff(g, w))
 	}
 }
 

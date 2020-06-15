@@ -67,10 +67,10 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 }
 
 // SuggestTracking tells the VCS to suggest the user commit these files.
-func (v VcsHandle) SuggestTracking(repobasedir string, message string, files ...string) error {
-	fmt.Print(`
+func (v VcsHandle) SuggestTracking(repobasedir string, message string, files []string) error {
+	fmt.Printf(`
 NEXT STEP: You need to manually check these in:
-     git commit -m'INITIALIZE BLACKBOX'`)
+     git commit -m%q`, message)
 	for _, file := range files {
 		fmt.Print(fmt.Sprintf(" %q", file))
 	}

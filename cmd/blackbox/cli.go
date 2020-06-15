@@ -49,8 +49,9 @@ func flags() *cli.App {
 			EnvVars: []string{"BLACKBOX_UMASK", "DECRYPT_UMASK"},
 		},
 		&cli.BoolFlag{
-			Name:  "debug",
-			Usage: "Show debug output",
+			Name:    "debug",
+			Usage:   "Show debug output",
+			EnvVars: []string{"BLACKBOX_DEBUG"},
 		},
 	}
 
@@ -142,7 +143,7 @@ func flags() *cli.App {
 					Name:  "add",
 					Usage: "Registers file with the system",
 					Flags: []cli.Flag{
-						&cli.BoolFlag{Name: "leave", Usage: "Do not remove plaintext version"},
+						&cli.BoolFlag{Name: "shred", Usage: "Remove plaintext afterwords"},
 					},
 					Action: func(c *cli.Context) error { return cmdFileAdd(c) },
 				},
@@ -168,7 +169,7 @@ func flags() *cli.App {
 
 		{
 			Name:  "shred",
-			Usage: "Shred the plaintext",
+			Usage: "Shred files, or --all for all registered files",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
 			},

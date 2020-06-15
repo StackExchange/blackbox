@@ -96,6 +96,17 @@ func TestStatus(t *testing.T) {
 	checkOutput(t, "status", "000-status.txt")
 }
 
+func TestShred(t *testing.T) {
+	compile(t)
+	makeHomeDir(t, "shred")
+	runBB(t, "init", "yes")
+
+	makeFile(t, "shredme.txt", "File with SHREDME in it.")
+	assertFileExists(t, "shredme.txt")
+	runBB(t, "shred", "shredme.txt")
+	assertFileMissing(t, "shredme.txt")
+}
+
 func TestStatus_notreg(t *testing.T) {
 	compile(t)
 	makeHomeDir(t, "init")
@@ -123,36 +134,39 @@ func TestBasic(t *testing.T) {
 	phase("Alice creates a repo.  Creates secret.txt.")
 	makeFile(t, "secret.txt", "this is my secret")
 
-	phase("Alice creates a GPG key...")
-	makeAdmin(t, "alice", "Alice Example", "alice@example.com")
+	phase("Alice creates a GPG key")
+	gpgdir := makeAdmin(t, "alice", "Alice Example", "alice@example.com")
 	become(t, "alice")
 
-	runBB(t, "admin", "add", "alice@example.com")
-
-}
-
-func TestAlice(t *testing.T) {
-	// Create an empty repo with a user named Alice who
-	// performs many operations.  All files are valid.
-	compile(t)
-	setup(t)
-	populateDummyRepo(t, *vcsToTest)
+	phase("Alice enrolls as an admin")
+	runBB(t, "admin", "add", "alice@example.com", gpgdir)
 
 	// encrypt
-	runBB(t, "encrypt", "foo.txt")
+	phase("Alice registers foo.txt")
+	plaintextFoo := "I am the foo.txt file!\n"
+	makeFile(t, "foo.txt", plaintextFoo)
+	runBB(t, "file", "add", "--shred", "foo.txt")
+	//runBB(t, "encrypt", "--shred", "foo.txt")
+	// We shred the plaintext so that we are sure that when Decrypt runs,
+	// we can verify the contents wasn't just sitting there all the time.
 	assertFileMissing(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
 
+	phase("Alice decrypts foo.txt")
 	// decrypt
 	runBB(t, "decrypt", "foo.txt")
 	assertFileExists(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
+	assertFileContents(t, "foo.txt", plaintextFoo)
+
+	// encrypts (without shredding)
+	phase("Alice encrypts foo.txt (again)")
+	runBB(t, "encrypt", "foo.txt")
+	assertFileExists(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+	assertFileContents(t, "foo.txt", plaintextFoo)
 
 	// reencrypt
-
-	// edit
-	invalidArgs(t, "edit")
-	invalidArgs(t, "edit", "--all")
 
 	// cat
 
@@ -167,4 +181,11 @@ func TestAlice(t *testing.T) {
 // 	setupUser(t, "bob", "b")
 // 	runBB(t, "init")
 // 	runBB(t, "admin", "add", "alice@")
+
+// FYI: test "admins add" with multiple people.
+
+// Edit requires a name, and doesn't work with --all.
+//	invalidArgs(t, "edit")
+//	invalidArgs(t, "edit", "--all")
+
 // }
