@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 )
@@ -50,6 +51,17 @@ func FileStatus(name string) (string, error) {
 		}
 	}
 	return "PLAINERROR", perr
+}
+
+func anyGpg(names []string) error {
+	for _, name := range names {
+		if strings.HasSuffix(name, ".gpg") {
+			return fmt.Errorf(
+				"no not specify .gpg files. Specify %q not %q",
+				strings.TrimSuffix(name, ".gpg"), name)
+		}
+	}
+	return nil
 }
 
 // func isChanged(pname string) (bool, error) {

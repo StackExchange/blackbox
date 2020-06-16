@@ -5,6 +5,7 @@ package box
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -68,8 +69,18 @@ func (bx *Box) AdminRemove([]string) error {
 
 // Cat outputs a file, unencrypting if needed.
 func (bx *Box) Cat(names []string) error {
+	if err := anyGpg(names); err != nil {
+		return err
+	}
+
 	for _, name := range names {
-		out, err := bx.Crypter.Cat(name)
+		var out []byte
+		var err error
+		if _, ok := bx.FilesSet[name]; ok {
+			out, err = bx.Crypter.Cat(name)
+		} else {
+			out, err = ioutil.ReadFile(name)
+		}
 		if err != nil {
 			return err
 		}
@@ -81,6 +92,10 @@ func (bx *Box) Cat(names []string) error {
 // Decrypt decrypts a file.
 func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup string) error {
 	var err error
+
+	if err := anyGpg(names); err != nil {
+		return err
+	}
 
 	err = bx.getFiles()
 	if err != nil {
@@ -131,7 +146,10 @@ func decryptMany(bx *Box, names []string, overwrite bool, groupchange bool, gid 
 			continue
 		}
 
+		// FIXME(tlim): Clone the file perms from the .gpg file to the plaintext file.
+
 		if groupchange {
+			// FIXME(tlim): Also "chmod g+r" the file.
 			os.Chown(name, -1, gid)
 		}
 	}
@@ -144,13 +162,41 @@ func (bx *Box) Diff([]string) error {
 }
 
 // Edit unencrypts, calls editor, calls encrypt.
-func (bx *Box) Edit([]string) error {
-	return fmt.Errorf("NOT IMPLEMENTED: Edit")
+func (bx *Box) Edit(names []string) error {
+
+	if err := anyGpg(names); err != nil {
+		return err
+	}
+
+	err := bx.getFiles()
+	if err != nil {
+		return err
+	}
+
+	for _, name := range names {
+		if _, ok := bx.FilesSet[name]; ok {
+			if !bbutil.FileExistsOrProblem(name) {
+				err := bx.Crypter.Decrypt(name, bx.Umask, false)
+				if err != nil {
+					return fmt.Errorf("edit failed %q: %w", name, err)
+				}
+			}
+		}
+		err := bbutil.RunBash(bx.Editor, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Encrypt encrypts a file.
-func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
+func (bx *Box) Encrypt(names []string, shred bool) error {
 	var err error
+
+	if err = anyGpg(names); err != nil {
+		return err
+	}
 
 	err = bx.getAdmins()
 	if err != nil {
@@ -216,12 +262,23 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 	// If that succeeds, add to the blackbox-files.txt file.
 	// (optionally) shred the plaintext.
 
+	// FIXME(tlim): Check if the plaintext is in GIT.  If it is,
+	// remove it from Git and print a warning that they should
+	// eliminate the history or rotate any secrets.
+
+	if err := anyGpg(names); err != nil {
+		return err
+	}
+
 	err := bx.getAdmins()
 	if err != nil {
 		return err
 	}
 	err = bx.getFiles()
 	if err != nil {
+		return err
+	}
+	if err := anyGpg(names); err != nil {
 		return err
 	}
 
@@ -359,6 +416,10 @@ func (bx *Box) Init(yes, vcsname string) error {
 // Reencrypt decrypts and reencrypts files.
 func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 
+	if err := anyGpg(names); err != nil {
+		return err
+	}
+
 	err := bx.getAdmins()
 	if err != nil {
 		return err
@@ -426,6 +487,10 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 
 // Shred shreds files.
 func (bx *Box) Shred(names []string) error {
+
+	if err := anyGpg(names); err != nil {
+		return err
+	}
 
 	err := bx.getFiles()
 	// Calling getFiles() has the benefit of making sure we are in a repo.

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_edit -- Decrypt a file temporarily for edition, then re-encrypts it again
+#
+
+# NB(tlim): In v1 this offers to register any non-registered files.
+
+exec blackbox edit "$@"

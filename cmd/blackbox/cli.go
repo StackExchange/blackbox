@@ -42,6 +42,12 @@ func flags() *cli.App {
 			Usage:   "Use .blackbox-$TEAM as the configdir",
 			EnvVars: []string{"BLACKBOX_TEAM"},
 		},
+		&cli.StringFlag{
+			Name:    "editor",
+			Usage:   "editor to use",
+			Value:   "vi",
+			EnvVars: []string{"EDITOR", "BLACKBOX_EDITOR"},
+		},
 		&cli.IntFlag{
 			Name:    "umask",
 			Usage:   "umask to set when decrypting",

@@ -28,7 +28,8 @@ type Box struct {
 	ConfigDir    string // Abs path to the .blackbox (or whatever) directory.
 	ConfigDirRel string // Path to the .blackbox (or whatever) directory relative to RepoBaseDir
 	// Settings:
-	Umask int // umask to set when decrypting
+	Umask  int    // umask to set when decrypting
+	Editor string // Editor to call
 	// Cache of data gathered from .blackbox:
 	Admins   []string        // If non-empty, the list of admins.
 	Files    []string        // If non-empty, the list of files.
@@ -71,6 +72,7 @@ func NewFromFlags(c *cli.Context) *Box {
 
 	bx := &Box{
 		Umask:    c.Int("umask"),
+		Editor:   c.String("editor"),
 		Team:     c.String("team"),
 		logErr:   bblog.GetErr(),
 		logDebug: bblog.GetDebug(c.Bool("verbose")),

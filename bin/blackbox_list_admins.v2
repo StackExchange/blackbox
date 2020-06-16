@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_list_admins -- List authorized admins
+#
+exec blackbox admin list

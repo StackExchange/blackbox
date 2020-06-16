@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_decrypt_all_files -- Decrypt all blackbox files (INTERACTIVE).
+#
+
+exec blackbox decrypt --all --agentcheck=true --overwrite "@"

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_initialize -- Enable blackbox for a GIT or HG repo.
+#
+#
+# Example:
+#    blackbox_initialize
+#
+
+exec blackbox init "$@"

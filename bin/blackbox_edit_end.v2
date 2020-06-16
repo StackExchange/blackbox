@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_edit_end -- Re-encrypt file after edits.
+#
+exec blackbox encrypt --shred "$@"

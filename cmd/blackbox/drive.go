@@ -107,7 +107,7 @@ func cmdEncrypt(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Encrypt(c.Args().Slice(), c.Int("umask"), c.Bool("shred"))
+	return bx.Encrypt(c.Args().Slice(), c.Bool("shred"))
 }
 
 func cmdFileAdd(c *cli.Context) error {
