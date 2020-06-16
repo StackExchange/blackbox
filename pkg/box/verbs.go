@@ -67,8 +67,15 @@ func (bx *Box) AdminRemove([]string) error {
 }
 
 // Cat outputs a file, unencrypting if needed.
-func (bx *Box) Cat([]string) error {
-	return fmt.Errorf("NOT IMPLEMENTED: Cat")
+func (bx *Box) Cat(names []string) error {
+	for _, name := range names {
+		out, err := bx.Crypter.Cat(name)
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(out))
+	}
+	return nil
 }
 
 // Decrypt decrypts a file.
@@ -96,6 +103,10 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 	if len(names) == 0 {
 		names = bx.Files
 	}
+	return decryptMany(bx, names, overwrite, groupchange, gid)
+}
+
+func decryptMany(bx *Box, names []string, overwrite bool, groupchange bool, gid int) error {
 	for _, name := range names {
 		fmt.Printf("========== DECRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
@@ -124,7 +135,6 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 			os.Chown(name, -1, gid)
 		}
 	}
-
 	return nil
 }
 
@@ -155,12 +165,32 @@ func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
 		names = bx.Files
 	}
 
+	suggestMsg, suggestFiles, err := encryptMany(bx, names, shred)
+	if err != nil {
+		return err
+	}
+
+	if len(suggestFiles) != 0 {
+		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
+			"ENCRYPTED "+strings.Join(suggestMsg, " "),
+			suggestFiles,
+		)
+	}
+
+	return nil
+}
+
+func encryptMany(bx *Box, names []string, shred bool) ([]string, []string, error) {
 	var suggestMsg []string
 	var suggestFiles []string
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
 			bx.logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+			continue
+		}
+		if !bbutil.FileExistsOrProblem(name) {
+			bx.logErr.Printf("Skipping. Plaintext does not exist: %q", name)
 			continue
 		}
 		s, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
@@ -174,15 +204,7 @@ func (bx *Box) Encrypt(names []string, umask int, shred bool) error {
 			bx.Shred([]string{name})
 		}
 	}
-
-	if len(suggestFiles) != 0 {
-		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
-			"ENCRYPTED "+strings.Join(suggestMsg, " "),
-			suggestFiles,
-		)
-	}
-
-	return nil
+	return suggestMsg, suggestFiles, nil
 }
 
 // FileAdd enrolls files.
@@ -335,8 +357,71 @@ func (bx *Box) Init(yes, vcsname string) error {
 }
 
 // Reencrypt decrypts and reencrypts files.
-func (bx *Box) Reencrypt(names []string) error {
-	return fmt.Errorf("NOT IMPLEMENTED: Reencrypt")
+func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
+
+	err := bx.getAdmins()
+	if err != nil {
+		return err
+	}
+	err = bx.getFiles()
+	if err != nil {
+		return err
+	}
+	if len(names) == 0 {
+		names = bx.Files
+	}
+
+	if bulkpause {
+		gpgAgentNotice()
+	}
+
+	fmt.Println("========== blackbox administrators are:")
+	bx.AdminList()
+
+	if overwrite {
+		for _, n := range names {
+			if bbutil.FileExistsOrProblem(n) {
+				bbutil.ShredFiles([]string{n})
+			}
+		}
+	} else {
+		warned := false
+		for _, n := range names {
+			if bbutil.FileExistsOrProblem(n) {
+				if !warned {
+					fmt.Printf("========== Shred these files?\n")
+					warned = true
+				}
+				fmt.Println("SHRED?", n)
+			}
+		}
+		if warned {
+			shouldWeOverwrite()
+		}
+	}
+
+	// Decrypt
+	err = decryptMany(bx, names, overwrite, false, 0)
+	if err != nil {
+		return fmt.Errorf("reencrypt failed decrypt: %w", err)
+	}
+	suggestMsg, suggestFiles, err := encryptMany(bx, names, false)
+	if err != nil {
+		return fmt.Errorf("reencrypt failed encrypt: %w", err)
+	}
+	err = bbutil.ShredFiles(names)
+	if err != nil {
+		return fmt.Errorf("reencrypt failed shred: %w", err)
+	}
+
+	if len(suggestFiles) != 0 {
+		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
+			"ENCRYPTED "+strings.Join(suggestMsg, " "),
+			suggestFiles,
+		)
+	}
+
+	return nil
 }
 
 // Shred shreds files.

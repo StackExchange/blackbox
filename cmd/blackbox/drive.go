@@ -154,8 +154,19 @@ func cmdReencrypt(c *cli.Context) error {
 	if err := allOrSomeFiles(c); err != nil {
 		return err
 	}
+
+	// The default for --agentcheck is off normally, and on when using --all.
+	pauseNeeded := c.Bool("all")
+	// If the user used the flag, abide by it.
+	if c.IsSet("agentcheck") {
+		pauseNeeded = c.Bool("agentcheck")
+	}
+
 	bx := box.NewFromFlags(c)
-	return bx.Reencrypt(c.Args().Slice())
+	return bx.Reencrypt(c.Args().Slice(),
+		c.Bool("overwrite"),
+		pauseNeeded,
+	)
 }
 
 func cmdShred(c *cli.Context) error {

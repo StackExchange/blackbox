@@ -3,7 +3,6 @@ module github.com/StackExchange/blackbox/v2
 go 1.14
 
 require (
-	github.com/TomOnTime/hind v0.0.0-20200614150227-473623602965
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/olekukonko/tablewriter v0.0.4

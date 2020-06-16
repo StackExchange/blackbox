@@ -67,16 +67,13 @@ func ShredFiles(names []string) error {
 	// TODO(tlim) DO the shredding in parallel like in v1.
 
 	for _, n := range names {
-		fmt.Printf("SHREDDING (%q, %q): %q\n", path, flag, n)
+		fmt.Printf("========== SHREDDING (%q, %q): %q\n", path, flag, n)
 		e := RunBash(path, flag, n)
 		if e != nil {
 			err = e
-			fmt.Printf("ERROR: %v", e)
-		} else {
-			fmt.Println()
+			fmt.Printf("ERROR: %v\n", e)
 		}
 	}
-	fmt.Println("DONE.")
 	return err
 }
 

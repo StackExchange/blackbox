@@ -80,8 +80,8 @@ func TestList(t *testing.T) {
 
 	runBB(t, "init", "yes")
 	createDummyFilesAdmin(t)
-	checkOutput(t, "admin", "list", "000-admin-list.txt")
-	checkOutput(t, "file", "list", "000-file-list.txt")
+	checkOutput("000-admin-list.txt", t, "admin", "list")
+	checkOutput("000-file-list.txt", t, "file", "list")
 
 	invalidArgs(t, "file", "list", "extra")
 	invalidArgs(t, "admin", "list", "extra")
@@ -93,7 +93,7 @@ func TestStatus(t *testing.T) {
 
 	runBB(t, "init", "yes")
 	createFilesStatus(t)
-	checkOutput(t, "status", "000-status.txt")
+	checkOutput("000-status.txt", t, "status")
 }
 
 func TestShred(t *testing.T) {
@@ -101,7 +101,7 @@ func TestShred(t *testing.T) {
 	makeHomeDir(t, "shred")
 	runBB(t, "init", "yes")
 
-	makeFile(t, "shredme.txt", "File with SHREDME in it.")
+	makeFile(t, "shredme.txt", "File with SHREDME in it.\n")
 	assertFileExists(t, "shredme.txt")
 	runBB(t, "shred", "shredme.txt")
 	assertFileMissing(t, "shredme.txt")
@@ -113,8 +113,7 @@ func TestStatus_notreg(t *testing.T) {
 
 	runBB(t, "init", "yes")
 	createFilesStatus(t)
-	checkOutput(t, "status", "status-ENCRYPTED.txt", "blah.txt",
-		"status-noreg.txt")
+	checkOutput("status-noreg.txt", t, "status", "status-ENCRYPTED.txt", "blah.txt")
 }
 
 // TestBasicCommands tests of the basic functions, using a fake homedir and repo.
@@ -167,13 +166,30 @@ func TestBasic(t *testing.T) {
 	assertFileContents(t, "foo.txt", plaintextFoo)
 
 	// reencrypt
+	phase("Alice reencrypts")
+	checkOutput("basic-status.txt", t, "status")
+	runBB(t, "reencrypt", "--overwrite", "foo.txt")
 
-	// cat
-
-	// diff
-
-	// shred
-
+	// cat & shred
+	phase("Alice cats")
+	makeFile(t, "foo.txt", plaintextFoo)
+	// foo.txt=plain    result=plain
+	runBB(t, "encrypt", "foo.txt")
+	assertFileExists(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
+	// foo.txt=missing  result=plain
+	runBB(t, "shred", "foo.txt")
+	assertFileMissing(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
+	// foo.txt=altered  result=altered
+	phase("Alice edits then cats")
+	plainAltered := "I am the altered file!\n"
+	makeFile(t, "foo.txt", plainAltered)
+	assertFileExists(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
 }
 
 // func TestAliceAndBob(t *testing.T) {

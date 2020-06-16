@@ -78,6 +78,18 @@ NEXT STEP: You need to manually check these in:
 	return nil
 }
 
+// Add makes a file visible to the VCS (like "git add").
+func (v VcsHandle) Add(repobasedir string, files []string) error {
+
+	// TODO(tlim): Make sure that files are within repobasedir.
+
+	var gpgnames []string
+	for _, n := range files {
+		gpgnames = append(gpgnames, n+".gpg")
+	}
+	return bbutil.RunBash("git", append([]string{"add"}, gpgnames...)...)
+}
+
 // The following are "secret" functions only used by the integration testing system.
 
 // TestingInitRepo initializes a repo.

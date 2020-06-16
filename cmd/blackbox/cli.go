@@ -190,10 +190,12 @@ func flags() *cli.App {
 
 		{
 			Name:     "reencrypt",
-			Usage:    "Decrypt then re-encrypt files",
+			Usage:    "Decrypt then re-encrypt files (erases any plaintext)",
 			Category: "ADMINISTRATIVE",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{Name: "all", Usage: "All registered files"},
+				&cli.BoolFlag{Name: "overwrite", Usage: "Overwrite plaintext if it exists"},
+				&cli.BoolFlag{Name: "agentcheck", Usage: "Do not check for gpg-agent when using --all"},
 			},
 			Action: func(c *cli.Context) error { return cmdReencrypt(c) },
 		},

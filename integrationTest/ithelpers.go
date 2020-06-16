@@ -16,7 +16,6 @@ import (
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 	_ "github.com/StackExchange/blackbox/v2/pkg/vcs/_all"
-	"github.com/TomOnTime/hind"
 
 	"github.com/andreyvit/diff"
 )
@@ -181,10 +180,10 @@ func addLineSorted(t *testing.T, filename, line string) {
 	}
 }
 
-func makeFile(t *testing.T, name string, lines ...string) {
+func makeFile(t *testing.T, name string, content string) {
 	t.Helper()
 
-	err := ioutil.WriteFile(name, []byte(strings.Join(lines, "\n")), 0o666)
+	err := ioutil.WriteFile(name, []byte(content), 0o666)
 	if err != nil {
 		t.Fatalf("makeFile can't create %q: %v", name, err)
 	}
@@ -203,27 +202,30 @@ var originPath string // CWD when program started.
 
 // checkOutput runs blackbox with args, the last arg is the filename
 // of the expected output. Error if output is not expected.
-func checkOutput(t *testing.T, args ...string) {
+func checkOutput(name string, t *testing.T, args ...string) {
 	t.Helper()
-
-	// Pop off the last arg. Use it as the filename.
-	name, args := args[hind.G(args)], args[:hind.G(args)]
 
 	cmd := exec.Command(PathToBlackBox(), args...)
 	cmd.Stdin = nil
 	cmd.Stdout = nil
 	cmd.Stderr = os.Stderr
-	got, err := cmd.Output()
+	var gb []byte
+	gb, err := cmd.Output()
 	if err != nil {
 		t.Fatal(fmt.Errorf("checkOutput(%q): %w", args, err))
 	}
+	got := string(gb)
 
-	want, err := ioutil.ReadFile(filepath.Join(originPath, "test_data", name))
+	wb, err := ioutil.ReadFile(filepath.Join(originPath, "test_data", name))
 	if err != nil {
 		t.Fatalf("checkOutput can't read %v: %v", name, err)
 	}
+	want := string(wb)
 
-	if w, g := string(want), string(got); w != g {
+	//fmt.Printf("CHECKOUTPUT g: %v\n", got)
+	//fmt.Printf("CHECKOUTPUT w: %v\n", want)
+
+	if g, w := got, want; g != w {
 		t.Errorf("checkOutput(%q) mismatch (-got +want):\n%s",
 			args, diff.LineDiff(g, w))
 	}

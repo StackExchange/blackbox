@@ -2,7 +2,9 @@ package gnupg
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"syscall"
 
@@ -67,6 +69,30 @@ func (crypt CrypterHandle) Decrypt(filename string, umask int, overwrite bool) e
 	err := bbutil.RunBash(crypt.GPGCmd, a...)
 	syscall.Umask(oldumask)
 	return err
+}
+
+// Cat returns the plaintext or, if it is missing, the decrypted cyphertext.
+func (crypt CrypterHandle) Cat(filename string) ([]byte, error) {
+
+	a := []string{
+		"--use-agent",
+		"-q",
+		"--decrypt",
+	}
+
+	// TODO(tlim): This assumes the entire gpg file fits in memory. If
+	// this becomes a problem, re-implement this using exec Cmd.StdinPipe()
+	// and feed the input in chunks.
+	in, err := ioutil.ReadFile(filename + ".gpg")
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Encrypted file doesn't exit? Return the plaintext.
+			return ioutil.ReadFile(filename)
+		}
+		return nil, err
+	}
+
+	return bbutil.RunBashInputOutput(in, crypt.GPGCmd, a...)
 }
 
 // Encrypt name, overwriting name+".gpg"

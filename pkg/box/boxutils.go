@@ -216,3 +216,11 @@ func gpgAgentNotice() {
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
 }
+
+func shouldWeOverwrite() {
+	fmt.Println()
+	fmt.Println("WARNING: This will overwrite any unencrypted files laying about.")
+	fmt.Print("Press CTRL-C now to stop. ENTER to continue: ")
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
+}

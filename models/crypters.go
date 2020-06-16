@@ -8,6 +8,8 @@ type Crypter interface {
 	Decrypt(filename string, umask int, overwrite bool) error
 	// Encrypt name, overwriting name+".gpg"
 	Encrypt(filename string, umask int, receivers []string) (string, error)
+	// Cat outputs a file, unencrypting if needed.
+	Cat(filename string) ([]byte, error)
 	// AddNewKey extracts keyname from sourcedir's GnuPG chain to destdir keychain.
 	AddNewKey(keyname, sourcedir, destdir string) ([]string, error)
 }

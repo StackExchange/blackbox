@@ -85,3 +85,10 @@ Then a shell script should run various combinations of VCS and crypters.
 # blackbox file list blah
 # blackbox shred list --all
 # blackbox shred list blah
+
+
+
+rm -rf /tmp/bbhome-* && BLACKBOX_DEBUG=true go test -verbose -run
+rm -rf /tmp/bbhome-* && go test -run
+
+( gbb && cd cmd/blackbox && go install ) && blackbox

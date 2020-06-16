@@ -48,5 +48,18 @@ func RunBashInput(input string, command string, args ...string) error {
 	if err != nil {
 		return fmt.Errorf("RunBashInput err=%w", err)
 	}
-	return err
+	return nil
+}
+
+// RunBashInputOutput runs a Bash command, sends input on stdin.
+func RunBashInputOutput(input []byte, command string, args ...string) ([]byte, error) {
+
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = bytes.NewBuffer(input)
+	cmd.Stderr = os.Stderr
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("RunBashInputOutput err=%w", err)
+	}
+	return out, nil
 }
