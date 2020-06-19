@@ -81,7 +81,7 @@ func makeHomeDir(t *testing.T, testname string) {
 		// Make a predictable location. wipe and re-use
 		homedir = "/tmp/bbhome-" + testname
 		os.RemoveAll(homedir)
-		err = os.Mkdir(homedir, 0o770)
+		err = os.Mkdir(homedir, 0770)
 		if err != nil {
 			t.Fatal(fmt.Errorf("mk-home %q: %v", homedir, err))
 		}
@@ -94,7 +94,7 @@ func makeHomeDir(t *testing.T, testname string) {
 	logDebug.Printf("TESTING DIR HOME: cd %v\n", homedir)
 
 	repodir := filepath.Join(homedir, "repo")
-	err = os.Mkdir(repodir, 0o770)
+	err = os.Mkdir(repodir, 0770)
 	if err != nil {
 		t.Fatal(fmt.Errorf("mk-repo %q: %v", repodir, err))
 	}
@@ -156,12 +156,12 @@ func createFilesStatus(t *testing.T) {
 	// NB(tlim): commented out.  I can't think of an error I can reproduce.
 	// makeFile(t, "status-PLAINERROR.txt", "File with PLAINERROR in it.")
 	// makeFile(t, "status-PLAINERROR.txt.gpg", "Svyr jvgu CYNVAREEBE va vg.")
-	// setFilePerms(t, "status-PLAINERROR.txt", 0o000)
+	// setFilePerms(t, "status-PLAINERROR.txt", 0000)
 
 	// NB(tlim): commented out.  I can't think of an error I can reproduce.
 	// makeFile(t, "status-GPGERROR.txt", "File with GPGERROR in it.")
 	// makeFile(t, "status-GPGERROR.txt.gpg", "Svyr jvgu TCTREEBE va vg.")
-	// setFilePerms(t, "status-GPGERROR.txt.gpg", 0o000)
+	// setFilePerms(t, "status-GPGERROR.txt.gpg", 0000)
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -187,7 +187,7 @@ func removeFile(t *testing.T, name string) {
 func makeFile(t *testing.T, name string, content string) {
 	t.Helper()
 
-	err := ioutil.WriteFile(name, []byte(content), 0o666)
+	err := ioutil.WriteFile(name, []byte(content), 0666)
 	if err != nil {
 		t.Fatalf("makeFile can't create %q: %v", name, err)
 	}
@@ -311,7 +311,7 @@ func makeAdmin(t *testing.T, name, fullname, email string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Mkdir(dir, 0o700)
+	os.Mkdir(dir, 0700)
 
 	u := &userinfo{
 		name:     name,
@@ -324,22 +324,127 @@ func makeAdmin(t *testing.T, name, fullname, email string) string {
 	// GNUPGHOME=u.dir
 	// echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
 	os.Setenv("GNUPGHOME", u.dir)
-	out, err := bbutil.RunBashOutput("gpg-agent", "--homedir", u.dir, "--daemon")
+	ai, err := bbutil.RunBashOutput("gpg-agent", "--homedir", u.dir, "--daemon")
+	// NB(tlim): It should return something like:
+	//   `GPG_AGENT_INFO=/home/tlimoncelli/.gnupg/S.gpg-agent:18548:1; export GPG_AGENT_INFO;`
 	if err != nil {
-		t.Fatal(err)
+		//t.Fatal(err)
 	}
-	u.agentInfo = strings.TrimSpace(out)
+	if strings.HasPrefix(ai, "GPG_AGENT_INFO=") {
+		u.agentInfo = ai[15:strings.Index(ai, ";")]
+		os.Setenv("GPG_AGENT_INFO", u.agentInfo)
+		fmt.Printf("GPG_AGENT_INFO=%q (was %q)\n", ai, u.agentInfo)
+	} else {
+		fmt.Println("WARNING: gpg-agent didn't output what we expected. Assumed dead.")
+	}
 
 	os.Setenv("GNUPGHOME", u.dir)
 	// Generate key:
-	bbutil.RunBash("gpg",
-		"--homedir", u.dir,
-		"--batch",
-		"--passphrase", "",
-		"--quick-generate-key", u.email,
-	)
+	if hasQuick(t) {
+		fmt.Println("DISCOVERED: NEW GPG")
+		fmt.Printf("Generating %q using --qgk\n", u.email)
+		bbutil.RunBash("gpg",
+			"--homedir", u.dir,
+			"--batch",
+			"--passphrase", "",
+			"--quick-generate-key", u.email,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+	} else {
+
+		fmt.Println("DISCOVERED: OLD GPG")
+		fmt.Println("MAKING KEY")
+
+		tmpfile, err := ioutil.TempFile("", "example")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer os.Remove(tmpfile.Name()) // clean up
+
+		batch := `%echo Generating a basic OpenPGP key
+Key-Type: RSA
+Key-Length: 2048
+Subkey-Type: RSA
+Subkey-Length: 2048
+Name-Real: ` + u.fullname + `
+Name-Comment: Not for actual use
+Name-Email: ` + u.email + `
+Expire-Date: 0
+%pubring ` + filepath.Join(u.dir, `pubring.gpg`) + `
+%secring ` + filepath.Join(u.dir, `secring.gpg`) + `
+# Do a commit here, so that we can later print "done"
+%commit
+%echo done`
+		//fmt.Printf("BATCH START\n%s\nBATCH END\n", batch)
+		fmt.Fprintln(tmpfile, batch)
+
+		// FIXME(tlim): The batch file should include a password, but then
+		// we need to figure out how to get "blackbox encrypt" and other
+		// commands to input a password in an automated way.
+		// To experiment with this, add after "Expire-Date:" a line like:
+		//         Passphrase: kljfhslfjkhsaljkhsdflgjkhsd
+		// Current status: without that line GPG keys have no passphrase
+		// and none is requested.
+
+		bbutil.RunBash("gpg",
+			"--homedir", u.dir,
+			"--verbose",
+			"--batch",
+			"--gen-key",
+			tmpfile.Name(),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := tmpfile.Close(); err != nil {
+			log.Fatal(err)
+		}
+
+		// We do this just to for gpg to create trustdb.gpg
+		bbutil.RunBash("gpg",
+			"--homedir", u.dir,
+			"--list-keys",
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		bbutil.RunBash("gpg",
+			"--homedir", u.dir,
+			"--list-secret-keys",
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+	}
 
 	return u.dir
+}
+
+func hasQuick(t *testing.T) bool {
+	testing.Init()
+	fmt.Println("========== Do we have --quick-generate-key?")
+	err := bbutil.RunBash("gpg2",
+		"--dry-run",
+		"--quick-generate-key",
+		"--batch",
+		"--passphrase", "",
+		"foo", "rsa", "encr")
+	fmt.Println("========== Done")
+	if err == nil {
+		return true
+	}
+	//fmt.Printf("DISCOVER GPG: %d", err.ExitCode())
+	if exitError, ok := err.(*exec.ExitError); ok {
+		if exitError.ExitCode() == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func become(t *testing.T, name string) {
