@@ -85,10 +85,12 @@ func (crypt CrypterHandle) Cat(filename string) ([]byte, error) {
 	// and feed the input in chunks.
 	in, err := ioutil.ReadFile(filename + ".gpg")
 	if err != nil {
+
 		if os.IsNotExist(err) {
 			// Encrypted file doesn't exit? Return the plaintext.
 			return ioutil.ReadFile(filename)
 		}
+
 		return nil, err
 	}
 

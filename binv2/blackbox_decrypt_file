@@ -1,7 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_decrypt_file -- Decrypt one or more blackbox files.
-#
-
 exec blackbox decrypt --overwrite "$@"

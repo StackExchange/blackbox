@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_list_files -- List files that black box is tracking
-#
 exec blackbox file list

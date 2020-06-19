@@ -1,9 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_cat -- cat a file from the .gpg, not the plaintext.
-#
-# NOTE: This is different than in v1 where the plaintext was always
-# used if available.
-#
 exec blackbox cat "$@"

@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_register_new_file -- Enroll new file(s) in the blackbox system.
-#
 exec blackbox file add --shred "$@"

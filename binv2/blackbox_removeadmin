@@ -1,7 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_removeadmin -- Remove an admin to the system
-#  NOTE: Does not remove admin from the keyring.
-#
 exec blackbox admin remove "$@"

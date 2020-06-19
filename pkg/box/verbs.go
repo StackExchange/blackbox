@@ -70,6 +70,11 @@ func (bx *Box) AdminRemove([]string) error {
 // Cat outputs a file, unencrypting if needed.
 func (bx *Box) Cat(names []string) error {
 	if err := anyGpg(names); err != nil {
+		return fmt.Errorf("cat: %w", err)
+	}
+
+	err := bx.getFiles()
+	if err != nil {
 		return err
 	}
 
@@ -82,7 +87,8 @@ func (bx *Box) Cat(names []string) error {
 			out, err = ioutil.ReadFile(name)
 		}
 		if err != nil {
-			return err
+			bx.logErr.Printf("BX_CRY3\n")
+			return fmt.Errorf("cat: %w", err)
 		}
 		fmt.Print(string(out))
 	}

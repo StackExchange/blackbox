@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_view -- Decrypt a file, view it, shred it
-#
 blackbox cat "$@" | ${PAGER:-less}

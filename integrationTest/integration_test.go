@@ -126,6 +126,9 @@ func TestBasic(t *testing.T) {
 	setup(t)
 	makeHomeDir(t, "Basic")
 
+	plaintextFoo := "I am the foo.txt file!\n"
+	plainAltered := "I am the altered file!\n"
+
 	runBB(t, "testing_init") // Runs "git init" or equiv
 	assertFileExists(t, ".git")
 	runBB(t, "init", "yes") // Creates .blackbox or equiv
@@ -142,7 +145,6 @@ func TestBasic(t *testing.T) {
 
 	// encrypt
 	phase("Alice registers foo.txt")
-	plaintextFoo := "I am the foo.txt file!\n"
 	makeFile(t, "foo.txt", plaintextFoo)
 	runBB(t, "file", "add", "--shred", "foo.txt")
 	//runBB(t, "encrypt", "--shred", "foo.txt")
@@ -170,38 +172,36 @@ func TestBasic(t *testing.T) {
 	checkOutput("basic-status.txt", t, "status")
 	runBB(t, "reencrypt", "--overwrite", "foo.txt")
 
-	// cat & shred
-	phase("Alice cats")
-	makeFile(t, "foo.txt", plaintextFoo)
+	// Test variations of cat
+
 	// foo.txt=plain    result=plain
+	phase("Alice cats plain:plain")
+	makeFile(t, "foo.txt", plaintextFoo)
+	assertFileExists(t, "foo.txt")
 	runBB(t, "encrypt", "foo.txt")
 	assertFileExists(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
-	// foo.txt=missing  result=plain
-	runBB(t, "shred", "foo.txt")
-	assertFileMissing(t, "foo.txt")
+	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+	assertFileExists(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
-	// foo.txt=altered  result=altered
-	phase("Alice edits then cats")
-	plainAltered := "I am the altered file!\n"
+
+	// foo.txt=altered    result=plain
+	phase("Alice cats altered:plain")
 	makeFile(t, "foo.txt", plainAltered)
 	assertFileExists(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("reencrypt-plain.txt", t, "cat", "foo.txt")
+	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+	assertFileExists(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+
+	// foo.txt=missing  result=plain
+	phase("Alice cats missing:plain")
+	removeFile(t, "foo.txt")
+	assertFileMissing(t, "foo.txt")
+	assertFileMissing(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+	assertFileMissing(t, "foo.txt")
+	assertFileExists(t, "foo.txt.gpg")
+
 }
-
-// func TestAliceAndBob(t *testing.T) {
-// 	setupUser(t, "alice", "a")
-// 	setupUser(t, "bob", "b")
-// 	runBB(t, "init")
-// 	runBB(t, "admin", "add", "alice@")
-
-// FYI: test "admins add" with multiple people.
-
-// Edit requires a name, and doesn't work with --all.
-//	invalidArgs(t, "edit")
-//	invalidArgs(t, "edit", "--all")
-
-// }

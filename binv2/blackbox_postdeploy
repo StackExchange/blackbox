@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_postdeploy -- Decrypt all blackbox files.
-#
 if [[ "$1" == "" ]]; then
   blackbox decrypt --all --overwrite
 else

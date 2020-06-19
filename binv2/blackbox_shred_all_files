@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_shred_all_files -- shred all decrypted versions of encrypted files
-#
 exec blackbox shred --all

@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_edit_start -- Decrypt a file for editing.
-#
 exec blackbox decrypt "$@"

@@ -180,6 +180,10 @@ func addLineSorted(t *testing.T, filename, line string) {
 	}
 }
 
+func removeFile(t *testing.T, name string) {
+	os.RemoveAll(name)
+}
+
 func makeFile(t *testing.T, name string, content string) {
 	t.Helper()
 

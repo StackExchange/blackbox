@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_listadmins -- List active admins for keyring
-#
 exec blackbox admin list

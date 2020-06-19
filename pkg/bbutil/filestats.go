@@ -50,24 +50,42 @@ func Touch(name string) error {
 	return os.Chtimes(name, currentTime, currentTime)
 }
 
-// ShredFiles securely erases a list of files.
-func ShredFiles(names []string) error {
-	var path, flag string
+var shredPath, shredFlag string
+
+func shredCmd() (string, string) {
+	if shredPath != "" {
+		return shredPath, shredFlag
+	}
+
+	var path string
 	var err error
 	if path, err = exec.LookPath("shred"); err == nil {
-		flag = "-u"
+		shredPath, shredFlag = path, "-u"
 	} else if path, err = exec.LookPath("srm"); err == nil {
-		flag = "-f"
+		shredPath, shredFlag = path, "-f"
 	} else if path, err = exec.LookPath("rm"); err == nil {
-		flag = "-f"
-		// FIXME(tlim): Test if "rm -P $tempfile" returns a error.
-		// If it doesn't, flag = "-Pf"
+		shredPath, shredFlag = path, "-f"
+		// Does this command support the "-P" flag?
+		tmpfile, err := ioutil.TempFile("", "rmtest")
+		defer os.Remove(tmpfile.Name()) // clean up
+		err = RunBash("rm", "-P", tmpfile.Name())
+		if err != nil {
+			shredFlag = "-Pf"
+		}
 	}
+
+	return shredPath, shredFlag
+}
+
+// ShredFiles securely erases a list of files.
+func ShredFiles(names []string) error {
 
 	// TODO(tlim) DO the shredding in parallel like in v1.
 
+	path, flag := shredCmd()
+	var err error
 	for _, n := range names {
-		fmt.Printf("========== SHREDDING (%q, %q): %q\n", path, flag, n)
+		fmt.Printf("========== SHREDDING: %q\n", n)
 		e := RunBash(path, flag, n)
 		if e != nil {
 			err = e

@@ -1,7 +1,2 @@
 #!/usr/bin/env bash
-
-#
-# blackbox_deregister_file -- Remove a file from the blackbox system.
-#
-
 exec blackbox file remove --safe "$@"

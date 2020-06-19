@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
 
@@ -72,7 +73,7 @@ func (v VcsHandle) SuggestTracking(repobasedir string, message string, files []s
 NEXT STEP: You need to manually check these in:
      git commit -m%q`, message)
 	for _, file := range files {
-		fmt.Print(fmt.Sprintf(" %q", file))
+		fmt.Print(" " + tainedname.New(file).String())
 	}
 	fmt.Println()
 	return nil
