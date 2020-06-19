@@ -3,9 +3,9 @@
 #
 # blackbox_initialize -- Enable blackbox for a GIT or HG repo.
 #
-#
 # Example:
 #    blackbox_initialize
-#
+#    blackbox_initialize yes
+#    blackbox_initialize yes /path/to/my/gnupg/config
 
 exec blackbox init "$@"

@@ -3,11 +3,8 @@
 #
 # blackbox_postdeploy -- Decrypt all blackbox files.
 #
-exec blackbox decrypt --all --overwrite --group "$
-
-
 if [[ "$1" == "" ]]; then
   blackbox decrypt --all --overwrite
 else
-  blackbox decrypt --all --overwrite --group "$1"
+  blackbox decrypt --all --overwrite --group "$1" "
 fi

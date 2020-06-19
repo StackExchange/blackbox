@@ -3,7 +3,6 @@
 #
 # blackbox_edit -- Decrypt a file temporarily for edition, then re-encrypts it again
 #
-
-# NB(tlim): In v1 this offers to register any non-registered files.
+# NOTE: In v1 this offers to register any non-registered files. v2 does not.
 
 exec blackbox edit "$@"

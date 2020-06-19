@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+#
+# blackbox_diff -- Show all differences between encrypted and plaintext.
+#
+exec blackbox diff --diff "$@"

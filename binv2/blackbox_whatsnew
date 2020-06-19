@@ -3,6 +3,8 @@
 #
 # blackbox_whatsnew - show what has changed in the last commit for a given file
 #
+exec blackbox whatsnew "$@"
+exit 0
 
 set -e
 source "${0%/*}/_blackbox_common.sh"
