@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
 )
 
 // FileStatus returns the status of a file.
@@ -235,4 +236,27 @@ func shouldWeOverwrite() {
 	fmt.Print("Press CTRL-C now to stop. ENTER to continue: ")
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
+}
+
+// PrettyCommitMessage generates a pretty commit message.
+func PrettyCommitMessage(verb string, files []string) string {
+
+	if len(files) == 0 {
+		return verb
+	}
+
+	for i := range files {
+		safe, redacted := tainedname.New(files[i]).RedactUnsafe()
+		if redacted {
+			files[i] = "\"" + safe + "\" (redacted)"
+		} else {
+			files[i] = safe
+		}
+	}
+
+	if len(files) <= 2 || len(strings.Join(files, " ")) < 100 {
+		return verb + ": " + strings.Join(files, " ")
+	}
+
+	return verb + ": " + strings.Join(files[:3], " ") + " ..." + "    " + strings.Join(files, "\n    ") + "\n"
 }

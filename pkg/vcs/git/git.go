@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/commitlater"
 	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
@@ -17,6 +18,7 @@ func init() {
 
 // VcsHandle is the handle
 type VcsHandle struct {
+	toCommit commitlater.List
 }
 
 func newGit() (vcs.Vcs, error) {
@@ -67,18 +69,6 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 	return bbutil.AddLinesToFile(ignore, files...)
 }
 
-// SuggestTracking tells the VCS to suggest the user commit these files.
-func (v VcsHandle) SuggestTracking(repobasedir string, message string, files []string) error {
-	fmt.Printf(`
-NEXT STEP: You need to manually check these in:
-     git commit -m%q`, message)
-	for _, file := range files {
-		fmt.Print(" " + tainedname.New(file).String())
-	}
-	fmt.Println()
-	return nil
-}
-
 // Add makes a file visible to the VCS (like "git add").
 func (v VcsHandle) Add(repobasedir string, files []string) error {
 
@@ -89,6 +79,32 @@ func (v VcsHandle) Add(repobasedir string, files []string) error {
 		gpgnames = append(gpgnames, n+".gpg")
 	}
 	return bbutil.RunBash("git", append([]string{"add"}, gpgnames...)...)
+}
+
+// NeedsCommit queues up commits for later execution.
+func (v VcsHandle) NeedsCommit(message string, repobasedir string, names []string) {
+	v.toCommit.Add(message, repobasedir, names)
+}
+
+// FlushCommits informs the VCS to do queued up commits.
+func (v VcsHandle) FlushCommits() error {
+	return v.toCommit.Flush(v.suggestCommit)
+	// TODO(tlim): Some day we can add a command line flag that indicates that commits are
+	// to be done for real, not just suggested to the user.  At that point, this function
+	// can call v.toCommit.Flush() with a function that actually does the commits insteada
+	// of suggesting them.  Flag could be called --commit=auto vs --commit=suggest.
+}
+
+// suggestCommit tells the user what commits are needed.
+func (v VcsHandle) suggestCommit(repobasedir string, message string, files []string) error {
+	fmt.Printf(`
+NEXT STEP: You need to manually check these in:
+     git commit -m%q`, message)
+	for _, file := range files {
+		fmt.Print(" " + tainedname.New(file).String())
+	}
+	fmt.Println()
+	return nil
 }
 
 // The following are "secret" functions only used by the integration testing system.

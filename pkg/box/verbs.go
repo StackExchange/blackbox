@@ -1,7 +1,8 @@
 package box
 
 // This file implements the business logic related to a black box.
-
+// These functions are usually called from cmd/blackbox/drive.go or
+// external sytems that use box as a module.
 import (
 	"bufio"
 	"fmt"
@@ -23,14 +24,14 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 		return err
 	}
 
-	fmt.Printf("ADMINS=%q\n", bx.Admins)
+	//fmt.Printf("ADMINS=%q\n", bx.Admins)
 
 	// Check for duplicates.
 	if i := sort.SearchStrings(bx.Admins, nom); i < len(bx.Admins) && bx.Admins[i] == nom {
 		return fmt.Errorf("Admin %v already an admin", nom)
 	}
 
-	sugg, err := bx.Crypter.AddNewKey(nom, sdir, bx.ConfigDir)
+	changedFiles, err := bx.Crypter.AddNewKey(nom, sdir, bx.ConfigDir)
 	if err != nil {
 		return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
 	}
@@ -45,7 +46,7 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 		return fmt.Errorf("could not update file (%q,%q): %v", fn, nom, err)
 	}
 
-	bx.Vcs.SuggestTracking(bx.RepoBaseDir, "NEW ADMIN: "+nom, sugg)
+	bx.Vcs.NeedsCommit("NEW ADMIN: "+nom, bx.RepoBaseDir, changedFiles)
 	return nil
 }
 
@@ -128,6 +129,13 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 }
 
 func decryptMany(bx *Box, names []string, overwrite bool, groupchange bool, gid int) error {
+
+	// TODO(tlim): If we want to decrypt them in parallel, go has a helper function
+	// called "sync.WaitGroup()"" which would be useful here.  We would probably
+	// want to add a flag on the command line (stored in a field such as bx.ParallelMax)
+	// that limits the amount of parallelism. The default for the flag should
+	// probably be runtime.NumCPU().
+
 	for _, name := range names {
 		fmt.Printf("========== DECRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
@@ -140,9 +148,9 @@ func decryptMany(bx *Box, names []string, overwrite bool, groupchange bool, gid 
 
 		// TODO(tlim) v1 detects zero-length files and removes them, even
 		// if overwrite is disabled. I don't think anyone has ever used that
-		// feature. That said, we could immplement that here.
+		// feature. That said, if we want to do that, we would implement it here.
 
-		// TODO(tlim) v1 takes the md5 has of the plaintext before it decrypts,
+		// TODO(tlim) v1 takes the md5 hash of the plaintext before it decrypts,
 		// then compares the new plaintext's md5. It prints "EXTRACTED" if
 		// there is a change.
 
@@ -217,24 +225,11 @@ func (bx *Box) Encrypt(names []string, shred bool) error {
 		names = bx.Files
 	}
 
-	suggestMsg, suggestFiles, err := encryptMany(bx, names, shred)
-	if err != nil {
-		return err
-	}
-
-	if len(suggestFiles) != 0 {
-		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
-			"ENCRYPTED "+strings.Join(suggestMsg, " "),
-			suggestFiles,
-		)
-	}
-
-	return nil
+	return encryptMany(bx, names, shred)
 }
 
-func encryptMany(bx *Box, names []string, shred bool) ([]string, []string, error) {
-	var suggestMsg []string
-	var suggestFiles []string
+func encryptMany(bx *Box, names []string, shred bool) error {
+	var enames []string
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
@@ -245,18 +240,23 @@ func encryptMany(bx *Box, names []string, shred bool) ([]string, []string, error
 			bx.logErr.Printf("Skipping. Plaintext does not exist: %q", name)
 			continue
 		}
-		s, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
+		ename, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
 			bx.logErr.Printf("Failed to encrypt %q: %v", name, err)
 			continue
 		}
-		suggestMsg = append(suggestMsg, name)
-		suggestFiles = append(suggestFiles, s)
+		enames = append(enames, ename)
 		if shred {
 			bx.Shred([]string{name})
 		}
 	}
-	return suggestMsg, suggestFiles, nil
+
+	bx.Vcs.NeedsCommit(
+		PrettyCommitMessage("REENCRYPTED", enames),
+		bx.RepoBaseDir,
+		enames,
+	)
+	return nil
 }
 
 // FileAdd enrolls files.
@@ -320,10 +320,11 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 		bx.logErr.Printf("Error while shredding: %v", err)
 	}
 
-	bx.Vcs.SuggestTracking(
+	bx.Vcs.NeedsCommit(
+		PrettyCommitMessage("NEW BLACKBOX FILES:", names),
 		bx.RepoBaseDir,
-		"NEW FILES: "+strings.Join(names, " "),
-		encryptedNames)
+		encryptedNames,
+	)
 	return nil
 }
 
@@ -412,10 +413,11 @@ func (bx *Box) Init(yes, vcsname string) error {
 		"secring.gpg",
 	)
 
-	bx.Vcs.SuggestTracking(bx.RepoBaseDir, "INITIALIZE BLACKBOX",
+	bx.Vcs.NeedsCommit(
+		"INITIALIZE BLACKBOX",
+		bx.RepoBaseDir,
 		[]string{bbadminsRel, bbfilesRel},
 	)
-
 	return nil
 }
 
@@ -472,20 +474,13 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 	if err != nil {
 		return fmt.Errorf("reencrypt failed decrypt: %w", err)
 	}
-	suggestMsg, suggestFiles, err := encryptMany(bx, names, false)
+	err = encryptMany(bx, names, false)
 	if err != nil {
 		return fmt.Errorf("reencrypt failed encrypt: %w", err)
 	}
 	err = bbutil.ShredFiles(names)
 	if err != nil {
 		return fmt.Errorf("reencrypt failed shred: %w", err)
-	}
-
-	if len(suggestFiles) != 0 {
-		bx.Vcs.SuggestTracking(bx.RepoBaseDir,
-			"ENCRYPTED "+strings.Join(suggestMsg, " "),
-			suggestFiles,
-		)
 	}
 
 	return nil

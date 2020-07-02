@@ -39,7 +39,11 @@ func cmdAdminAdd(c *cli.Context) error {
 			"Must specify one admin's GnuPG user-id (i.e. email address) and optionally the directory of the pubkey data (default ~/.GnuPG)")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.AdminAdd(c.Args().Get(0), c.Args().Get(1))
+	err := bx.AdminAdd(c.Args().Get(0), c.Args().Get(1))
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdAdminList(c *cli.Context) error {
@@ -47,7 +51,11 @@ func cmdAdminList(c *cli.Context) error {
 		return fmt.Errorf("This command takes zero arguments")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.AdminList()
+	err := bx.AdminList()
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdAdminRemove(c *cli.Context) error {
@@ -55,7 +63,11 @@ func cmdAdminRemove(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one admin's GnuPG user-id (i.e. email address)")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.AdminRemove(c.Args().Slice())
+	err := bx.AdminRemove(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdCat(c *cli.Context) error {
@@ -63,7 +75,11 @@ func cmdCat(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Cat(c.Args().Slice())
+	err := bx.Cat(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdDecrypt(c *cli.Context) error {
@@ -79,11 +95,15 @@ func cmdDecrypt(c *cli.Context) error {
 	}
 
 	bx := box.NewFromFlags(c)
-	return bx.Decrypt(c.Args().Slice(),
+	err := bx.Decrypt(c.Args().Slice(),
 		c.Bool("overwrite"),
 		pauseNeeded,
 		c.String("group"),
 	)
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdDiff(c *cli.Context) error {
@@ -91,7 +111,11 @@ func cmdDiff(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Diff(c.Args().Slice())
+	err := bx.Diff(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdEdit(c *cli.Context) error {
@@ -99,7 +123,11 @@ func cmdEdit(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Edit(c.Args().Slice())
+	err := bx.Edit(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdEncrypt(c *cli.Context) error {
@@ -107,7 +135,11 @@ func cmdEncrypt(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Encrypt(c.Args().Slice(), c.Bool("shred"))
+	err := bx.Encrypt(c.Args().Slice(), c.Bool("shred"))
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdFileAdd(c *cli.Context) error {
@@ -115,7 +147,11 @@ func cmdFileAdd(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.FileAdd(c.Args().Slice(), c.Bool("shred"))
+	err := bx.FileAdd(c.Args().Slice(), c.Bool("shred"))
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdFileList(c *cli.Context) error {
@@ -123,7 +159,11 @@ func cmdFileList(c *cli.Context) error {
 		return fmt.Errorf("This command takes zero arguments")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.FileList()
+	err := bx.FileList()
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdFileRemove(c *cli.Context) error {
@@ -131,7 +171,11 @@ func cmdFileRemove(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.FileRemove(c.Args().Slice())
+	err := bx.FileRemove(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdInfo(c *cli.Context) error {
@@ -139,7 +183,11 @@ func cmdInfo(c *cli.Context) error {
 		return fmt.Errorf("This command takes zero arguments")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Info()
+	err := bx.Info()
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdInit(c *cli.Context) error {
@@ -147,7 +195,11 @@ func cmdInit(c *cli.Context) error {
 		return fmt.Errorf("This command takes one or two arguments")
 	}
 	bx := box.NewUninitialized(c.String("configdir"), c.String("team"))
-	return bx.Init(c.Args().First(), c.String("vcs"))
+	err := bx.Init(c.Args().First(), c.String("vcs"))
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdReencrypt(c *cli.Context) error {
@@ -163,10 +215,14 @@ func cmdReencrypt(c *cli.Context) error {
 	}
 
 	bx := box.NewFromFlags(c)
-	return bx.Reencrypt(c.Args().Slice(),
+	err := bx.Reencrypt(c.Args().Slice(),
 		c.Bool("overwrite"),
 		pauseNeeded,
 	)
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdShred(c *cli.Context) error {
@@ -174,7 +230,11 @@ func cmdShred(c *cli.Context) error {
 		return err
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Shred(c.Args().Slice())
+	err := bx.Shred(c.Args().Slice())
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 func cmdStatus(c *cli.Context) error {
@@ -182,7 +242,11 @@ func cmdStatus(c *cli.Context) error {
 		return fmt.Errorf("Can not specify filenames and --all")
 	}
 	bx := box.NewFromFlags(c)
-	return bx.Status(c.Args().Slice(), c.Bool("name-only"), c.String("type"))
+	err := bx.Status(c.Args().Slice(), c.Bool("name-only"), c.String("type"))
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }
 
 // These are "secret" commands used by the integration tests.
@@ -198,5 +262,9 @@ func testingInit(c *cli.Context) error {
 		c.String("vcs"),
 	)
 	bx := box.NewForTestingInit(c.String("vcs"))
-	return bx.TestingInitRepo()
+	err := bx.TestingInitRepo()
+	if err != nil {
+		return err
+	}
+	return bx.Vcs.FlushCommits()
 }

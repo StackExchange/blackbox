@@ -14,7 +14,6 @@ func init() {
 
 // VcsHandle is
 type VcsHandle struct {
-	Age int
 }
 
 func newNone() (vcs.Vcs, error) {
@@ -36,13 +35,18 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 	return nil
 }
 
-// IgnoreAnywhere tells the VCS to ignore these files anywhere rin the repo.
+// IgnoreAnywhere tells the VCS to ignore these files anywhere in the repo.
 func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 	return nil
 }
 
-// SuggestTracking tells the VCS to suggest the user commit these files.
-func (v VcsHandle) SuggestTracking(repobasedir string, message string, files []string) error {
+// NeedsCommit queues up commits for later execution.
+func (v VcsHandle) NeedsCommit(message string, repobasedir string, names []string) {
+	return
+}
+
+// FlushCommits informs the VCS to do queued up commits.
+func (v VcsHandle) FlushCommits() error {
 	return nil
 }
 

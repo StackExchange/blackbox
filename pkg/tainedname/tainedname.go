@@ -15,6 +15,7 @@ package tainedname
 import (
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 // Dubious is a string that can't be trusted to work on a shell line without escaping.
@@ -143,6 +144,47 @@ func same() func(r rune) string {
 // oct returns the octal representing the value.
 func oct() func(r rune) string {
 	return func(r rune) string { return fmt.Sprintf(`\%03o`, r) }
+}
+
+// RedactUnsafe redacts any "bad" chars, returns true if anything
+// redacted.
+func (dirty Dubious) RedactUnsafe() (string, bool) {
+	if dirty == "" {
+		return `""`, false
+	}
+
+	var b strings.Builder
+	b.Grow(len(dirty) + 2)
+
+	needsQuote := false
+	redacted := false
+
+	for _, r := range dirty {
+		if r == ' ' {
+			b.WriteRune(r)
+			needsQuote = true
+		} else if r == '\'' {
+			b.WriteRune(r)
+			needsQuote = true
+		} else if r == '"' {
+			b.WriteRune(r)
+			needsQuote = true
+		} else if r == '\'' {
+			b.WriteRune('X')
+			needsQuote = true
+		} else if unicode.IsPrint(r) {
+			b.WriteRune(r)
+		} else {
+			b.WriteRune('X')
+			redacted = true
+		}
+	}
+
+	if needsQuote {
+		return "'" + b.String() + "'", redacted
+	}
+
+	return b.String(), redacted
 }
 
 // String returns a version of the dirty string that is absolutely

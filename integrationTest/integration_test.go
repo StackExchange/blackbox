@@ -14,6 +14,7 @@ import (
 )
 
 var vcsToTest = flag.String("testvcs", "GIT", "VCS to test")
+var longTests = flag.Bool("long", false, "Run long version of tests")
 
 //var crypterToTest = flag.String("crypter", "GnuPG", "crypter to test")
 
@@ -60,6 +61,9 @@ func setup(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	compile(t)
 	makeHomeDir(t, "init")
 
@@ -75,6 +79,9 @@ func TestInit(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	compile(t)
 	makeHomeDir(t, "init")
 
@@ -88,6 +95,9 @@ func TestList(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	compile(t)
 	makeHomeDir(t, "init")
 
@@ -97,6 +107,9 @@ func TestStatus(t *testing.T) {
 }
 
 func TestShred(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	compile(t)
 	makeHomeDir(t, "shred")
 	runBB(t, "init", "yes")
@@ -108,6 +121,9 @@ func TestShred(t *testing.T) {
 }
 
 func TestStatus_notreg(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	compile(t)
 	makeHomeDir(t, "init")
 
@@ -119,6 +135,9 @@ func TestStatus_notreg(t *testing.T) {
 // TestBasicCommands tests of the basic functions, using a fake homedir and repo.
 // The files are full of garbage, not real encrypted data.
 func TestBasic(t *testing.T) {
+	if !*longTests {
+		return
+	}
 	// These are basic tests that work on a fake repo.
 	// The repo has mostly real data, except any .gpg file
 	// is just garbage.
