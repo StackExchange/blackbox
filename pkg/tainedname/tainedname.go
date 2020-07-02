@@ -17,34 +17,48 @@ import (
 	"strings"
 )
 
-type dubious string
+// Dubious is a string that can't be trusted to work on a shell line without escaping.
+type Dubious string
 
-func New(s string) dubious {
-	return dubious(s)
+// New creates a dubious string.
+func New(s string) Dubious {
+	return Dubious(s)
 }
 
 type protection int
 
 const (
-	Unknown     protection = iota
-	None                   // Nothing special
-	SingleQuote            // Requires at least a single quote
-	DoubleQuote            // Can only be in a double-quoted string
+	// Unknown indicates we don't know if it is safe.
+	Unknown protection = iota
+	// None requires no special escaping.
+	None // Nothing special
+	// SingleQuote is unsafe in bash and requires a single quote.
+	SingleQuote // Requires at least a single quote
+	// DoubleQuote is unsafe in bash and requires escaping or other double-quote features.
+	DoubleQuote // Can only be in a double-quoted string
 )
 
-var IsAQuote = None                   // Handled as a special case
-var IsSpace = SingleQuote             // " " (ascii 32)
-var ShellUnsafe = SingleQuote         // bash special
-var GlobUnsafe = SingleQuote          // Could be a glob
-var InterpolationUnsafe = SingleQuote // Used in bash string interpolation
-var HasBackslash = DoubleQuote        // things like \n \t \r \000 \xFF
+const (
+	// IsAQuote is either a `'` or `"`
+	IsAQuote = None
+	// IsSpace is ascii 32
+	IsSpace = SingleQuote
+	// ShellUnsafe is ()!$ or other bash special char
+	ShellUnsafe = SingleQuote
+	// GlobUnsafe means could be a glob char (* or ?)
+	GlobUnsafe = SingleQuote
+	// InterpolationUnsafe used in bash string interpolation ($)
+	InterpolationUnsafe = SingleQuote
+	// HasBackslash things like \n \t \r \000 \xFF
+	HasBackslash = DoubleQuote
+)
 
 func max(i, j protection) protection {
 	if i > j {
 		return i
-	} else {
-		return j
 	}
+	return j
+
 }
 
 type tabEntry struct {
@@ -133,7 +147,7 @@ func oct() func(r rune) string {
 
 // String returns a version of the dirty string that is absolutely
 // safe to paste into a command line.
-func (dirty dubious) String() string {
+func (dirty Dubious) String() string {
 	if dirty == "" {
 		return `""`
 	}
@@ -165,14 +179,12 @@ func (dirty dubious) String() string {
 	case DoubleQuote:
 		if unicode {
 			return "$(printf '" + s + "')"
-		} else {
-			return `"` + s + `"`
 		}
+		return `"` + s + `"`
 	default:
 	}
 	// should not happen
 	return fmt.Sprintf("%q", s)
-
 }
 
 // escapeRune returns a string of octal escapes that represent the rune.
