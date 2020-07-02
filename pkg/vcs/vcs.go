@@ -24,7 +24,7 @@ type Item struct {
 // Catalog is the list of registered vcs's.
 var Catalog []*Item
 
-// DetermineVcs polls the VCS plug-ins to determine the VCS of directory.
+// Discover polls the VCS plug-ins to determine the VCS of directory.
 // The first to succeed is returned.
 // It never returns nil, since "NONE" is always valid.
 func Discover(dir string) Vcs {
