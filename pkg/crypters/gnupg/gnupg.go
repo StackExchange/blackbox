@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bblog"
@@ -123,7 +124,7 @@ func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []strin
 
 // AddNewKey extracts keyname from sourcedir's GnuPG chain to destdir keychain.
 // It returns a list of files that may have changed.
-func (crypt CrypterHandle) AddNewKey(keyname, sourcedir, destdir string) ([]string, error) {
+func (crypt CrypterHandle) AddNewKey(keyname, repobasedir, sourcedir, destdir string) ([]string, error) {
 
 	// $GPG --homedir="$2" --export -a "$KEYNAME" >"$pubkeyfile"
 	args := []string{
@@ -153,6 +154,19 @@ func (crypt CrypterHandle) AddNewKey(keyname, sourcedir, destdir string) ([]stri
 	}
 
 	// Suggest: ${pubring_path} trustdb.gpg  blackbox-admins.txt
+	var changed []string
 
-	return nil, nil
+	// Prefix each file with the relative path to it.
+	prefix, err := filepath.Rel(repobasedir, destdir)
+	if err != nil {
+		fmt.Printf("FAIL (%v) (%v) (%v)\n", repobasedir, destdir, err)
+		prefix = destdir
+	}
+	for _, file := range []string{"pubring.gpg", "pubring.kbx", "trustdb.gpg"} {
+		path := filepath.Join(destdir, file)
+		if bbutil.FileExistsOrProblem(path) {
+			changed = append(changed, filepath.Join(prefix, file))
+		}
+	}
+	return changed, nil
 }

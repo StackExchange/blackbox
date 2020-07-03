@@ -97,6 +97,10 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 // Add makes a file visible to the VCS (like "git add").
 func (v VcsHandle) Add(repobasedir string, files []string) error {
 
+	if len(files) == 0 {
+		return nil
+	}
+
 	// TODO(tlim): Make sure that files are within repobasedir.
 
 	var gpgnames []string

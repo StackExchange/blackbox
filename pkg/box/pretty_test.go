@@ -8,7 +8,7 @@ func TestPrettyCommitMessage(t *testing.T) {
 		data     []string
 		expected string
 	}{
-		{[]string{}, `HEADING`},
+		{[]string{}, `HEADING (no files)`},
 		{[]string{"one"}, `HEADING: one`},
 		{[]string{"one", "two"}, `HEADING: one two`},
 		{[]string{"one", "two", "three"}, `HEADING: one two three`},

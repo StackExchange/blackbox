@@ -58,13 +58,13 @@ const (
 // NewFromFlags creates a box using items from flags.  Nearly all subcommands use this.
 func NewFromFlags(c *cli.Context) *Box {
 	/*
-				 Nearly all subcommands use this.  It is used with a VCS repo
-				 that has blackbox already initialized.
+	 Nearly all subcommands use this.  It is used with a VCS repo
+	 that has blackbox already initialized.
 
-				 Commands need:    How we populate it:
-			     bx.Vcs:           Discovered by calling each plug-in until succeeds.
-		       bx.ConfigDir:     Is discovered.
-		       bx.RepoBaseDir:   Is discovered.
+	 Commands need:    How we populate it:
+	    bx.Vcs:           Discovered by calling each plug-in until succeeds.
+	    bx.ConfigDir:     Is discovered.
+	    bx.RepoBaseDir:   Is discovered.
 	*/
 
 	logErr = bblog.GetErr()

@@ -11,5 +11,5 @@ type Crypter interface {
 	// Cat outputs a file, unencrypting if needed.
 	Cat(filename string) ([]byte, error)
 	// AddNewKey extracts keyname from sourcedir's GnuPG chain to destdir keychain.
-	AddNewKey(keyname, sourcedir, destdir string) ([]string, error)
+	AddNewKey(keyname, repobasename, sourcedir, destdir string) ([]string, error)
 }

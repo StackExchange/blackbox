@@ -32,7 +32,8 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 		return fmt.Errorf("Admin %v already an admin", nom)
 	}
 
-	changedFiles, err := bx.Crypter.AddNewKey(nom, sdir, bx.ConfigDir)
+	fmt.Printf("ADMIN ADD rbd=%q\n", bx.RepoBaseDir)
+	changedFiles, err := bx.Crypter.AddNewKey(nom, bx.RepoBaseDir, sdir, bx.ConfigDir)
 	if err != nil {
 		return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
 	}
