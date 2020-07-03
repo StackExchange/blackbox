@@ -112,7 +112,7 @@ func NewUninitialized(configdir, team string) *Box {
 		Team: team,
 	}
 	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
-	bx.ConfigDir = GenerateConfigDir(configdir, team)
+	bx.ConfigDir, bx.ConfigDirRel = GenerateConfigDir(configdir, team)
 	return bx
 }
 

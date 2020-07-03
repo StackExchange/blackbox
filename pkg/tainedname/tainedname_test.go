@@ -4,6 +4,36 @@ import (
 	"testing"
 )
 
+func TestRedactUnsafe(t *testing.T) {
+	for i, test := range []struct{ data, expected string }{
+		{"", `""`},
+		{"one", "one"},
+		{"has space.txt", "'has space.txt'"},
+		{"has\ttab.txt", `hasXtab.txtR`},
+		{"has\nnl.txt", `hasXnl.txtR`},
+		{"has\rret.txt", `hasXret.txtR`},
+		{"¡que!", `¡que!`},
+		{"thé", `thé`},
+		{"pound£", `pound£`},
+		{"*.go", `*.go`},
+		{"rm -rf / ; echo done", `'rm -rf / ; echo done'`},
+		{"smile\u263a", `smile☺`},
+		{"dub\U0001D4E6", `dub𝓦`},
+		{"four\U0010FFFF", `fourXR`},
+	} {
+		g, b := New(test.data).RedactUnsafe()
+		if b {
+			g = g + "R"
+		}
+		if g == test.expected {
+			//jt.Logf("%03d: PASSED go(%q) bash: %s\n", i, test.data, test.expected)
+			t.Logf("%03d: PASSED\n", i)
+		} else {
+			t.Errorf("%03d: FAILED data=%q got=(%s) wanted=(%s)\n", i, test.data, g, test.expected)
+		}
+	}
+}
+
 func TestString(t *testing.T) {
 	for i, test := range []struct{ data, expected string }{
 		{"", `""`},

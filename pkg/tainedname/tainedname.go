@@ -146,8 +146,29 @@ func oct() func(r rune) string {
 	return func(r rune) string { return fmt.Sprintf(`\%03o`, r) }
 }
 
+// RedactList returns a string of redacted names.
+func RedactList(names []string) string {
+	var msgs []string
+	for _, f := range names {
+		msgs = append(msgs, New(f).RedactUnsafeWithComment())
+	}
+	return strings.Join(msgs, " ")
+}
+
+// RedactUnsafeWithComment is like RedactUnsafe but appends
+// "(redacted)" when appropriate.
+func (dirty Dubious) RedactUnsafeWithComment() string {
+	s, b := dirty.RedactUnsafe()
+	if b {
+		return "\"" + s + "\"(redacted)"
+	}
+	return s
+}
+
 // RedactUnsafe redacts any "bad" chars, returns true if anything
-// redacted.
+// redacted.  The resulting string should be human readable and
+// pastable (for example, something to include in a git commit
+// message) but not usable in os.Open().
 func (dirty Dubious) RedactUnsafe() (string, bool) {
 	if dirty == "" {
 		return `""`, false
@@ -188,7 +209,8 @@ func (dirty Dubious) RedactUnsafe() (string, bool) {
 }
 
 // String returns a version of the dirty string that is absolutely
-// safe to paste into a command line.
+// safe to paste into a bash command line, and will result in the
+// correct filename being interpreted by bash.
 func (dirty Dubious) String() string {
 	if dirty == "" {
 		return `""`

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -141,22 +142,46 @@ func parseGroup(userinput string) (int, error) {
 // The result is an absolute path.
 // If --config is set, use that value (no matter what).
 // Otherwise use .blackbox-$team or .blackbox (if no team).
-func GenerateConfigDir(configdir, team string) string {
-	if configdir != "" {
-		if p, err := filepath.Abs(configdir); err == nil {
-			return p
+func GenerateConfigDir(configdir, team string) (string, string) {
+
+	if configdir == "" {
+		// Normal case.
+		rel := ".blackbox"
+		if team != "" {
+			rel = ".blackbox-" + team
 		}
-		return configdir
+		configdir, err := filepath.Abs(rel)
+		if err != nil {
+			fmt.Printf("ERROR: init says: ABS should not happen: %v\n", err)
+			os.Exit(1)
+		}
+		return configdir, rel
 	}
 
-	c := ".blackbox"
-	if team != "" {
-		c = ".blackbox-" + team
+	// User specified a configdir.  Now we can to guess what they mean.
+
+	// What's our CWD?
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("ERROR: init says: GETWD should not happen: %v\n", err)
+		os.Exit(1)
 	}
-	if p, err := filepath.Abs(c); err == nil {
-		return p
+
+	// They specified a relative path. Assume it is relative to wd.
+	if !filepath.IsAbs(configdir) {
+		// Assume they meant it is relative to PWD.
+		return wd, configdir
 	}
-	return c
+
+	// This is the difficult case. The user specified an absolute path to the
+	// config directory. We probably should just error out. Let's at least make
+	// one attempt at guessing what the Rel part should be.
+	rel, err := filepath.Rel(wd, configdir)
+	if err != nil {
+		fmt.Printf("ERROR: Run init from the repo base: %v\n", err)
+		os.Exit(1)
+	}
+	return configdir, rel
 }
 
 // FindConfigDir tests various places until it finds the config dir.
@@ -218,6 +243,12 @@ func gpgAgentNotice() {
 	if os.Getenv("GPG_AGENT_INFO") != "" {
 		return
 	}
+	// Are we on macOS?
+	if runtime.GOOS == "darwin" {
+		// We assume the use of https://gpgtools.org, which
+		// uses the keychain.
+		return
+	}
 
 	// TODO(tlim): v1 verifies that "gpg-agent --version" outputs a version
 	// string that is 2.1.0 or higher.  It seems that 1.x is incompatible.
@@ -242,19 +273,16 @@ func shouldWeOverwrite() {
 func PrettyCommitMessage(verb string, files []string) string {
 
 	if len(files) == 0 {
-		return verb
+		// This use-case should probably be an error.
+		return verb + " (no files)"
 	}
 
+	// Redact the names.
 	for i := range files {
-		safe, redacted := tainedname.New(files[i]).RedactUnsafe()
-		if redacted {
-			files[i] = "\"" + safe + "\" (redacted)"
-		} else {
-			files[i] = safe
-		}
+		files[i] = tainedname.New(files[i]).RedactUnsafeWithComment()
 	}
 
-	if len(files) <= 2 || len(strings.Join(files, " ")) < 100 {
+	if len(files) <= 2 || len(strings.Join(files, " ")) < 50 {
 		return verb + ": " + strings.Join(files, " ")
 	}
 

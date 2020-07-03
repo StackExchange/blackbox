@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
+	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -382,10 +383,19 @@ func (bx *Box) Init(yes, vcsname string) error {
 	//fmt.Printf("configdir will be: %q\n", bx.ConfigDir)
 
 	if yes != "yes" {
-		fmt.Printf("Enable blackbox for this %v repo? (yes/no)", bx.Vcs.Name())
+		fmt.Printf("Enable blackbox for this %v repo? (yes/no)? ", bx.Vcs.Name())
 		input := bufio.NewScanner(os.Stdin)
 		input.Scan()
-		b, _ := strconv.ParseBool(input.Text())
+		ans := input.Text()
+		b, err := strconv.ParseBool(ans)
+		if err != nil {
+			b = false
+			if len(ans) > 0 {
+				if ans[0] == 'y' || ans[0] == 'Y' {
+					b = true
+				}
+			}
+		}
 		if !b {
 			fmt.Println("Ok. Maybe some other time.")
 			return nil
@@ -397,15 +407,13 @@ func (bx *Box) Init(yes, vcsname string) error {
 		return err
 	}
 
-	bbadmins := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
-	bbutil.Touch(bbadmins)
-	bbadminsRel := filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt")
-	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbadminsRel)
-
-	bbfiles := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
-	bbutil.Touch(bbfiles)
-	bbfilesRel := filepath.Join(bx.ConfigDirRel, "blackbox-files.txt")
-	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, bbfilesRel)
+	bbutil.Touch(filepath.Join(bx.ConfigDir, "blackbox-admins.txt"))
+	bbutil.Touch(filepath.Join(bx.ConfigDir, "blackbox-files.txt"))
+	bx.Vcs.SetFileTypeUnix(
+		bx.RepoBaseDir,
+		filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt"),
+		filepath.Join(bx.ConfigDirRel, "blackbox-files.txt"),
+	)
 
 	bx.Vcs.IgnoreAnywhere(bx.RepoBaseDir,
 		"pubring.gpg~",
@@ -413,11 +421,16 @@ func (bx *Box) Init(yes, vcsname string) error {
 		"secring.gpg",
 	)
 
+	fs := []string{
+		filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt"),
+		filepath.Join(bx.ConfigDirRel, "blackbox-files.txt"),
+	}
 	bx.Vcs.NeedsCommit(
-		"INITIALIZE BLACKBOX",
-		bx.RepoBaseDir,
-		[]string{bbadminsRel, bbfilesRel},
+		"NEW: "+tainedname.RedactList(fs),
+		bx.RepoBaseDir, fs,
 	)
+
+	bx.Vcs.CommitTitle("INITIALIZE BLACKBOX")
 	return nil
 }
 
