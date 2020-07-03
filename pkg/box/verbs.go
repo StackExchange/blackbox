@@ -298,13 +298,13 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 	}
 
 	// Encrypt
-	var encryptedNames []string
+	var needsCommit []string
 	for _, name := range names {
 		s, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
 			return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
 		}
-		encryptedNames = append(encryptedNames, s)
+		needsCommit = append(needsCommit, s)
 	}
 
 	// TODO(tlim): Try the json file.
@@ -322,10 +322,12 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 		bx.logErr.Printf("Error while shredding: %v", err)
 	}
 
+	bx.Vcs.IgnoreFiles(bx.RepoBaseDir, names)
+
 	bx.Vcs.NeedsCommit(
-		PrettyCommitMessage("NEW BLACKBOX FILES:", names),
+		PrettyCommitMessage("ADDING TO BLACKBOX", names),
 		bx.RepoBaseDir,
-		encryptedNames,
+		append([]string{filepath.Join(bx.ConfigDirRel, "blackbox-files.txt")}, needsCommit...),
 	)
 	return nil
 }
@@ -364,10 +366,15 @@ func (bx *Box) Info() error {
 	//fmt.Printf("bx.Files=%q\n", bx.Files)
 
 	fmt.Println("BLACKBOX:")
-	fmt.Printf("      ConfigDir: %q\n", bx.ConfigDir)
+	fmt.Printf("           Team: %q\n", bx.Team)
 	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
+	fmt.Printf("      ConfigDir: %q\n", bx.ConfigDir)
+	fmt.Printf("   ConfigDirRel: %q\n", bx.ConfigDirRel)
+	fmt.Printf("          Umask: %O\n", bx.Umask)
+	fmt.Printf("        Edditor: %v\n", bx.Editor)
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
+	fmt.Printf("       FilesSet: count=%v\n", len(bx.FilesSet))
 	fmt.Printf("            Vcs: %v\n", bx.Vcs)
 	fmt.Printf("        VcsName: %q\n", bx.Vcs.Name())
 	fmt.Printf("        Crypter: %v\n", bx.Crypter)
@@ -416,11 +423,11 @@ func (bx *Box) Init(yes, vcsname string) error {
 		filepath.Join(bx.ConfigDirRel, "blackbox-files.txt"),
 	)
 
-	bx.Vcs.IgnoreAnywhere(bx.RepoBaseDir,
+	bx.Vcs.IgnoreAnywhere(bx.RepoBaseDir, []string{
 		"pubring.gpg~",
 		"pubring.kbx~",
 		"secring.gpg",
-	)
+	})
 
 	fs := []string{
 		filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt"),

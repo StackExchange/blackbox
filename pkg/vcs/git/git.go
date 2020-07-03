@@ -78,10 +78,15 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 }
 
 // IgnoreAnywhere tells the VCS to ignore these files anywhere rin the repo.
-func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
+func (v VcsHandle) IgnoreAnywhere(repobasedir string, files []string) error {
 	// Add to the .gitignore file in the repobasedir.
 	ignore := filepath.Join(repobasedir, ".gitignore")
 	err := bbutil.Touch(ignore)
+	if err != nil {
+		return err
+	}
+
+	err = bbutil.AddLinesToFile(ignore, files...)
 	if err != nil {
 		return err
 	}
@@ -91,7 +96,56 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
 		repobasedir,
 		[]string{".gitignore"},
 	)
-	return bbutil.AddLinesToFile(ignore, files...)
+	return nil
+}
+
+func gitSafeFilename(name string) string {
+	// TODO(tlim): Add unit tests.
+	// TODO(tlim): Confirm that *?[] escaping works.
+	if name == "" {
+		return "ERROR"
+	}
+	var b strings.Builder
+	b.Grow(len(name) + 2)
+	for _, r := range name {
+		if r == ' ' || r == '*' || r == '?' || r == '[' || r == ']' {
+			b.WriteRune('\\')
+			b.WriteRune(r)
+		} else {
+			b.WriteRune(r)
+		}
+	}
+	if name[0] == '!' || name[0] == '#' {
+		return `\` + b.String()
+	}
+	return b.String()
+}
+
+// IgnoreFiles tells the VCS to ignore these files, specified relative to RepoBaseDir.
+func (v VcsHandle) IgnoreFiles(repobasedir string, files []string) error {
+
+	var lines []string
+	for _, f := range files {
+		lines = append(lines, "/"+gitSafeFilename(f))
+	}
+
+	// Add to the .gitignore file in the repobasedir.
+	ignore := filepath.Join(repobasedir, ".gitignore")
+	err := bbutil.Touch(ignore)
+	if err != nil {
+		return err
+	}
+	err = bbutil.AddLinesToFile(ignore, lines...)
+	if err != nil {
+		return err
+	}
+
+	v.NeedsCommit(
+		"gitignore "+tainedname.RedactList(files),
+		repobasedir,
+		[]string{".gitignore"},
+	)
+	return nil
 }
 
 // Add makes a file visible to the VCS (like "git add").

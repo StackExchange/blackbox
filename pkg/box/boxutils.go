@@ -185,19 +185,20 @@ func GenerateConfigDir(configdir, team string) (string, string) {
 }
 
 // FindConfigDir tests various places until it finds the config dir.
-func FindConfigDir(configdir, team string) (string, error) {
+// If we can't determine the relative path, "" is returned.
+func FindConfigDir(configdir, team string) (string, string, error) {
 
 	// if configdir is set, use it.
 	if configdir != "" {
 		logDebug.Printf("CONFIG IS SET. NOT DISCOVERING: %q\n", configdir)
 		_, err := os.Stat(configdir)
 		if err != nil {
-			return "", fmt.Errorf("config dir %q error: %v", configdir, err)
+			return "", "", fmt.Errorf("config dir %q error: %v", configdir, err)
 		}
 		if _, err := filepath.Abs(configdir); err != nil {
-			return "", fmt.Errorf("config dir abs %q error: %v", configdir, err)
+			return "", "", fmt.Errorf("config dir abs %q error: %v", configdir, err)
 		}
-		return configdir, nil
+		return configdir, "", nil
 	}
 
 	// Otherwise, search up the tree for the config dir.
@@ -213,7 +214,7 @@ func FindConfigDir(configdir, team string) (string, error) {
 
 	// Prevent an infinite loop by only doing "cd .." this many times
 	maxDirLevels := 100
-	relpath := ""
+	relpath := "."
 	for i := 0; i < maxDirLevels; i++ {
 		// Does relpath contain any of our directory names?
 		for _, c := range candidates {
@@ -221,10 +222,11 @@ func FindConfigDir(configdir, team string) (string, error) {
 			logDebug.Printf("Trying %q\n", t)
 			d, err := bbutil.DirExists(t)
 			if err != nil {
-				return "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
+				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
 			}
 			if d {
-				return filepath.Abs(t)
+				a, e := filepath.Abs(t)
+				return a, c, e
 			}
 		}
 		// If we are at the root, stop.
@@ -235,7 +237,7 @@ func FindConfigDir(configdir, team string) (string, error) {
 		relpath = filepath.Join("..", relpath)
 	}
 
-	return "", fmt.Errorf("No .blackbox directory found in cwd or above")
+	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
 }
 
 func gpgAgentNotice() {

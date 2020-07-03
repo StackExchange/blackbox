@@ -11,8 +11,10 @@ type Vcs interface {
 
 	// SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
 	SetFileTypeUnix(repobasedir string, files ...string) error
-	// IgnoreAnywhere tells the VCS to ignore these files anywhere rin the repo.
-	IgnoreAnywhere(repobasedir string, files ...string) error
+	// IgnoreAnywhere tells the VCS to ignore these files anywhere in the repo.
+	IgnoreAnywhere(repobasedir string, files []string) error
+	// IgnoreAnywhere tells the VCS to ignore these files, rooted in the base of the repo.
+	IgnoreFiles(repobasedir string, files []string) error
 
 	// CommitTitle sets the title of the next commit.
 	CommitTitle(title string)

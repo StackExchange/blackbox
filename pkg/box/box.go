@@ -78,6 +78,16 @@ func NewFromFlags(c *cli.Context) *Box {
 		logDebug: bblog.GetDebug(c.Bool("verbose")),
 	}
 
+	var err error
+
+	// Assume we are chdir'ed to the base of the repo.
+	// TODO(tlim): In the future, we'll want the utilities to work from anywhere
+	// in the repo, but this is fine for now.
+	bx.RepoBaseDir, err = os.Getwd()
+	if err != nil {
+		bx.RepoBaseDir = "."
+	}
+
 	// Discover which kind of VCS is in use.
 	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
 
@@ -89,8 +99,7 @@ func NewFromFlags(c *cli.Context) *Box {
 	}
 
 	// Are we using .blackbox or what?
-	var err error
-	bx.ConfigDir, err = FindConfigDir(c.String("config"), c.String("team"))
+	bx.ConfigDir, bx.ConfigDirRel, err = FindConfigDir(c.String("config"), c.String("team"))
 	if err != nil {
 		return nil
 	}

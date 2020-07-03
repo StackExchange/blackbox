@@ -37,7 +37,12 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 }
 
 // IgnoreAnywhere tells the VCS to ignore these files anywhere in the repo.
-func (v VcsHandle) IgnoreAnywhere(repobasedir string, files ...string) error {
+func (v VcsHandle) IgnoreAnywhere(repobasedir string, files []string) error {
+	return nil
+}
+
+// IgnoreFiles tells the VCS to ignore these files anywhere in the repo.
+func (v VcsHandle) IgnoreFiles(repobasedir string, files []string) error {
 	return nil
 }
 

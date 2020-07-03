@@ -87,3 +87,5 @@ rm -rf /tmp/bbhome-* && BLACKBOX_DEBUG=true go test -verbose -long -run
 rm -rf /tmp/bbhome-* && go test -long -run
 
 ( gbb && cd cmd/blackbox && go install ) && blackbox
+
+cd /tmp && rm -rf /tmp/bbhome-* ; mkdir /tmp/bbhome-1 ; cd /tmp/bbhome-1 && git init ; ( gbb && cd cmd/blackbox && go install ) && blackbox init yes && gitmeWork ; git commit -mm -a ; blackbox admin add tlimoncelli ; git commit -mnewadmin -a ; echo secrt > secret.txt ; blackbox file add secret.txt
