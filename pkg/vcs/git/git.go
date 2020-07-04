@@ -192,12 +192,14 @@ func (v VcsHandle) DebugCommits() commitlater.List {
 func (v VcsHandle) FlushCommits() error {
 	return v.toCommit.Flush(
 		v.commitTitle,
-		func(files []string) error { return bbutil.RunBash("git", append([]string{"add"}, files...)...) },
+		func(files []string) error {
+			return bbutil.RunBash("git", append([]string{"add"}, files...)...)
+		},
 		v.suggestCommit,
 	)
 	// TODO(tlim): Some day we can add a command line flag that indicates that commits are
 	// to be done for real, not just suggested to the user.  At that point, this function
-	// can call v.toCommit.Flush() with a function that actually does the commits insteada
+	// can call v.toCommit.Flush() with a function that actually does the commits instead
 	// of suggesting them.  Flag could be called --commit=auto vs --commit=suggest.
 }
 
@@ -220,7 +222,6 @@ func (v *VcsHandle) suggestCommit(messages []string, repobasedir string, files [
 
 // TestingInitRepo initializes a repo.
 func (v VcsHandle) TestingInitRepo() error {
-	fmt.Println("RUNNING GIT INIT")
 	return bbutil.RunBash("git", "init")
 
 }

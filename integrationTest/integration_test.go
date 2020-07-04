@@ -132,9 +132,8 @@ func TestStatus_notreg(t *testing.T) {
 	checkOutput("status-noreg.txt", t, "status", "status-ENCRYPTED.txt", "blah.txt")
 }
 
-// TestBasicCommands tests of the basic functions, using a fake homedir and repo.
-// The files are full of garbage, not real encrypted data.
-func TestBasic(t *testing.T) {
+// TestHard tests the functions using a fake homedir and repo.
+func TestHard(t *testing.T) {
 	if !*longTests {
 		return
 	}
@@ -143,7 +142,7 @@ func TestBasic(t *testing.T) {
 	// is just garbage.
 	compile(t)
 	setup(t)
-	makeHomeDir(t, "Basic")
+	makeHomeDir(t, "BasicAlice")
 
 	plaintextFoo := "I am the foo.txt file!\n"
 	plainAltered := "I am the altered file!\n"
@@ -166,7 +165,7 @@ func TestBasic(t *testing.T) {
 	phase("Alice registers foo.txt")
 	makeFile(t, "foo.txt", plaintextFoo)
 	runBB(t, "file", "add", "--shred", "foo.txt")
-	//runBB(t, "encrypt", "--shred", "foo.txt")
+	// "file add" encrypts the file.
 	// We shred the plaintext so that we are sure that when Decrypt runs,
 	// we can verify the contents wasn't just sitting there all the time.
 	assertFileMissing(t, "foo.txt")
@@ -223,4 +222,90 @@ func TestBasic(t *testing.T) {
 	assertFileMissing(t, "foo.txt")
 	assertFileExists(t, "foo.txt.gpg")
 
+	// Chapter 2: Bob
+	// Alice adds Bob.
+	// Bob encrypts a file.
+	// Bob makes sure he can decrypt alice's file.
+	// Bob removes Alice.
+	// Alice verifies she CAN'T decrypt files.
+	// Bob adds Alice back.
+	// Alice verifies she CAN decrypt files.
+	// Bob adds an encrypted file by mistake, "bb add" and fixes it.
+	// Bob corrupts the blackbox-admins.txt file, verifies that commands fail.
+
 }
+
+// TestEvilFilenames verifies commands work with "difficult" file names
+func TestEvilFilenames(t *testing.T) {
+	if !*longTests {
+		return
+	}
+	compile(t)
+	setup(t)
+	makeHomeDir(t, "Mallory")
+
+	runBB(t, "testing_init") // Runs "git init" or equiv
+	assertFileExists(t, ".git")
+	runBB(t, "init", "yes") // Creates .blackbox or equiv
+
+	phase("Malory creates a GPG key")
+	gpgdir := makeAdmin(t, "mallory", "Mallory Evil", "mallory@example.com")
+	become(t, "mallory")
+
+	phase("Mallory enrolls as an admin")
+	runBB(t, "admin", "add", "mallory@example.com", gpgdir)
+
+	_ = os.MkdirAll("my/path/to", 0o770)
+	_ = os.Mkdir("other", 0o770)
+
+	for i, name := range []string{
+		"!important!.txt",
+		"#andpounds.txt",
+		"stars*bars?.txt",
+		"space space.txt",
+		"tab\ttab.txt",
+		"ret\rret.txt",
+		"smile😁eyes",
+		"¡que!",
+		"thé",
+		"pound£",
+		"*.go",
+		"rm -f erase ; echo done",
+		`smile☺`,
+		`dub𝓦`,
+		"my/path/to/relsecrets.txt",
+		"my/../my/path/../path/to/myother.txt",
+		"other/../my//path/../path/to/otherother.txt",
+		//"new\nnew.txt",  // \n not permitted
+		//"two\n",  // \n not permitted (yet)
+		//"four\U0010FFFF",  // Illegal byte sequence. git won't accept.
+	} {
+		phase(fmt.Sprintf("Mallory tries %02d: %q", i, name))
+		contents := "the name of this file is the talking heads... i mean, " + name
+		makeFile(t, name, contents)
+		assertFileExists(t, name)
+		assertFileMissing(t, name+".gpg")
+		assertFileContents(t, name, contents)
+
+		runBB(t, "file", "add", name)
+		assertFileMissing(t, name)
+		assertFileExists(t, name+".gpg")
+
+		runBB(t, "decrypt", name)
+		assertFileExists(t, name)
+		assertFileExists(t, name+".gpg")
+		assertFileContents(t, name, contents)
+
+		runBB(t, "encrypt", name)
+		assertFileExists(t, name)
+		assertFileExists(t, name+".gpg")
+		assertFileContents(t, name, contents)
+
+		runBB(t, "shred", name)
+		assertFileMissing(t, name)
+		assertFileExists(t, name+".gpg")
+	}
+}
+
+// More tests to implement.
+// 1. Verify that the --gid works (blackbox decrypt --gid)

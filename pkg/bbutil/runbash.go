@@ -20,7 +20,7 @@ func RunBash(command string, args ...string) error {
 	}
 	err = cmd.Wait()
 	if err != nil {
-		return fmt.Errorf("RunBash err=%w", err)
+		return fmt.Errorf("RunBash cmd=%q err=%w", command, err)
 	}
 	return nil
 }

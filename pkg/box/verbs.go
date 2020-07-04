@@ -32,7 +32,7 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 		return fmt.Errorf("Admin %v already an admin", nom)
 	}
 
-	fmt.Printf("ADMIN ADD rbd=%q\n", bx.RepoBaseDir)
+	bx.logDebug.Printf("ADMIN ADD rbd=%q\n", bx.RepoBaseDir)
 	changedFiles, err := bx.Crypter.AddNewKey(nom, bx.RepoBaseDir, sdir, bx.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
@@ -232,6 +232,7 @@ func (bx *Box) Encrypt(names []string, shred bool) error {
 
 func encryptMany(bx *Box, names []string, shred bool) error {
 	var enames []string
+	bx.logErr.Printf("EncryptMany = %q\n", names)
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
@@ -242,6 +243,7 @@ func encryptMany(bx *Box, names []string, shred bool) error {
 			bx.logErr.Printf("Skipping. Plaintext does not exist: %q", name)
 			continue
 		}
+		bx.logErr.Printf("EncryptMany Crypt = %q\n", name)
 		ename, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
 			bx.logErr.Printf("Failed to encrypt %q: %v", name, err)
@@ -288,6 +290,13 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 	}
 	if err := anyGpg(names); err != nil {
 		return err
+	}
+
+	// Check for newlines
+	for _, n := range names {
+		if strings.ContainsAny(n, "\n") {
+			return fmt.Errorf("file %q contains a newlineregistered", n)
+		}
 	}
 
 	// Check for duplicates.
@@ -354,16 +363,13 @@ func (bx *Box) Info() error {
 
 	err := bx.getFiles()
 	if err != nil {
-		bx.logErr.Printf("Info: %v", err)
+		bx.logErr.Printf("Info getFiles: %v", err)
 	}
 
 	err = bx.getAdmins()
 	if err != nil {
-		bx.logErr.Printf("Info: %v", err)
+		bx.logErr.Printf("Info getAdmins: %v", err)
 	}
-
-	//fmt.Printf("bx.Admins=%q\n", bx.Admins)
-	//fmt.Printf("bx.Files=%q\n", bx.Files)
 
 	fmt.Println("BLACKBOX:")
 	fmt.Printf("           Team: %q\n", bx.Team)

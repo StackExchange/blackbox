@@ -23,10 +23,7 @@ func (list *List) Add(message string, repobasedir string, files []string) {
 		dir:     repobasedir,
 		files:   files,
 	}
-	//o := len(list.items)
 	list.items = append(list.items, item)
-	//n := len(list.items)
-	//fmt.Printf("LIST=%v (%v) ADD o=%v n=%v\n", list, list.items, o, n)
 }
 
 func sameDirs(l *List) bool {
@@ -53,7 +50,7 @@ func (list *List) Flush(
 		for _, fut := range list.items {
 			err := fadd(fut.files)
 			if err != nil {
-				return fmt.Errorf("add files (%q) failed: %w", fut.files, err)
+				return fmt.Errorf("add files1 (%q) failed: %w", fut.files, err)
 			}
 			err = fcommit([]string{fut.message}, fut.dir, fut.files)
 			if err != nil {
@@ -69,7 +66,7 @@ func (list *List) Flush(
 	for _, fut := range list.items {
 		err := fadd(fut.files)
 		if err != nil {
-			return fmt.Errorf("add files (%q) failed: %w", fut.files, err)
+			return fmt.Errorf("add files2 (%q) failed: %w", fut.files, err)
 		}
 		m = append(m, fut.message)
 		f = append(f, fut.files...)

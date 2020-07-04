@@ -202,7 +202,7 @@ func (dirty Dubious) redactHelper() (string, bool) {
 	}
 
 	if needsQuote {
-		return "'" + b.String() + "'", redacted
+		return `"` + b.String() + `"`, redacted
 	}
 
 	return b.String(), redacted
@@ -220,7 +220,7 @@ func (dirty Dubious) String() string {
 	b.Grow(len(dirty) + 2)
 
 	level := Unknown
-	unicode := false
+	//unicode := false
 	for _, r := range dirty {
 		if r < 128 {
 			level = max(level, tab[r].level)
@@ -228,7 +228,7 @@ func (dirty Dubious) String() string {
 		} else {
 			level = max(level, DoubleQuote)
 			b.WriteString(escapeRune(r))
-			unicode = true
+			//unicode = true
 		}
 	}
 	s := b.String()
@@ -241,10 +241,7 @@ func (dirty Dubious) String() string {
 		// quote itself, which must be replaced with: '"'"'
 		return "'" + strings.Join(strings.Split(s, "'"), `'"'"'`) + "'"
 	case DoubleQuote:
-		if unicode {
-			return "$(printf '" + s + "')"
-		}
-		return `"` + s + `"`
+		return `$(printf '%q' '` + s + `')`
 	default:
 	}
 	// should not happen

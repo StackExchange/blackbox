@@ -218,13 +218,19 @@ func PrettyCommitMessage(verb string, files []string) string {
 	}
 
 	// Redact the names.
+	var rfiles []string
 	for i := range files {
-		files[i] = tainedname.New(files[i]).Redact()
+		rfiles = append(rfiles, tainedname.New(files[i]).Redact())
 	}
 
-	if len(files) <= 2 || len(strings.Join(files, " ")) < 50 {
-		return verb + ": " + strings.Join(files, " ")
+	if len(rfiles) <= 2 || len(strings.Join(rfiles, " ")) < 50 {
+		return verb + ": " + strings.Join(rfiles, " ")
 	}
 
-	return verb + ": " + strings.Join(files[:3], " ") + " ..." + "    " + strings.Join(files, "\n    ") + "\n"
+	return (verb + ": " +
+		strings.Join(rfiles[:3], " ") +
+		" ..." +
+		"    " +
+		strings.Join(rfiles, "\n    ") +
+		"\n")
 }

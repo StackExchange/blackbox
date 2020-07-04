@@ -100,6 +100,8 @@ func (crypt CrypterHandle) Cat(filename string) ([]byte, error) {
 
 // Encrypt name, overwriting name+".gpg"
 func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []string) (string, error) {
+	var err error
+
 	crypt.logDebug.Printf("Encrypt(%q, %d, %q)", filename, umask, receivers)
 	encrypted := filename + ".gpg"
 	a := []string{
@@ -112,11 +114,13 @@ func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []strin
 	for _, f := range receivers {
 		a = append(a, "-r", f)
 	}
+	a = append(a, "--encrypt")
 	a = append(a, filename)
+	//err = bbutil.RunBash("ls", "-la")
 
 	oldumask := syscall.Umask(umask)
 	crypt.logDebug.Printf("Args = %q", a)
-	err := bbutil.RunBash(crypt.GPGCmd, a...)
+	err = bbutil.RunBash(crypt.GPGCmd, a...)
 	syscall.Umask(oldumask)
 
 	return encrypted, err
@@ -160,7 +164,7 @@ func (crypt CrypterHandle) AddNewKey(keyname, repobasedir, sourcedir, destdir st
 	// Prefix each file with the relative path to it.
 	prefix, err := filepath.Rel(repobasedir, destdir)
 	if err != nil {
-		fmt.Printf("FAIL (%v) (%v) (%v)\n", repobasedir, destdir, err)
+		//fmt.Printf("FAIL (%v) (%v) (%v)\n", repobasedir, destdir, err)
 		prefix = destdir
 	}
 	for _, file := range []string{"pubring.gpg", "pubring.kbx", "trustdb.gpg"} {
