@@ -19,10 +19,9 @@ func init() {
 
 // VcsHandle is the handle
 type VcsHandle struct {
-	repoRoot     string // Abs or Rel path to the repo root
-	commitTitle  string
-	toCommit     *commitlater.List // List of future commits
-	commitHeader bool              // Has the "NEXT STEPS" header been printed?
+	commitTitle         string
+	commitHeaderPrinted bool              // Has the "NEXT STEPS" header been printed?
+	toCommit            *commitlater.List // List of future commits
 }
 
 func newGit() (vcs.Vcs, error) {
@@ -53,11 +52,6 @@ func (v VcsHandle) Discover() (bool, string) {
 	return err == nil, out
 }
 
-//// SetRepoRoot informs the Vcs of the VCS root.
-//func (v *VcsHandle) SetRepoRoot(dir string) {
-//	v.repoRoot = dir
-//}
-
 // SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
 func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 	seen := make(map[string]bool)
@@ -77,15 +71,15 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 		seen[af] = true
 	}
 
-	var keys []string
+	var changedfiles []string
 	for k := range seen {
-		keys = append(keys, k)
+		changedfiles = append(changedfiles, k)
 	}
 
 	v.NeedsCommit(
 		"set gitattr=UNIX "+tainedname.RedactList(files),
 		repobasedir,
-		keys,
+		changedfiles,
 	)
 
 	return nil
@@ -209,10 +203,10 @@ func (v VcsHandle) FlushCommits() error {
 
 // suggestCommit tells the user what commits are needed.
 func (v *VcsHandle) suggestCommit(messages []string, repobasedir string, files []string) error {
-	if !v.commitHeader {
+	if !v.commitHeaderPrinted {
 		fmt.Printf("NEXT STEP: You need to manually check these in:\n")
 	}
-	v.commitHeader = true
+	v.commitHeaderPrinted = true
 
 	fmt.Print(`     git commit -m'`, strings.Join(messages, `' -m'`)+`'`)
 	for _, file := range files {
