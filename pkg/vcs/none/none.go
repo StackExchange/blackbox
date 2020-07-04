@@ -15,6 +15,7 @@ func init() {
 
 // VcsHandle is
 type VcsHandle struct {
+	repoRoot string
 }
 
 func newNone() (vcs.Vcs, error) {
@@ -26,10 +27,15 @@ func (v VcsHandle) Name() string {
 	return pluginName
 }
 
-// Discover returns true
-func (v VcsHandle) Discover(repobasedir string) bool {
-	return true
+// Discover returns true if we are a repo of this type; along with the Abs path to the repo root (or "" if we don't know).
+func (v VcsHandle) Discover() (bool, string) {
+	return true, "" // We don't know the root.
 }
+
+//// SetRepoRoot informs the Vcs of the VCS root.
+//func (v *VcsHandle) SetRepoRoot(dir string) {
+//	v.repoRoot = dir
+//}
 
 // SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
 func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {

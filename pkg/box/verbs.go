@@ -33,7 +33,7 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 	}
 
 	fmt.Printf("ADMIN ADD rbd=%q\n", bx.RepoBaseDir)
-	changedFiles, err := bx.Crypter.AddNewKey(nom, bx.RepoBaseDir, sdir, bx.ConfigDir)
+	changedFiles, err := bx.Crypter.AddNewKey(nom, bx.RepoBaseDir, sdir, bx.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("AdminAdd failed AddNewKey: %v", err)
 	}
@@ -41,7 +41,7 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 	// TODO(tlim): Try the json file.
 
 	// Try the legacy file:
-	fn := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
+	fn := filepath.Join(bx.ConfigPath, "blackbox-admins.txt")
 	bx.logDebug.Printf("Admins file: %q", fn)
 	err = bbutil.AddLinesToSortedFile(fn, nom)
 	if err != nil {
@@ -310,7 +310,7 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 	// TODO(tlim): Try the json file.
 
 	// Try the legacy file:
-	fn := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
+	fn := filepath.Join(bx.ConfigPath, "blackbox-files.txt")
 	bx.logDebug.Printf("Files file: %q", fn)
 	err = bbutil.AddLinesToSortedFile(fn, names...)
 	if err != nil {
@@ -327,7 +327,7 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 	bx.Vcs.NeedsCommit(
 		PrettyCommitMessage("ADDING TO BLACKBOX", names),
 		bx.RepoBaseDir,
-		append([]string{filepath.Join(bx.ConfigDirRel, "blackbox-files.txt")}, needsCommit...),
+		append([]string{filepath.Join(bx.ConfigPath, "blackbox-files.txt")}, needsCommit...),
 	)
 	return nil
 }
@@ -368,9 +368,8 @@ func (bx *Box) Info() error {
 	fmt.Println("BLACKBOX:")
 	fmt.Printf("           Team: %q\n", bx.Team)
 	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
-	fmt.Printf("      ConfigDir: %q\n", bx.ConfigDir)
-	fmt.Printf("   ConfigDirRel: %q\n", bx.ConfigDirRel)
-	fmt.Printf("          Umask: %O\n", bx.Umask)
+	fmt.Printf("     ConfigPath: %q\n", bx.ConfigPath)
+	fmt.Printf("          Umask: %o\n", bx.Umask)
 	fmt.Printf("        Edditor: %v\n", bx.Editor)
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
@@ -385,10 +384,10 @@ func (bx *Box) Info() error {
 
 // Init initializes a repo.
 func (bx *Box) Init(yes, vcsname string) error {
-	//fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
+	fmt.Printf("VCS root is: %q\n", bx.RepoBaseDir)
 
-	//fmt.Printf("team is: %q\n", bx.Team)
-	//fmt.Printf("configdir will be: %q\n", bx.ConfigDir)
+	fmt.Printf("team is: %q\n", bx.Team)
+	fmt.Printf("configdir will be: %q\n", bx.ConfigPath)
 
 	if yes != "yes" {
 		fmt.Printf("Enable blackbox for this %v repo? (yes/no)? ", bx.Vcs.Name())
@@ -410,18 +409,16 @@ func (bx *Box) Init(yes, vcsname string) error {
 		}
 	}
 
-	err := os.Mkdir(bx.ConfigDir, 0o750)
+	err := os.Mkdir(bx.ConfigPath, 0o750)
 	if err != nil {
 		return err
 	}
 
-	bbutil.Touch(filepath.Join(bx.ConfigDir, "blackbox-admins.txt"))
-	bbutil.Touch(filepath.Join(bx.ConfigDir, "blackbox-files.txt"))
-	bx.Vcs.SetFileTypeUnix(
-		bx.RepoBaseDir,
-		filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt"),
-		filepath.Join(bx.ConfigDirRel, "blackbox-files.txt"),
-	)
+	ba := filepath.Join(bx.ConfigPath, "blackbox-admins.txt")
+	bf := filepath.Join(bx.ConfigPath, "blackbox-files.txt")
+	bbutil.Touch(ba)
+	bbutil.Touch(bf)
+	bx.Vcs.SetFileTypeUnix(bx.RepoBaseDir, ba, bf)
 
 	bx.Vcs.IgnoreAnywhere(bx.RepoBaseDir, []string{
 		"pubring.gpg~",
@@ -429,13 +426,11 @@ func (bx *Box) Init(yes, vcsname string) error {
 		"secring.gpg",
 	})
 
-	fs := []string{
-		filepath.Join(bx.ConfigDirRel, "blackbox-admins.txt"),
-		filepath.Join(bx.ConfigDirRel, "blackbox-files.txt"),
-	}
+	fs := []string{ba, bf}
 	bx.Vcs.NeedsCommit(
 		"NEW: "+tainedname.RedactList(fs),
-		bx.RepoBaseDir, fs,
+		bx.RepoBaseDir,
+		fs,
 	)
 
 	bx.Vcs.CommitTitle("INITIALIZE BLACKBOX")
@@ -604,7 +599,7 @@ func (bx *Box) TestingInitRepo() error {
 	if err != nil {
 		return fmt.Errorf("TestingInitRepo returned: %w", err)
 	}
-	if !bx.Vcs.Discover("") {
+	if b, _ := bx.Vcs.Discover(); !b {
 		return fmt.Errorf("TestingInitRepo failed Discovery")
 	}
 	return nil

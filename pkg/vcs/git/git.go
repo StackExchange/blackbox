@@ -19,6 +19,7 @@ func init() {
 
 // VcsHandle is the handle
 type VcsHandle struct {
+	repoRoot     string // Abs or Rel path to the repo root
 	commitTitle  string
 	toCommit     *commitlater.List // List of future commits
 	commitHeader bool              // Has the "NEXT STEPS" header been printed?
@@ -34,15 +35,28 @@ func (v VcsHandle) Name() string {
 	return pluginName
 }
 
-// Discover returns false.
-func (v VcsHandle) Discover(repobasedir string) bool {
-	n := filepath.Join(repobasedir, ".git")
-	found, err := bbutil.DirExists(n)
+func ultimate(s string) int { return len(s) - 1 }
+
+// Discover returns true if we are a repo of this type; along with the Abs path to the repo root (or "" if we don't know).
+func (v VcsHandle) Discover() (bool, string) {
+	out, err := bbutil.RunBashOutputSilent("git", "rev-parse", "--show-toplevel")
 	if err != nil {
-		return false
+		return false, ""
 	}
-	return found
+	if out == "" {
+		fmt.Printf("WARNING: git rev-parse --show-toplevel has NO output??.  Seems broken.")
+		return false, ""
+	}
+	if out[ultimate(out)] == '\n' {
+		out = out[0:ultimate(out)]
+	}
+	return err == nil, out
 }
+
+//// SetRepoRoot informs the Vcs of the VCS root.
+//func (v *VcsHandle) SetRepoRoot(dir string) {
+//	v.repoRoot = dir
+//}
 
 // SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
 func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {

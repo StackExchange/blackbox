@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
 )
 
@@ -137,98 +136,37 @@ func parseGroup(userinput string) (int, error) {
 	return -1, err
 }
 
-// GenerateConfigDir calculates configdir for uninitialized
-// repos (where discovery won't work).
-// The result is an absolute path.
-// If --config is set, use that value (no matter what).
-// Otherwise use .blackbox-$team or .blackbox (if no team).
-func GenerateConfigDir(configdir, team string) (string, string) {
-
-	if configdir == "" {
-		// Normal case.
-		rel := ".blackbox"
-		if team != "" {
-			rel = ".blackbox-" + team
-		}
-		configdir, err := filepath.Abs(rel)
-		if err != nil {
-			fmt.Printf("ERROR: init says: ABS should not happen: %v\n", err)
-			os.Exit(1)
-		}
-		return configdir, rel
-	}
-
-	// User specified a configdir.  Now we can to guess what they mean.
-
-	// What's our CWD?
-	wd, err := os.Getwd()
-	if err != nil {
-		fmt.Printf("ERROR: init says: GETWD should not happen: %v\n", err)
-		os.Exit(1)
-	}
-
-	// They specified a relative path. Assume it is relative to wd.
-	if !filepath.IsAbs(configdir) {
-		// Assume they meant it is relative to PWD.
-		return wd, configdir
-	}
-
-	// This is the difficult case. The user specified an absolute path to the
-	// config directory. We probably should just error out. Let's at least make
-	// one attempt at guessing what the Rel part should be.
-	rel, err := filepath.Rel(wd, configdir)
-	if err != nil {
-		fmt.Printf("ERROR: Run init from the repo base: %v\n", err)
-		os.Exit(1)
-	}
-	return configdir, rel
-}
-
 // FindConfigDir tests various places until it finds the config dir.
 // If we can't determine the relative path, "" is returned.
-func FindConfigDir(configdir, team string) (string, string, error) {
+func FindConfigDir(reporoot, team string) (string, error) {
 
-	// if configdir is set, use it.
-	if configdir != "" {
-		logDebug.Printf("CONFIG IS SET. NOT DISCOVERING: %q\n", configdir)
-		_, err := os.Stat(configdir)
-		if err != nil {
-			return "", "", fmt.Errorf("config dir %q error: %v", configdir, err)
-		}
-		if _, err := filepath.Abs(configdir); err != nil {
-			return "", "", fmt.Errorf("config dir abs %q error: %v", configdir, err)
-		}
-		return configdir, "", nil
-	}
-
-	// Otherwise, search up the tree for the config dir.
 	candidates := []string{}
 	if team != "" {
-		candidates = append([]string{".blackbox-" + team}, candidates...)
-	} else {
-		candidates = append(candidates, ".blackbox")
+		candidates = append(candidates, ".blackbox-"+team)
 	}
+	candidates = append(candidates, ".blackbox")
 	candidates = append(candidates, "keyrings/live")
-
 	logDebug.Printf("DEBUG: candidates = %q\n", candidates)
 
-	// Prevent an infinite loop by only doing "cd .." this many times
-	maxDirLevels := 100
+	maxDirLevels := 30 // Prevent an infinite loop
 	relpath := "."
 	for i := 0; i < maxDirLevels; i++ {
 		// Does relpath contain any of our directory names?
 		for _, c := range candidates {
 			t := filepath.Join(relpath, c)
 			logDebug.Printf("Trying %q\n", t)
-			d, err := bbutil.DirExists(t)
-			if err != nil {
-				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
+			fi, err := os.Stat(t)
+			if err == nil && fi.IsDir() {
+				return t, nil
 			}
-			if d {
-				a, e := filepath.Abs(t)
-				return a, c, e
+			if err == nil {
+				return "", fmt.Errorf("path %q is not a directory: %w", t, err)
+			}
+			if !os.IsNotExist(err) {
+				return "", fmt.Errorf("dirExists access error: %w", err)
 			}
 		}
+
 		// If we are at the root, stop.
 		if abs, _ := filepath.Abs(relpath); abs == "/" {
 			break
@@ -237,7 +175,7 @@ func FindConfigDir(configdir, team string) (string, string, error) {
 		relpath = filepath.Join("..", relpath)
 	}
 
-	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
+	return "", fmt.Errorf("No .blackbox (or equiv) directory found")
 }
 
 func gpgAgentNotice() {

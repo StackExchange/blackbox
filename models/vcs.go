@@ -6,8 +6,8 @@ import "github.com/StackExchange/blackbox/v2/pkg/commitlater"
 type Vcs interface {
 	// Name returns the plug-in's canonical name.
 	Name() string
-	// Discover returns true if the cwd is a VCS of this type.
-	Discover(repobasedir string) bool
+	// Discover returns true if we are a repo of this type; along with the Abs path to the repo root (or "" if we don't know).
+	Discover() (bool, string)
 
 	// SetFileTypeUnix informs the VCS that files should maintain unix-style line endings.
 	SetFileTypeUnix(repobasedir string, files ...string) error

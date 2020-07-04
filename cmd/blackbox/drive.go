@@ -31,6 +31,14 @@ func allOrSomeFiles(c *cli.Context) error {
 	return nil
 }
 
+const roError = `This command is disabled due to --config flag being used.
+We can not determine if the flag's value is in or out of the repo, and
+Blackbox can only work on one repo at a time. If the value is inside the
+repo, and you'd like to suggest an algorithm that would let us determine that
+automatically, please file a bug. We'd love to have this work better. In the
+meanwhile, run this command without the --config flag, perhaps after cd'ing
+to the base of the repo.`
+
 // Keep these functions in alphabetical order.
 
 func cmdAdminAdd(c *cli.Context) error {
@@ -39,6 +47,9 @@ func cmdAdminAdd(c *cli.Context) error {
 			"Must specify one admin's GnuPG user-id (i.e. email address) and optionally the directory of the pubkey data (default ~/.GnuPG)")
 	}
 	bx := box.NewFromFlags(c)
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.AdminAdd(c.Args().Get(0), c.Args().Get(1))
 	if err != nil {
 		return err
@@ -63,6 +74,9 @@ func cmdAdminRemove(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one admin's GnuPG user-id (i.e. email address)")
 	}
 	bx := box.NewFromFlags(c)
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.AdminRemove(c.Args().Slice())
 	if err != nil {
 		return err
@@ -147,6 +161,9 @@ func cmdFileAdd(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.FileAdd(c.Args().Slice(), c.Bool("shred"))
 	if err != nil {
 		return err
@@ -171,6 +188,9 @@ func cmdFileRemove(c *cli.Context) error {
 		return fmt.Errorf("Must specify at least one file name")
 	}
 	bx := box.NewFromFlags(c)
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.FileRemove(c.Args().Slice())
 	if err != nil {
 		return err
@@ -195,6 +215,9 @@ func cmdInit(c *cli.Context) error {
 		return fmt.Errorf("This command takes one or two arguments")
 	}
 	bx := box.NewUninitialized(c.String("configdir"), c.String("team"))
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.Init(c.Args().First(), c.String("vcs"))
 	if err != nil {
 		return err
@@ -262,6 +285,9 @@ func testingInit(c *cli.Context) error {
 		c.String("vcs"),
 	)
 	bx := box.NewForTestingInit(c.String("vcs"))
+	if bx.ConfigRO {
+		return fmt.Errorf(roError)
+	}
 	err := bx.TestingInitRepo()
 	if err != nil {
 		return err

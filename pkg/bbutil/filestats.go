@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -144,4 +145,32 @@ func AddLinesToFile(filename string, newlines ...string) error {
 		return fmt.Errorf("AddLinesToFile can't write %q: %w", filename, err)
 	}
 	return nil
+}
+
+// FindDirInParent looks for target in CWD, or .., or ../.., etc.
+func FindDirInParent(target string) (string, error) {
+	// Prevent an infinite loop by only doing "cd .." this many times
+	maxDirLevels := 30
+	relpath := "."
+	for i := 0; i < maxDirLevels; i++ {
+		// Does relpath contain our target?
+		t := filepath.Join(relpath, target)
+		//logDebug.Printf("Trying %q\n", t)
+		_, err := os.Stat(t)
+		if err == nil {
+			return t, nil
+		}
+		if !os.IsNotExist(err) {
+			return "", fmt.Errorf("stat failed FindDirInParent (%q): %w", t, err)
+		}
+		// Ok, it really wasn't found.
+
+		// If we are at the root, stop.
+		if abs, err := filepath.Abs(relpath); err == nil && abs == "/" {
+			break
+		}
+		// Try one directory up
+		relpath = filepath.Join("..", relpath)
+	}
+	return "", fmt.Errorf("Not found")
 }

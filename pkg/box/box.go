@@ -23,10 +23,10 @@ var logDebug *log.Logger
 // Box describes what we know about a box.
 type Box struct {
 	// Paths:
-	Team         string // Name of the team (i.e. .blackbox-$TEAM) TODO(tlim): Can this be deleted?
-	RepoBaseDir  string // Abs path to the VCS repo.
-	ConfigDir    string // Abs path to the .blackbox (or whatever) directory.
-	ConfigDirRel string // Path to the .blackbox (or whatever) directory relative to RepoBaseDir
+	Team        string // Name of the team (i.e. .blackbox-$TEAM)
+	RepoBaseDir string // Rel path to the VCS repo.
+	ConfigPath  string // Abs or Rel path to the .blackbox (or whatever) directory.
+	ConfigRO    bool   // True if we should not try to change files in ConfigPath.
 	// Settings:
 	Umask  int    // umask to set when decrypting
 	Editor string // Editor to call
@@ -57,15 +57,10 @@ const (
 
 // NewFromFlags creates a box using items from flags.  Nearly all subcommands use this.
 func NewFromFlags(c *cli.Context) *Box {
-	/*
-	 Nearly all subcommands use this.  It is used with a VCS repo
-	 that has blackbox already initialized.
 
-	 Commands need:    How we populate it:
-	    bx.Vcs:           Discovered by calling each plug-in until succeeds.
-	    bx.ConfigDir:     Is discovered.
-	    bx.RepoBaseDir:   Is discovered.
-	*/
+	// The goal of this is to create a fully-populated box (and box.Vcs)
+	// so that all subcommands have all the fields and interfaces they need
+	// to do their job.
 
 	logErr = bblog.GetErr()
 	logDebug = bblog.GetDebug(c.Bool("debug"))
@@ -78,50 +73,75 @@ func NewFromFlags(c *cli.Context) *Box {
 		logDebug: bblog.GetDebug(c.Bool("verbose")),
 	}
 
-	var err error
+	// Discover which kind of VCS is in use, and the repo root.
+	bx.Vcs, bx.RepoBaseDir = vcs.Discover()
+	// TODO: Tell the Vcs about bx.RepoBaseDir?
 
-	// Assume we are chdir'ed to the base of the repo.
-	// TODO(tlim): In the future, we'll want the utilities to work from anywhere
-	// in the repo, but this is fine for now.
-	bx.RepoBaseDir, err = os.Getwd()
-	if err != nil {
-		bx.RepoBaseDir = "."
-	}
-
-	// Discover which kind of VCS is in use.
-	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
-
-	// Pick a crypto backend (GnuPG, go-openpgp, etc.)
+	// Discover the crypto backend (GnuPG, go-openpgp, etc.)
 	bx.Crypter = crypters.SearchByName(c.String("crypto"), c.Bool("debug"))
 	if bx.Crypter == nil {
 		fmt.Printf("ERROR!  No CRYPTER found! Please set --crypto correctly or use the damn default\n")
 		os.Exit(1)
 	}
 
-	// Are we using .blackbox or what?
-	bx.ConfigDir, bx.ConfigDirRel, err = FindConfigDir(c.String("config"), c.String("team"))
-	if err != nil {
-		return nil
+	// Find the .blackbox (or equiv.) directory.
+	var err error
+	configFlag := c.String("config")
+	if configFlag == "" {
+		// Normal path. Flag not set, so we discover the path.
+		bx.ConfigPath, err = FindConfigDir(bx.RepoBaseDir, c.String("team"))
+		if err != nil {
+			fmt.Printf("Can't find .blackbox or equiv. Have you run init?\n")
+			os.Exit(1)
+		}
+	} else {
+		// Flag is set. Better make sure it is valid.
+		if !filepath.IsAbs(configFlag) {
+			fmt.Printf("config flag value is a relative path. Too risky. Exiting.\n")
+			os.Exit(1)
+			// TODO(tlim): We could take the filepath.Abs(config) but until someone
+			// shows a use-case, just fail.
+		}
+		bx.ConfigPath = configFlag
+		bx.ConfigRO = true // External configs treated as read-only.
+		// TODO(tlim): We could get fancy here and set ConfigReadOnly=true only
+		// if we are sure configFlag is not within bx.RepoBaseDir.
 	}
 
 	return bx
 }
 
 // NewUninitialized creates a box in a pre-init situation.
-func NewUninitialized(configdir, team string) *Box {
+func NewUninitialized(configflag, team string) *Box {
 	/*
 		   This is for "blackbox init" (used before ".blackbox*" exists)
 
 			 Init needs:       How we populate it:
 			   bx.Vcs:           Discovered by calling each plug-in until succeeds.
 			   bx.ConfigDir:     Generated algorithmically (it doesn't exist yet).
-				 bx.RepoBaseDir:   Generated algorithmically (it doesn't exist yet).
+			   bx.RepoBaseDir:   Generated algorithmically (it doesn't exist yet).
 	*/
 	bx := &Box{
 		Team: team,
 	}
-	bx.Vcs = vcs.Discover(bx.RepoBaseDir)
-	bx.ConfigDir, bx.ConfigDirRel = GenerateConfigDir(configdir, team)
+	bx.Vcs, bx.RepoBaseDir = vcs.Discover()
+	if configflag == "" {
+		rel := ".blackbox"
+		if team != "" {
+			rel = ".blackbox-" + team
+		}
+		bx.ConfigPath = filepath.Join(bx.RepoBaseDir, rel)
+	} else {
+		// Wait. The user is using the --config flag on a repo that
+		// hasn't been created yet?  I hope this works!
+		fmt.Printf("ERROR: You can not set --config when initializing a new repo.  Please run this command from within a repo, with no --config flag.  Or, file a bug explaining your use caseyour use-case. Exiting!\n")
+		os.Exit(1)
+		// TODO(tlim): We could get fancy here and query the Vcs to see if the
+		// path would fall within the repo, figure out the relative path, and
+		// use that value. (and error if configflag is not within the repo).
+		// That would be error prone and would only help the zero users that
+		// ever see the above error message.
+	}
 	return bx
 }
 
@@ -130,9 +150,7 @@ func NewForTestingInit(vcsname string) *Box {
 	/*
 
 		This is for "blackbox test_init" (secret command used in integration tests; when nothing exists)
-
 		TestingInitRepo only uses bx.Vcs, so that's all we set.
-
 		Populates bx.Vcs by finding the provider named vcsname.
 	*/
 	bx := &Box{}
@@ -154,44 +172,6 @@ func NewForTestingInit(vcsname string) *Box {
 	return bx
 }
 
-// func findBaseAndConfigDir() (repodir, configdir string, err error) {
-
-// 	// Otherwise, search up the tree for the config dir.
-
-// 	candidates := []string{}
-// 	if team := os.Getenv("BLACKBOX_TEAM"); team != "" {
-// 		candidates = append([]string{".blackbox-" + team}, candidates...)
-// 	}
-// 	candidates = append(candidates, ".blackbox")
-// 	candidates = append(candidates, "keyrings/live")
-
-// 	// Prevent an infinite loop by only doing "cd .." this many times
-// 	maxDirLevels := 100
-
-// 	relpath := ""
-// 	for i := 0; i < maxDirLevels; i++ {
-// 		// Does relpath contain any of our directory names?
-// 		for _, c := range candidates {
-// 			t := filepath.Join(relpath, c)
-// 			d, err := bbutil.DirExists(t)
-// 			if err != nil {
-// 				return "", "", fmt.Errorf("dirExists(%q) failed: %v", t, err)
-// 			}
-// 			if d {
-// 				return relpath, t, nil
-// 			}
-// 		}
-// 		// If we are at the root, stop.
-// 		if abs, _ := filepath.Abs(relpath); abs == "/" {
-// 			break
-// 		}
-// 		// Try one directory up
-// 		relpath = filepath.Join("..", relpath)
-// 	}
-
-// 	return "", "", fmt.Errorf("No .blackbox directory found in cwd or above")
-// }
-
 func (bx *Box) getAdmins() error {
 	// Memoized
 	if len(bx.Admins) != 0 {
@@ -201,7 +181,7 @@ func (bx *Box) getAdmins() error {
 	// TODO(tlim): Try the json file.
 
 	// Try the legacy file:
-	fn := filepath.Join(bx.ConfigDir, "blackbox-admins.txt")
+	fn := filepath.Join(bx.ConfigPath, "blackbox-admins.txt")
 	bx.logDebug.Printf("Admins file: %q", fn)
 	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {
@@ -224,7 +204,7 @@ func (bx *Box) getFiles() error {
 	// TODO(tlim): Try the json file.
 
 	// Try the legacy file:
-	fn := filepath.Join(bx.ConfigDir, "blackbox-files.txt")
+	fn := filepath.Join(bx.ConfigPath, "blackbox-files.txt")
 	bx.logDebug.Printf("Files file: %q", fn)
 	a, err := bbutil.ReadFileLines(fn)
 	if err != nil {

@@ -1,7 +1,11 @@
 package vcs
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/StackExchange/blackbox/v2/models"
 )
@@ -27,17 +31,40 @@ var Catalog []*Item
 // Discover polls the VCS plug-ins to determine the VCS of directory.
 // The first to succeed is returned.
 // It never returns nil, since "NONE" is always valid.
-func Discover(dir string) Vcs {
+func Discover() (Vcs, string) {
 	for _, v := range Catalog {
 		h, err := v.New()
 		if err != nil {
-			return nil // No idea how that would happen.
+			return nil, "" // No idea how that would happen.
 		}
-		if h.Discover(dir) {
-			return h
+		if b, repodir := h.Discover(); b {
+
+			// Try to find the rel path from CWD to RepoBase
+			wd, err := os.Getwd()
+			if err != nil {
+				fmt.Printf("ERROR: Can not determine cwd! Failing!\n")
+				os.Exit(1)
+			}
+			//fmt.Printf("DISCCOVER: WD=%q REPO=%q\n", wd, repodir)
+			if repodir != wd && strings.HasSuffix(repodir, wd) {
+				// This is a terrible hack.  We're basically guessing
+				// at the filesystem layout.  That said, it works on macOS.
+				// TODO(tlim): Abstract this out into a separate function
+				// so we can do integration tests on it (to know if it fails on
+				// a particular operating system.)
+				repodir = wd
+			}
+			r, err := filepath.Rel(wd, repodir)
+			if err != nil {
+				// Wait, we're not relative to each other? Give up and
+				// just return the abs repodir.
+				return h, repodir
+			}
+			return h, r
 		}
 	}
-	return nil
+	// This can't happen. If it does, we'll panic and that's ok.
+	return nil, ""
 }
 
 // Register a new VCS.

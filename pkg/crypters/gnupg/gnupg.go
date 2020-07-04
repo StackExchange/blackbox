@@ -148,6 +148,7 @@ func (crypt CrypterHandle) AddNewKey(keyname, repobasedir, sourcedir, destdir st
 		"--import",
 	}
 	crypt.logDebug.Printf("ADDNEWKEY: Importing: gpg %v\n", args)
+	// fmt.Printf("DEBUG: crypter ADD %q", args)
 	err = bbutil.RunBashInput(pubkey, "gpg", args...)
 	if err != nil {
 		return nil, fmt.Errorf("AddNewKey failed: %w", err)

@@ -37,6 +37,18 @@ func RunBashOutput(command string, args ...string) (string, error) {
 	return string(out), err
 }
 
+// RunBashOutputSilent runs a Bash command, captures output, discards stderr.
+func RunBashOutputSilent(command string, args ...string) (string, error) {
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
+	// Leave cmd.Stderr unmodified and stderr is discarded.
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("RunBashOutputSilent err=%w", err)
+	}
+	return string(out), err
+}
+
 // RunBashInput runs a Bash command, sends input on stdin.
 func RunBashInput(input string, command string, args ...string) error {
 
