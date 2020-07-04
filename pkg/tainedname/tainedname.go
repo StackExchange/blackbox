@@ -150,26 +150,26 @@ func oct() func(r rune) string {
 func RedactList(names []string) string {
 	var msgs []string
 	for _, f := range names {
-		msgs = append(msgs, New(f).RedactUnsafeWithComment())
+		msgs = append(msgs, New(f).Redact())
 	}
 	return strings.Join(msgs, " ")
 }
 
-// RedactUnsafeWithComment is like RedactUnsafe but appends
+// Redact is like redactHelper but appends
 // "(redacted)" when appropriate.
-func (dirty Dubious) RedactUnsafeWithComment() string {
-	s, b := dirty.RedactUnsafe()
+func (dirty Dubious) Redact() string {
+	s, b := dirty.redactHelper()
 	if b {
 		return "\"" + s + "\"(redacted)"
 	}
 	return s
 }
 
-// RedactUnsafe redacts any "bad" chars, returns true if anything
+// redactHelper redacts any "bad" chars, returns true if anything
 // redacted.  The resulting string should be human readable and
 // pastable (for example, something to include in a git commit
 // message) but not usable in os.Open().
-func (dirty Dubious) RedactUnsafe() (string, bool) {
+func (dirty Dubious) redactHelper() (string, bool) {
 	if dirty == "" {
 		return `""`, false
 	}

@@ -21,7 +21,7 @@ func TestRedactUnsafe(t *testing.T) {
 		{"dub\U0001D4E6", `dub𝓦`},
 		{"four\U0010FFFF", `fourXR`},
 	} {
-		g, b := New(test.data).RedactUnsafe()
+		g, b := New(test.data).redactHelper()
 		if b {
 			g = g + "R"
 		}

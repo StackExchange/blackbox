@@ -219,7 +219,7 @@ func PrettyCommitMessage(verb string, files []string) string {
 
 	// Redact the names.
 	for i := range files {
-		files[i] = tainedname.New(files[i]).RedactUnsafeWithComment()
+		files[i] = tainedname.New(files[i]).Redact()
 	}
 
 	if len(files) <= 2 || len(strings.Join(files, " ")) < 50 {
