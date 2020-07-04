@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -324,18 +325,20 @@ func makeAdmin(t *testing.T, name, fullname, email string) string {
 	// GNUPGHOME=u.dir
 	// echo 'pinentry-program' "$(which pinentry-tty)" >> "$GNUPGHOME/gpg-agent.conf"
 	os.Setenv("GNUPGHOME", u.dir)
-	ai, err := bbutil.RunBashOutput("gpg-agent", "--homedir", u.dir, "--daemon")
-	// NB(tlim): It should return something like:
-	//   `GPG_AGENT_INFO=/home/tlimoncelli/.gnupg/S.gpg-agent:18548:1; export GPG_AGENT_INFO;`
-	if err != nil {
-		//t.Fatal(err)
-	}
-	if strings.HasPrefix(ai, "GPG_AGENT_INFO=") {
-		u.agentInfo = ai[15:strings.Index(ai, ";")]
-		os.Setenv("GPG_AGENT_INFO", u.agentInfo)
-		fmt.Printf("GPG_AGENT_INFO=%q (was %q)\n", ai, u.agentInfo)
-	} else {
-		fmt.Println("WARNING: gpg-agent didn't output what we expected. Assumed dead.")
+	if runtime.GOOS != "darwin" {
+		ai, err := bbutil.RunBashOutput("gpg-agent", "--homedir", u.dir, "--daemon")
+		// NB(tlim): It should return something like:
+		//   `GPG_AGENT_INFO=/home/tlimoncelli/.gnupg/S.gpg-agent:18548:1; export GPG_AGENT_INFO;`
+		if err != nil {
+			//t.Fatal(err)
+		}
+		if strings.HasPrefix(ai, "GPG_AGENT_INFO=") {
+			u.agentInfo = ai[15:strings.Index(ai, ";")]
+			os.Setenv("GPG_AGENT_INFO", u.agentInfo)
+			fmt.Printf("GPG_AGENT_INFO=%q (was %q)\n", ai, u.agentInfo)
+		} else {
+			fmt.Println("WARNING: gpg-agent didn't output what we expected. Assumed dead.")
+		}
 	}
 
 	os.Setenv("GNUPGHOME", u.dir)
