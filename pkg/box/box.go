@@ -30,6 +30,7 @@ type Box struct {
 	// Settings:
 	Umask  int    // umask to set when decrypting
 	Editor string // Editor to call
+	Debug  bool   // Are we in debug logging mode?
 	// Cache of data gathered from .blackbox:
 	Admins   []string        // If non-empty, the list of admins.
 	Files    []string        // If non-empty, the list of files.
@@ -70,7 +71,8 @@ func NewFromFlags(c *cli.Context) *Box {
 		Editor:   c.String("editor"),
 		Team:     c.String("team"),
 		logErr:   bblog.GetErr(),
-		logDebug: bblog.GetDebug(c.Bool("verbose")),
+		logDebug: bblog.GetDebug(c.Bool("debug")),
+		Debug:    c.Bool("debug"),
 	}
 
 	// Discover which kind of VCS is in use, and the repo root.
@@ -89,7 +91,7 @@ func NewFromFlags(c *cli.Context) *Box {
 	if configFlag == "" {
 		// Normal path. Flag not set, so we discover the path.
 		bx.ConfigPath, err = FindConfigDir(bx.RepoBaseDir, c.String("team"))
-		if err != nil {
+		if err != nil && c.Command.Name != "info" {
 			fmt.Printf("Can't find .blackbox or equiv. Have you run init?\n")
 			os.Exit(1)
 		}
@@ -111,23 +113,27 @@ func NewFromFlags(c *cli.Context) *Box {
 }
 
 // NewUninitialized creates a box in a pre-init situation.
-func NewUninitialized(configflag, team string) *Box {
+func NewUninitialized(c *cli.Context) *Box {
 	/*
-		   This is for "blackbox init" (used before ".blackbox*" exists)
+		This is for "blackbox init" (used before ".blackbox*" exists)
 
-			 Init needs:       How we populate it:
-			   bx.Vcs:           Discovered by calling each plug-in until succeeds.
-			   bx.ConfigDir:     Generated algorithmically (it doesn't exist yet).
-			   bx.RepoBaseDir:   Generated algorithmically (it doesn't exist yet).
+		Init needs:       How we populate it:
+		bx.Vcs:           Discovered by calling each plug-in until succeeds.
+		bx.ConfigDir:     Generated algorithmically (it doesn't exist yet).
 	*/
 	bx := &Box{
-		Team: team,
+		Umask:    c.Int("umask"),
+		Editor:   c.String("editor"),
+		Team:     c.String("team"),
+		logErr:   bblog.GetErr(),
+		logDebug: bblog.GetDebug(c.Bool("debug")),
+		Debug:    c.Bool("debug"),
 	}
 	bx.Vcs, bx.RepoBaseDir = vcs.Discover()
-	if configflag == "" {
+	if c.String("configdir") == "" {
 		rel := ".blackbox"
-		if team != "" {
-			rel = ".blackbox-" + team
+		if bx.Team != "" {
+			rel = ".blackbox-" + bx.Team
 		}
 		bx.ConfigPath = filepath.Join(bx.RepoBaseDir, rel)
 	} else {

@@ -122,7 +122,9 @@ func (bx *Box) Decrypt(names []string, overwrite bool, bulkpause bool, setgroup 
 		if err != nil {
 			return fmt.Errorf("Invalid group name or gid: %w", err)
 		}
+		groupchange = true
 	}
+	bx.logDebug.Printf("DECRYPT GROUP %q %v,%v\n", setgroup, groupchange, gid)
 
 	if len(names) == 0 {
 		names = bx.Files
@@ -384,6 +386,7 @@ func (bx *Box) Info() error {
 	fmt.Printf("        VcsName: %q\n", bx.Vcs.Name())
 	fmt.Printf("        Crypter: %v\n", bx.Crypter)
 	fmt.Printf("    CrypterName: %q\n", bx.Crypter.Name())
+	fmt.Printf("          Debug: %v\n", bx.Debug)
 
 	return nil
 }

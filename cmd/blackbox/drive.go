@@ -214,7 +214,7 @@ func cmdInit(c *cli.Context) error {
 	if c.Args().Len() > 1 {
 		return fmt.Errorf("This command takes one or two arguments")
 	}
-	bx := box.NewUninitialized(c.String("configdir"), c.String("team"))
+	bx := box.NewUninitialized(c)
 	if bx.ConfigRO {
 		return fmt.Errorf(roError)
 	}

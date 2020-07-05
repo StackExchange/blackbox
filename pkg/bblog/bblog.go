@@ -14,13 +14,13 @@ var logErr *log.Logger
 var logDebug *log.Logger
 func init() {
   logErr = bblog.GetErr()
-  logDebug = bblog.GetDebug(verbose)
+  logDebug = bblog.GetDebug(debug)
 }
 
 Or in a function:
 
   logErr := bblog.GetErr()
-  logDebug := bblog.GetDebug(verbose)
+  logDebug := bblog.GetDebug(debug)
 	logDebug.Printf("whatever: %v", err)
 
 */

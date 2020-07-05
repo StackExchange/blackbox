@@ -127,7 +127,7 @@ func parseGroup(userinput string) (int, error) {
 
 	// If not a number, look it up by name.
 	g, err := user.LookupGroup(userinput)
-	if err != nil {
+	if err == nil {
 		i, err = strconv.Atoi(g.Gid)
 		return i, nil
 	}
