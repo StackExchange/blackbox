@@ -32,5 +32,5 @@ your code as well as the new test. This way the confidence tests
 accumulate as the system grows as we know future changes don't break
 old features.
 
-Note: More info about compatibility are on the [Compatibility Page](compatibility)
+Note: More info about compatibility are on the [Compatibility Page](compatibility.md)
 

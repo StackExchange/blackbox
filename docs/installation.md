@@ -13,5 +13,5 @@ git clone FILL IN
 Future:  We will have RPM, DEB, Chocolately packages.
 
 
-Next step: [Enable on a repo](enable-repo)
+Next step: [Enable on a repo](enable-repo.md)
 

@@ -15,7 +15,7 @@ GnuPG tips
 * Solution: Usually means you forgot to re-encrypt the file with the new key.
 
 * Message: `Error: can't re-encrypt because a key has expired.`
-* Solution: A user's key has expired and can't be used to encrypt any more. Follow the [Replace expired keys](expired-keys) page.
+* Solution: A user's key has expired and can't be used to encrypt any more. Follow the [Replace expired keys](expired-keys.md) page.
 
 FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the configuration stored?"
 
