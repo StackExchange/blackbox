@@ -1,6 +1,6 @@
-package tainedname
+package makesafe
 
-// tainedname -- A string with a Stringer that is shell safe.
+// untaint -- A string with a Stringer that is shell safe.
 
 // This goes to great lengths to make sure the String() is pastable.
 // Whitespace and shell "special chars" are handled as expected.
@@ -17,14 +17,6 @@ import (
 	"strings"
 	"unicode"
 )
-
-// Dubious is a string that can't be trusted to work on a shell line without escaping.
-type Dubious string
-
-// New creates a dubious string.
-func New(s string) Dubious {
-	return Dubious(s)
-}
 
 type protection int
 
@@ -146,52 +138,42 @@ func oct() func(r rune) string {
 	return func(r rune) string { return fmt.Sprintf(`\%03o`, r) }
 }
 
-// RedactList returns a string of redacted names.
-func RedactList(names []string) string {
-	var msgs []string
-	for _, f := range names {
-		msgs = append(msgs, New(f).Redact())
-	}
-	return strings.Join(msgs, " ")
-}
+// Redact returns a string that can be used in a shell single-quoted
+// string. It may not be an exact representation, but it is safe
+// to include on a command line.
+//
+// Redacted chars are changed to "X".
+// If anything is redacted, the string is surounded by double quotes
+// ("air quotes") and the string "(redacted)" is added to the end.
+// If nothing is redacted, but it contains spaces, it is surrounded
+// by double quotes.
+//
+// Example: `s` -> `s`
+// Example: `space cadet.txt` -> `"space cadet.txt"`
+// Example: `drink a \t soda` -> `"drink a X soda"(redacted)`
+// Example: `smile☺` -> `"smile☺`
+func Redact(tainted string) string {
 
-// Redact is like redactHelper but appends
-// "(redacted)" when appropriate.
-func (dirty Dubious) Redact() string {
-	s, b := dirty.redactHelper()
-	if b {
-		return "\"" + s + "\"(redacted)"
-	}
-	return s
-}
-
-// redactHelper redacts any "bad" chars, returns true if anything
-// redacted.  The resulting string should be human readable and
-// pastable (for example, something to include in a git commit
-// message) but not usable in os.Open().
-func (dirty Dubious) redactHelper() (string, bool) {
-	if dirty == "" {
-		return `""`, false
+	if tainted == "" {
+		return `""`
 	}
 
 	var b strings.Builder
-	b.Grow(len(dirty) + 2)
+	b.Grow(len(tainted) + 10)
 
-	needsQuote := false
 	redacted := false
+	needsQuote := false
 
-	for _, r := range dirty {
+	for _, r := range tainted {
 		if r == ' ' {
 			b.WriteRune(r)
 			needsQuote = true
 		} else if r == '\'' {
-			b.WriteRune(r)
-			needsQuote = true
-		} else if r == '"' {
-			b.WriteRune(r)
-			needsQuote = true
-		} else if r == '\'' {
 			b.WriteRune('X')
+			redacted = true
+		} else if r == '"' {
+			b.WriteRune('\\')
+			b.WriteRune(r)
 			needsQuote = true
 		} else if unicode.IsPrint(r) {
 			b.WriteRune(r)
@@ -201,48 +183,57 @@ func (dirty Dubious) redactHelper() (string, bool) {
 		}
 	}
 
-	if needsQuote {
-		return `"` + b.String() + `"`, redacted
+	if redacted {
+		return `"` + b.String() + `"(redacted)`
 	}
-
-	return b.String(), redacted
+	if needsQuote {
+		return `"` + b.String() + `"`
+	}
+	return tainted
 }
 
-// String returns a version of the dirty string that is absolutely
-// safe to paste into a bash command line, and will result in the
-// correct filename being interpreted by bash.
-func (dirty Dubious) String() string {
-	if dirty == "" {
+// RedactMany returns the list after processing each element with Redact().
+func RedactMany(items []string) []string {
+	var r []string
+	for _, n := range items {
+		r = append(r, Redact(n))
+	}
+	return r
+}
+
+// Shell returns the string formatted so that it is safe to be pasted
+// into a command line to produce the desired filename as an argument
+// to the command.
+func Shell(tainted string) string {
+	if tainted == "" {
 		return `""`
 	}
 
 	var b strings.Builder
-	b.Grow(len(dirty) + 2)
+	b.Grow(len(tainted) + 10)
 
 	level := Unknown
-	//unicode := false
-	for _, r := range dirty {
+	for _, r := range tainted {
 		if r < 128 {
 			level = max(level, tab[r].level)
 			b.WriteString(tab[r].fn(r))
 		} else {
 			level = max(level, DoubleQuote)
 			b.WriteString(escapeRune(r))
-			//unicode = true
 		}
 	}
 	s := b.String()
 
-	switch level {
-	case None:
-		return string(dirty)
-	case SingleQuote:
+	if level == None {
+		return tainted
+	} else if level == SingleQuote {
 		// A single quoted string accepts all chars except the single
 		// quote itself, which must be replaced with: '"'"'
 		return "'" + strings.Join(strings.Split(s, "'"), `'"'"'`) + "'"
-	case DoubleQuote:
+	} else if level == DoubleQuote {
+		// A double-quoted string may include \xxx escapes and other
+		// things. Sadly bash doesn't interpret those, but printf will!
 		return `$(printf '%q' '` + s + `')`
-	default:
 	}
 	// should not happen
 	return fmt.Sprintf("%q", s)
@@ -264,4 +255,31 @@ func escapeRune(r rune) string {
 	default:
 		return string(rune(r))
 	}
+}
+
+// ShellMany returns the list after processing each element with Shell().
+func ShellMany(items []string) []string {
+	var r []string
+	for _, n := range items {
+		r = append(r, Redact(n))
+	}
+	return r
+}
+
+// FirstFew returns the first few names. If any are truncated, it is
+// noted by appending "...".  The exact definition of "few" may change
+// over time, and may be based on the number of chars not the list
+func FirstFew(sl []string) string {
+	s, _ := FirstFewFlag(sl)
+	return s
+}
+
+// FirstFewFlag is like FirstFew but returns true if truncation done.
+func FirstFewFlag(sl []string) (string, bool) {
+	const maxitems = 4
+	const maxlen = 70
+	if len(sl) < maxitems || len(strings.Join(sl, " ")) < maxlen {
+		return strings.Join(sl, " "), false
+	}
+	return strings.Join(sl[:maxitems], " ") + " ...", true
 }

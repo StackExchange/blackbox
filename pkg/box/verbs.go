@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
-	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
+	"github.com/StackExchange/blackbox/v2/pkg/makesafe"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -47,6 +47,7 @@ func (bx *Box) AdminAdd(nom string, sdir string) error {
 	if err != nil {
 		return fmt.Errorf("could not update file (%q,%q): %v", fn, nom, err)
 	}
+	changedFiles = append([]string{fn}, changedFiles...)
 
 	bx.Vcs.NeedsCommit("NEW ADMIN: "+nom, bx.RepoBaseDir, changedFiles)
 	return nil
@@ -333,10 +334,12 @@ func (bx *Box) FileAdd(names []string, shred bool) error {
 		bx.logErr.Printf("Error while shredding: %v", err)
 	}
 
+	bx.Vcs.CommitTitle("BLACKBOX ADD FILE: " + makesafe.FirstFew(makesafe.ShellMany(names)))
+
 	bx.Vcs.IgnoreFiles(bx.RepoBaseDir, names)
 
 	bx.Vcs.NeedsCommit(
-		PrettyCommitMessage("ADDING TO BLACKBOX", names),
+		PrettyCommitMessage("blackbox-files.txt add", names),
 		bx.RepoBaseDir,
 		append([]string{filepath.Join(bx.ConfigPath, "blackbox-files.txt")}, needsCommit...),
 	)
@@ -377,7 +380,7 @@ func (bx *Box) Info() error {
 	fmt.Printf("           Team: %q\n", bx.Team)
 	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
 	fmt.Printf("     ConfigPath: %q\n", bx.ConfigPath)
-	fmt.Printf("          Umask: %04O\n", bx.Umask)
+	fmt.Printf("          Umask: %04o\n", bx.Umask)
 	fmt.Printf("        Edditor: %v\n", bx.Editor)
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
@@ -437,7 +440,7 @@ func (bx *Box) Init(yes, vcsname string) error {
 
 	fs := []string{ba, bf}
 	bx.Vcs.NeedsCommit(
-		"NEW: "+tainedname.RedactList(fs),
+		"NEW: "+strings.Join(makesafe.RedactMany(fs), " "),
 		bx.RepoBaseDir,
 		fs,
 	)

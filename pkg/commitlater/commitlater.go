@@ -46,7 +46,7 @@ func (list *List) Flush(
 ) error {
 
 	// Just list the individual commit commands.
-	if title == "" || len(list.items) <= 1 || !sameDirs(list) {
+	if title == "" || len(list.items) < 2 || !sameDirs(list) {
 		for _, fut := range list.items {
 			err := fadd(fut.files)
 			if err != nil {

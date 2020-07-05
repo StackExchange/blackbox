@@ -12,13 +12,17 @@ func TestPrettyCommitMessage(t *testing.T) {
 		{[]string{"one"}, `HEADING: one`},
 		{[]string{"one", "two"}, `HEADING: one two`},
 		{[]string{"one", "two", "three"}, `HEADING: one two three`},
-		{[]string{"one", "two", "three", "four"}, `HEADING: one two three four`},
-		{[]string{"one", "two", "three", "four", "five"}, `HEADING: one two three four five`},
-		{[]string{"has spaces.txt"}, `HEADING: 'has spaces.txt'`},
+		{[]string{"one", "two", "three", "four"},
+			`HEADING: one two three four`},
+		{[]string{"one", "two", "three", "four", "five"},
+			`HEADING: one two three four five`},
+		{[]string{"has spaces.txt"}, `HEADING: "has spaces.txt"`},
 		{[]string{"two\n"}, `HEADING: "twoX"(redacted)`},
 		{[]string{"smile😁eyes"}, `HEADING: smile😁eyes`},
-		{[]string{"tab\ttab", "two very long strings.txt"}, `HEADING: "tabXtab"(redacted) 'two very long strings.txt'`},
-		{[]string{long, long, long, long}, "HEADING: aVeryVeryLongLongLongStringStringString aVeryVeryLongLongLongStringStringString aVeryVeryLongLongLongStringStringString ...    aVeryVeryLongLongLongStringStringString\n    aVeryVeryLongLongLongStringStringString\n    aVeryVeryLongLongLongStringStringString\n    aVeryVeryLongLongLongStringStringString\n"},
+		{[]string{"tab\ttab", "two very long strings.txt"},
+			`HEADING: "tabXtab"(redacted) "two very long strings.txt"`},
+		{[]string{long, long, long, long},
+			"HEADING: " + long + " " + long + " " + long + " " + long + " ...    " + long + "\n    " + long + "\n    " + long + "\n    " + long + "\n"},
 	} {
 		g := PrettyCommitMessage("HEADING", test.data)
 		if g == test.expected {

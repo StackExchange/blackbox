@@ -7,7 +7,7 @@ import (
 
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 	"github.com/StackExchange/blackbox/v2/pkg/commitlater"
-	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
+	"github.com/StackExchange/blackbox/v2/pkg/makesafe"
 	"github.com/StackExchange/blackbox/v2/pkg/vcs"
 )
 
@@ -77,7 +77,7 @@ func (v VcsHandle) SetFileTypeUnix(repobasedir string, files ...string) error {
 	}
 
 	v.NeedsCommit(
-		"set gitattr=UNIX "+tainedname.RedactList(files),
+		"set gitattr=UNIX "+strings.Join(makesafe.RedactMany(files), " "),
 		repobasedir,
 		changedfiles,
 	)
@@ -100,7 +100,7 @@ func (v VcsHandle) IgnoreAnywhere(repobasedir string, files []string) error {
 	}
 
 	v.NeedsCommit(
-		"gitignore "+tainedname.RedactList(files),
+		"gitignore "+strings.Join(makesafe.RedactMany(files), " "),
 		repobasedir,
 		[]string{".gitignore"},
 	)
@@ -149,7 +149,7 @@ func (v VcsHandle) IgnoreFiles(repobasedir string, files []string) error {
 	}
 
 	v.NeedsCommit(
-		"gitignore "+tainedname.RedactList(files),
+		"gitignore "+strings.Join(makesafe.RedactMany(files), " "),
 		repobasedir,
 		[]string{".gitignore"},
 	)
@@ -211,9 +211,8 @@ func (v *VcsHandle) suggestCommit(messages []string, repobasedir string, files [
 	v.commitHeaderPrinted = true
 
 	fmt.Print(`     git commit -m'`, strings.Join(messages, `' -m'`)+`'`)
-	for _, file := range files {
-		fmt.Print(" " + tainedname.New(file).String())
-	}
+	fmt.Print(" ")
+	fmt.Print(strings.Join(makesafe.ShellMany(files), " "))
 	fmt.Println()
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/blackbox/v2/pkg/tainedname"
+	"github.com/StackExchange/blackbox/v2/pkg/makesafe"
 )
 
 // FileStatus returns the status of a file.
@@ -211,26 +211,14 @@ func shouldWeOverwrite() {
 
 // PrettyCommitMessage generates a pretty commit message.
 func PrettyCommitMessage(verb string, files []string) string {
-
 	if len(files) == 0 {
 		// This use-case should probably be an error.
 		return verb + " (no files)"
 	}
-
-	// Redact the names.
-	var rfiles []string
-	for i := range files {
-		rfiles = append(rfiles, tainedname.New(files[i]).Redact())
+	rfiles := makesafe.RedactMany(files)
+	m, truncated := makesafe.FirstFewFlag(rfiles)
+	if truncated {
+		return verb + ": " + m + "    " + strings.Join(rfiles, "\n    ") + "\n"
 	}
-
-	if len(rfiles) <= 2 || len(strings.Join(rfiles, " ")) < 50 {
-		return verb + ": " + strings.Join(rfiles, " ")
-	}
-
-	return (verb + ": " +
-		strings.Join(rfiles[:3], " ") +
-		" ..." +
-		"    " +
-		strings.Join(rfiles, "\n    ") +
-		"\n")
+	return verb + ": " + m
 }
