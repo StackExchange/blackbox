@@ -75,7 +75,6 @@ func NewFromFlags(c *cli.Context) *Box {
 
 	// Discover which kind of VCS is in use, and the repo root.
 	bx.Vcs, bx.RepoBaseDir = vcs.Discover()
-	// TODO: Tell the Vcs about bx.RepoBaseDir?
 
 	// Discover the crypto backend (GnuPG, go-openpgp, etc.)
 	bx.Crypter = crypters.SearchByName(c.String("crypto"), c.Bool("debug"))
@@ -213,7 +212,9 @@ func (bx *Box) getFiles() error {
 	if !sort.StringsAreSorted(a) {
 		return fmt.Errorf("file corrupt. Lines not sorted: %v", fn)
 	}
-	bx.Files = a
+	for _, n := range a {
+		bx.Files = append(bx.Files, filepath.Join(bx.RepoBaseDir, n))
+	}
 
 	bx.FilesSet = make(map[string]bool, len(bx.Files))
 	for _, s := range bx.Files {

@@ -86,6 +86,13 @@ func ShredFiles(names []string) error {
 	path, flag := shredCmd()
 	var err error
 	for _, n := range names {
+		_, err := os.Stat(n)
+		if err != nil {
+			if os.IsNotExist(err) {
+				fmt.Printf("======= already gone: %q\n", n)
+				continue
+			}
+		}
 		fmt.Printf("========== SHREDDING: %q\n", n)
 		e := RunBash(path, flag, n)
 		if e != nil {

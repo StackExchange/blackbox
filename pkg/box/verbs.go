@@ -375,7 +375,7 @@ func (bx *Box) Info() error {
 	fmt.Printf("           Team: %q\n", bx.Team)
 	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
 	fmt.Printf("     ConfigPath: %q\n", bx.ConfigPath)
-	fmt.Printf("          Umask: %o\n", bx.Umask)
+	fmt.Printf("          Umask: %04O\n", bx.Umask)
 	fmt.Printf("        Edditor: %v\n", bx.Editor)
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
