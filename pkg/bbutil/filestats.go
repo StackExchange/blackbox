@@ -51,9 +51,13 @@ func Touch(name string) error {
 	return os.Chtimes(name, currentTime, currentTime)
 }
 
-var shredPath, shredFlag string
+var shredPath, shredFlag string // Memoization cache
 
+// shredCmd determines which command to use to securely erase a file. It returns
+// the command to run and what flags to use with it. Determining the answer
+// can be slow, therefore the answer is memoized and returned to future callers.
 func shredCmd() (string, string) {
+	// Use the memoized result.
 	if shredPath != "" {
 		return shredPath, shredFlag
 	}
@@ -75,6 +79,7 @@ func shredCmd() (string, string) {
 		}
 	}
 
+	// Single exit, so we don't have to repeat the memoization code.
 	return shredPath, shredFlag
 }
 

@@ -576,19 +576,20 @@ func (bx *Box) Status(names []string, nameOnly bool, match string) error {
 
 	if nameOnly {
 		fmt.Println(strings.Join(onlylist, "\n"))
-	} else {
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		if thirdColumn {
-			table.SetHeader([]string{"Status", "Name", "Error"})
-		} else {
-			table.SetHeader([]string{"Status", "Name"})
-		}
-		for _, v := range data {
-			table.Append(v)
-		}
-		table.Render() // Send output
+		return nil
 	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoWrapText(false)
+	if thirdColumn {
+		table.SetHeader([]string{"Status", "Name", "Error"})
+	} else {
+		table.SetHeader([]string{"Status", "Name"})
+	}
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render() // Send output
 
 	return nil
 }

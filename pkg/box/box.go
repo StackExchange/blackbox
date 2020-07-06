@@ -88,27 +88,29 @@ func NewFromFlags(c *cli.Context) *Box {
 	// Find the .blackbox (or equiv.) directory.
 	var err error
 	configFlag := c.String("config")
-	if configFlag == "" {
-		// Normal path. Flag not set, so we discover the path.
-		bx.ConfigPath, err = FindConfigDir(bx.RepoBaseDir, c.String("team"))
-		if err != nil && c.Command.Name != "info" {
-			fmt.Printf("Can't find .blackbox or equiv. Have you run init?\n")
-			os.Exit(1)
-		}
-	} else {
+	if configFlag != "" {
 		// Flag is set. Better make sure it is valid.
 		if !filepath.IsAbs(configFlag) {
 			fmt.Printf("config flag value is a relative path. Too risky. Exiting.\n")
 			os.Exit(1)
-			// TODO(tlim): We could take the filepath.Abs(config) but until someone
-			// shows a use-case, just fail.
+			// NB(tlim): We could return filepath.Abs(config) or maybe it just
+			// works as is. I don't know, and until we have a use case to prove
+			// it out, it's best to just not implement this.
 		}
 		bx.ConfigPath = configFlag
 		bx.ConfigRO = true // External configs treated as read-only.
 		// TODO(tlim): We could get fancy here and set ConfigReadOnly=true only
-		// if we are sure configFlag is not within bx.RepoBaseDir.
-	}
+		// if we are sure configFlag is not within bx.RepoBaseDir. Again, I'd
+		// like to see a use-case before we implement this.
+		return bx
 
+	}
+	// Normal path. Flag not set, so we discover the path.
+	bx.ConfigPath, err = FindConfigDir(bx.RepoBaseDir, c.String("team"))
+	if err != nil && c.Command.Name != "info" {
+		fmt.Printf("Can't find .blackbox or equiv. Have you run init?\n")
+		os.Exit(1)
+	}
 	return bx
 }
 

@@ -22,6 +22,7 @@ import (
 )
 
 var verbose = flag.Bool("verbose", false, "reveal stderr")
+var nocleanup = flag.Bool("nocleanup", false, "do not delete the tmp directory")
 
 type userinfo struct {
 	name      string
@@ -71,20 +72,20 @@ func makeHomeDir(t *testing.T, testname string) {
 	var homedir string
 	var err error
 
-	if false {
-		// Make a random location that is deleted later
-		homedir, err = ioutil.TempDir("", filepath.Join("bbhome-"+testname))
-		defer os.RemoveAll(homedir) // clean up
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		// Make a predictable location. wipe and re-use
+	if *nocleanup {
+		// Make a predictable location; don't deleted.
 		homedir = "/tmp/bbhome-" + testname
 		os.RemoveAll(homedir)
 		err = os.Mkdir(homedir, 0770)
 		if err != nil {
 			t.Fatal(fmt.Errorf("mk-home %q: %v", homedir, err))
+		}
+	} else {
+		// Make a random location that is deleted automatically
+		homedir, err = ioutil.TempDir("", filepath.Join("bbhome-"+testname))
+		defer os.RemoveAll(homedir) // clean up
+		if err != nil {
+			t.Fatal(err)
 		}
 	}
 
@@ -287,16 +288,6 @@ func runBB(t *testing.T, args ...string) {
 	}
 }
 
-// # NB: This is copied from _blackbox_common.sh
-// function get_pubring_path() {
-//   : "${KEYRINGDIR:=keyrings/live}" ;
-//   if [[ -f "${KEYRINGDIR}/pubring.gpg" ]]; then
-//     echo "${KEYRINGDIR}/pubring.gpg"
-//   else
-//     echo "${KEYRINGDIR}/pubring.kbx"
-//   fi
-// }
-
 func phase(msg string) {
 	logDebug.Println("********************")
 	logDebug.Println("********************")
@@ -332,12 +323,12 @@ func makeAdmin(t *testing.T, name, fullname, email string) string {
 		if err != nil {
 			//t.Fatal(err)
 		}
-		if strings.HasPrefix(ai, "GPG_AGENT_INFO=") {
+		if !strings.HasPrefix(ai, "GPG_AGENT_INFO=") {
+			fmt.Println("WARNING: gpg-agent didn't output what we expected. Assumed dead.")
+		} else {
 			u.agentInfo = ai[15:strings.Index(ai, ";")]
 			os.Setenv("GPG_AGENT_INFO", u.agentInfo)
 			fmt.Printf("GPG_AGENT_INFO=%q (was %q)\n", ai, u.agentInfo)
-		} else {
-			fmt.Println("WARNING: gpg-agent didn't output what we expected. Assumed dead.")
 		}
 	}
 

@@ -83,8 +83,8 @@ Then a shell script should run various combinations of VCS and crypters.
 
 
 
-rm -rf /tmp/bbhome-* && BLACKBOX_DEBUG=true go test -verbose -long -run
-rm -rf /tmp/bbhome-* && go test -long -run
+rm -rf /tmp/bbhome-* && BLACKBOX_DEBUG=true go test -verbose -long -nocleanup
+rm -rf /tmp/bbhome-* && go test -long -nocleanup
 
 ( gbb && cd cmd/blackbox && go install ) && blackbox
 

@@ -46,7 +46,7 @@ This is what v1 does:
   if [[ "$GPG" != "gpg2" ]]; then
     $GPG --export --no-default-keyring --keyring "$(get_pubring_path)" >"$keyringasc"
     $GPG --import "$keyringasc" 2>&1 | egrep -v 'not changed$' >&2
-  else
+  Else
     $GPG --keyring "$(get_pubring_path)" --export | $GPG --import
   fi
 
@@ -102,6 +102,6 @@ New, ascii format:
 
 */
 
-func prepareUserKeychain() error {
-	return nil
-}
+//func prepareUserKeychain() error {
+//	return nil
+//}
