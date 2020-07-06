@@ -23,7 +23,7 @@ func DirExists(path string) (bool, error) {
 	return true, err
 }
 
-// FileExistsOrProblem returns true if the file exists or if we can't determine its existance.
+// FileExistsOrProblem returns true if the file exists or if we can't determine its existence.
 func FileExistsOrProblem(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -72,10 +72,14 @@ func shredCmd() (string, string) {
 		shredPath, shredFlag = path, "-f"
 		// Does this command support the "-P" flag?
 		tmpfile, err := ioutil.TempFile("", "rmtest")
-		defer os.Remove(tmpfile.Name()) // clean up
-		err = RunBash("rm", "-P", tmpfile.Name())
 		if err != nil {
-			shredFlag = "-Pf"
+			shredFlag = "-f"
+		} else {
+			defer os.Remove(tmpfile.Name()) // clean up
+			err = RunBash("rm", "-P", tmpfile.Name())
+			if err != nil {
+				shredFlag = "-Pf"
+			}
 		}
 	}
 
@@ -89,7 +93,7 @@ func ShredFiles(names []string) error {
 	// TODO(tlim) DO the shredding in parallel like in v1.
 
 	path, flag := shredCmd()
-	var err error
+	var eerr error
 	for _, n := range names {
 		_, err := os.Stat(n)
 		if err != nil {
@@ -101,11 +105,11 @@ func ShredFiles(names []string) error {
 		fmt.Printf("========== SHREDDING: %q\n", n)
 		e := RunBash(path, flag, n)
 		if e != nil {
-			err = e
+			eerr = e
 			fmt.Printf("ERROR: %v\n", e)
 		}
 	}
-	return err
+	return eerr
 }
 
 // ReadFileLines is like ioutil.ReadFile() but returns an []string.

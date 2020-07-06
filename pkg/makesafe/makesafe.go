@@ -143,7 +143,7 @@ func oct() func(r rune) string {
 // to include on a command line.
 //
 // Redacted chars are changed to "X".
-// If anything is redacted, the string is surounded by double quotes
+// If anything is redacted, the string is surrounded by double quotes
 // ("air quotes") and the string "(redacted)" is added to the end.
 // If nothing is redacted, but it contains spaces, it is surrounded
 // by double quotes.

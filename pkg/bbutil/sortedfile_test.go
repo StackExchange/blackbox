@@ -54,6 +54,9 @@ func TestAddLinesToSortedFile(t *testing.T) {
 		expected := test.expected
 
 		got, err := ioutil.ReadFile(tmpfilename)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if expected != string(got) {
 			t.Errorf("test %v: contents wrong:\nexpected: %q\n     got: %q", i, expected, got)
 		}

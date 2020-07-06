@@ -141,6 +141,9 @@ func (crypt CrypterHandle) AddNewKey(keyname, repobasedir, sourcedir, destdir st
 	args = append(args, keyname)
 	crypt.logDebug.Printf("ADDNEWKEY: Extracting key=%v: gpg, %v\n", keyname, args)
 	pubkey, err := bbutil.RunBashOutput("gpg", args...)
+	if err != nil {
+		return nil, err
+	}
 	if len(pubkey) == 0 {
 		return nil, fmt.Errorf("Nothing found when %q exported from %q", keyname, sourcedir)
 	}

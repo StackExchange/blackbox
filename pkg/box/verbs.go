@@ -455,13 +455,10 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 	if err := anyGpg(names); err != nil {
 		return err
 	}
-
-	err := bx.getAdmins()
-	if err != nil {
+	if err := bx.getAdmins(); err != nil {
 		return err
 	}
-	err = bx.getFiles()
-	if err != nil {
+	if err := bx.getFiles(); err != nil {
 		return err
 	}
 	if len(names) == 0 {
@@ -474,13 +471,10 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 
 	fmt.Println("========== blackbox administrators are:")
 	bx.AdminList()
+	fmt.Println("========== (the above people will be able to access the file)")
 
 	if overwrite {
-		for _, n := range names {
-			if bbutil.FileExistsOrProblem(n) {
-				bbutil.ShredFiles([]string{n})
-			}
-		}
+		bbutil.ShredFiles(names)
 	} else {
 		warned := false
 		for _, n := range names {
@@ -498,16 +492,13 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 	}
 
 	// Decrypt
-	err = decryptMany(bx, names, overwrite, false, 0)
-	if err != nil {
+	if err := decryptMany(bx, names, overwrite, false, 0); err != nil {
 		return fmt.Errorf("reencrypt failed decrypt: %w", err)
 	}
-	err = encryptMany(bx, names, false)
-	if err != nil {
+	if err := encryptMany(bx, names, false); err != nil {
 		return fmt.Errorf("reencrypt failed encrypt: %w", err)
 	}
-	err = bbutil.ShredFiles(names)
-	if err != nil {
+	if err := bbutil.ShredFiles(names); err != nil {
 		return fmt.Errorf("reencrypt failed shred: %w", err)
 	}
 
