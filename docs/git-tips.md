@@ -19,5 +19,4 @@ It's possible to tell Git to decrypt versions of the file before running them th
     textconv = gpg --use-agent -q --batch --decrypt
 ````
 
-And now commands like `git log -p file.gpg` will show a nice log of the changes in the encrypted file.
-
+Commands like `git log -p file.gpg` and `git diff master --` will display as expected.
