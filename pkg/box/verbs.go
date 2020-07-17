@@ -230,12 +230,19 @@ func (bx *Box) Encrypt(names []string, shred bool) error {
 		names = bx.Files
 	}
 
-	return encryptMany(bx, names, shred)
+	enames, err := encryptMany(bx, names, shred)
+
+	bx.Vcs.NeedsCommit(
+		PrettyCommitMessage("ENCRYPTED", names),
+		bx.RepoBaseDir,
+		enames,
+	)
+
+	return err
 }
 
-func encryptMany(bx *Box, names []string, shred bool) error {
+func encryptMany(bx *Box, names []string, shred bool) ([]string, error) {
 	var enames []string
-	bx.logErr.Printf("EncryptMany = %q\n", names)
 	for _, name := range names {
 		fmt.Printf("========== ENCRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
@@ -246,7 +253,6 @@ func encryptMany(bx *Box, names []string, shred bool) error {
 			bx.logErr.Printf("Skipping. Plaintext does not exist: %q", name)
 			continue
 		}
-		bx.logErr.Printf("EncryptMany Crypt = %q\n", name)
 		ename, err := bx.Crypter.Encrypt(name, bx.Umask, bx.Admins)
 		if err != nil {
 			bx.logErr.Printf("Failed to encrypt %q: %v", name, err)
@@ -258,12 +264,7 @@ func encryptMany(bx *Box, names []string, shred bool) error {
 		}
 	}
 
-	bx.Vcs.NeedsCommit(
-		PrettyCommitMessage("REENCRYPTED", enames),
-		bx.RepoBaseDir,
-		enames,
-	)
-	return nil
+	return enames, nil
 }
 
 // FileAdd enrolls files.
@@ -452,6 +453,8 @@ func (bx *Box) Init(yes, vcsname string) error {
 // Reencrypt decrypts and reencrypts files.
 func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 
+	allFiles := false
+
 	if err := anyGpg(names); err != nil {
 		return err
 	}
@@ -463,6 +466,7 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 	}
 	if len(names) == 0 {
 		names = bx.Files
+		allFiles = true
 	}
 
 	if bulkpause {
@@ -495,11 +499,28 @@ func (bx *Box) Reencrypt(names []string, overwrite bool, bulkpause bool) error {
 	if err := decryptMany(bx, names, overwrite, false, 0); err != nil {
 		return fmt.Errorf("reencrypt failed decrypt: %w", err)
 	}
-	if err := encryptMany(bx, names, false); err != nil {
+	enames, err := encryptMany(bx, names, false)
+	if err != nil {
 		return fmt.Errorf("reencrypt failed encrypt: %w", err)
 	}
 	if err := bbutil.ShredFiles(names); err != nil {
 		return fmt.Errorf("reencrypt failed shred: %w", err)
+	}
+
+	if allFiles {
+		// If the "--all" flag was used, don't try to list all the files.
+		bx.Vcs.NeedsCommit(
+			"REENCRYPT all files",
+			bx.RepoBaseDir,
+			enames,
+		)
+	} else {
+		bx.Vcs.NeedsCommit(
+			PrettyCommitMessage("REENCRYPT", names),
+			bx.RepoBaseDir,
+			enames,
+		)
+
 	}
 
 	return nil

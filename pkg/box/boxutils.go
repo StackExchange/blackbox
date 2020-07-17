@@ -218,7 +218,7 @@ func PrettyCommitMessage(verb string, files []string) string {
 	rfiles := makesafe.RedactMany(files)
 	m, truncated := makesafe.FirstFewFlag(rfiles)
 	if truncated {
-		return verb + ": " + m + "    " + strings.Join(rfiles, "\n    ") + "\n"
+		return verb + ": " + m
 	}
 	return verb + ": " + m
 }

@@ -276,10 +276,10 @@ func FirstFew(sl []string) string {
 
 // FirstFewFlag is like FirstFew but returns true if truncation done.
 func FirstFewFlag(sl []string) (string, bool) {
-	const maxitems = 4
+	const maxitems = 2
 	const maxlen = 70
 	if len(sl) < maxitems || len(strings.Join(sl, " ")) < maxlen {
 		return strings.Join(sl, " "), false
 	}
-	return strings.Join(sl[:maxitems], " ") + " ...", true
+	return strings.Join(sl[:maxitems], " ") + " (and others)", true
 }
