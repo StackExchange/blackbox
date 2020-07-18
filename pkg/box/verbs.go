@@ -145,6 +145,7 @@ func decryptMany(bx *Box, names []string, overwrite bool, groupchange bool, gid 
 		fmt.Printf("========== DECRYPTING %q\n", name)
 		if !bx.FilesSet[name] {
 			bx.logErr.Printf("Skipping %q: File not registered with Blackbox", name)
+			continue
 		}
 		if (!overwrite) && bbutil.FileExistsOrProblem(name) {
 			bx.logErr.Printf("Skipping %q: Will not overwrite existing file", name)
