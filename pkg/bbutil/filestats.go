@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -49,67 +48,6 @@ func Touch(name string) error {
 
 	currentTime := time.Now().Local()
 	return os.Chtimes(name, currentTime, currentTime)
-}
-
-var shredPath, shredFlag string // Memoization cache
-
-// shredCmd determines which command to use to securely erase a file. It returns
-// the command to run and what flags to use with it. Determining the answer
-// can be slow, therefore the answer is memoized and returned to future callers.
-func shredCmd() (string, string) {
-	// Use the memoized result.
-	if shredPath != "" {
-		return shredPath, shredFlag
-	}
-
-	var path string
-	var err error
-	if path, err = exec.LookPath("shred"); err == nil {
-		shredPath, shredFlag = path, "-u"
-	} else if path, err = exec.LookPath("srm"); err == nil {
-		shredPath, shredFlag = path, "-f"
-	} else if path, err = exec.LookPath("rm"); err == nil {
-		shredPath, shredFlag = path, "-f"
-		// Does this command support the "-P" flag?
-		tmpfile, err := ioutil.TempFile("", "rmtest")
-		if err != nil {
-			shredFlag = "-f"
-		} else {
-			defer os.Remove(tmpfile.Name()) // clean up
-			err = RunBash("rm", "-P", tmpfile.Name())
-			if err != nil {
-				shredFlag = "-Pf"
-			}
-		}
-	}
-
-	// Single exit, so we don't have to repeat the memoization code.
-	return shredPath, shredFlag
-}
-
-// ShredFiles securely erases a list of files.
-func ShredFiles(names []string) error {
-
-	// TODO(tlim) DO the shredding in parallel like in v1.
-
-	path, flag := shredCmd()
-	var eerr error
-	for _, n := range names {
-		_, err := os.Stat(n)
-		if err != nil {
-			if os.IsNotExist(err) {
-				fmt.Printf("======= already gone: %q\n", n)
-				continue
-			}
-		}
-		fmt.Printf("========== SHREDDING: %q\n", n)
-		e := RunBash(path, flag, n)
-		if e != nil {
-			eerr = e
-			fmt.Printf("ERROR: %v\n", e)
-		}
-	}
-	return eerr
 }
 
 // ReadFileLines is like ioutil.ReadFile() but returns an []string.

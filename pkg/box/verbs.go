@@ -379,11 +379,13 @@ func (bx *Box) Info() error {
 	}
 
 	fmt.Println("BLACKBOX:")
+	fmt.Printf("          Debug: %v\n", bx.Debug)
 	fmt.Printf("           Team: %q\n", bx.Team)
 	fmt.Printf("    RepoBaseDir: %q\n", bx.RepoBaseDir)
 	fmt.Printf("     ConfigPath: %q\n", bx.ConfigPath)
 	fmt.Printf("          Umask: %04o\n", bx.Umask)
-	fmt.Printf("        Edditor: %v\n", bx.Editor)
+	fmt.Printf("         Editor: %v\n", bx.Editor)
+	fmt.Printf("       Shredder: %v\n", bbutil.ShredInfo())
 	fmt.Printf("         Admins: count=%v\n", len(bx.Admins))
 	fmt.Printf("          Files: count=%v\n", len(bx.Files))
 	fmt.Printf("       FilesSet: count=%v\n", len(bx.FilesSet))
@@ -391,7 +393,6 @@ func (bx *Box) Info() error {
 	fmt.Printf("        VcsName: %q\n", bx.Vcs.Name())
 	fmt.Printf("        Crypter: %v\n", bx.Crypter)
 	fmt.Printf("    CrypterName: %q\n", bx.Crypter.Name())
-	fmt.Printf("          Debug: %v\n", bx.Debug)
 
 	return nil
 }
