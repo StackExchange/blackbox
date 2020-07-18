@@ -142,96 +142,128 @@ func TestHard(t *testing.T) {
 	// is just garbage.
 	compile(t)
 	setup(t)
-	makeHomeDir(t, "BasicAlice")
 
-	plaintextFoo := "I am the foo.txt file!\n"
-	plainAltered := "I am the altered file!\n"
+	for _, cx := range []struct{ subname, prefix string }{
+		//{subname: ".", prefix: "."},
+		{subname: "mysub", prefix: ".."},
+	} {
+		subname := cx.subname
+		prefix := cx.prefix
+		_ = prefix
 
-	runBB(t, "testing_init") // Runs "git init" or equiv
-	assertFileExists(t, ".git")
-	runBB(t, "init", "yes") // Creates .blackbox or equiv
+		phase("========== SUBDIR = " + subname + " ==========")
 
-	phase("Alice creates a repo.  Creates secret.txt.")
-	makeFile(t, "secret.txt", "this is my secret")
+		makeHomeDir(t, "BasicAlice")
 
-	phase("Alice creates a GPG key")
-	gpgdir := makeAdmin(t, "alice", "Alice Example", "alice@example.com")
-	become(t, "alice")
+		plaintextFoo := "I am the foo.txt file!\n"
+		plainAltered := "I am the altered file!\n"
 
-	phase("Alice enrolls as an admin")
-	runBB(t, "admin", "add", "alice@example.com", gpgdir)
+		runBB(t, "testing_init") // Runs "git init" or equiv
+		assertFileExists(t, ".git")
+		runBB(t, "init", "yes") // Creates .blackbox or equiv
 
-	// encrypt
-	phase("Alice registers foo.txt")
-	makeFile(t, "foo.txt", plaintextFoo)
-	runBB(t, "file", "add", "--shred", "foo.txt")
-	// "file add" encrypts the file.
-	// We shred the plaintext so that we are sure that when Decrypt runs,
-	// we can verify the contents wasn't just sitting there all the time.
-	assertFileMissing(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
+		if subname != "." {
+			err := os.Mkdir(subname, 0770)
+			if err != nil {
+				t.Fatal(fmt.Errorf("hard-mk-home %q: %v", subname, err))
+			}
+		}
+		olddir, err := os.Getwd()
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	phase("Alice decrypts foo.txt")
-	// decrypt
-	runBB(t, "decrypt", "foo.txt")
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
-	assertFileContents(t, "foo.txt", plaintextFoo)
+		os.Chdir(subname)
+		os.Chdir(olddir)
 
-	// encrypts (without shredding)
-	phase("Alice encrypts foo.txt (again)")
-	runBB(t, "encrypt", "foo.txt")
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
-	assertFileContents(t, "foo.txt", plaintextFoo)
+		phase("Alice creates a GPG key")
+		gpgdir := makeAdmin(t, "alice", "Alice Example", "alice@example.com")
+		become(t, "alice")
 
-	// reencrypt
-	phase("Alice reencrypts")
-	checkOutput("basic-status.txt", t, "status")
-	runBB(t, "reencrypt", "--overwrite", "foo.txt")
+		phase("Alice enrolls as an admin")
+		//os.Chdir(subname)
+		runBB(t, "admin", "add", "alice@example.com", gpgdir)
+		//os.Chdir(olddir)
 
-	// Test variations of cat
+		// encrypt
+		phase("Alice registers foo.txt")
+		makeFile(t, "foo.txt", plaintextFoo)
+		//os.Chdir(subname)
+		//runBB(t, "file", "add", "--shred", filepath.Join(prefix, "foo.txt"))
+		runBB(t, "file", "add", "--shred", "foo.txt")
+		//os.Chdir(olddir)
+		// "file add" encrypts the file.
+		// We shred the plaintext so that we are sure that when Decrypt runs,
+		// we can verify the contents wasn't just sitting there all the time.
+		assertFileMissing(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
 
-	// foo.txt=plain    result=plain
-	phase("Alice cats plain:plain")
-	makeFile(t, "foo.txt", plaintextFoo)
-	assertFileExists(t, "foo.txt")
-	runBB(t, "encrypt", "foo.txt")
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
+		phase("Alice decrypts foo.txt")
+		// decrypt
+		//os.Chdir(subname)
+		runBB(t, "decrypt", "foo.txt")
+		//runBB(t, "decrypt", filepath.Join(prefix, "foo.txt"))
+		//os.Chdir(olddir)
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+		assertFileContents(t, "foo.txt", plaintextFoo)
 
-	// foo.txt=altered    result=plain
-	phase("Alice cats altered:plain")
-	makeFile(t, "foo.txt", plainAltered)
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
-	assertFileExists(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
+		// encrypts (without shredding)
+		phase("Alice encrypts foo.txt (again)")
+		runBB(t, "encrypt", "foo.txt")
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+		assertFileContents(t, "foo.txt", plaintextFoo)
 
-	// foo.txt=missing  result=plain
-	phase("Alice cats missing:plain")
-	removeFile(t, "foo.txt")
-	assertFileMissing(t, "foo.txt")
-	assertFileMissing(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
-	checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
-	assertFileMissing(t, "foo.txt")
-	assertFileExists(t, "foo.txt.gpg")
+		// reencrypt
+		phase("Alice reencrypts")
+		checkOutput("basic-status.txt", t, "status")
+		runBB(t, "reencrypt", "--overwrite", "foo.txt")
 
-	// Chapter 2: Bob
-	// Alice adds Bob.
-	// Bob encrypts a file.
-	// Bob makes sure he can decrypt alice's file.
-	// Bob removes Alice.
-	// Alice verifies she CAN'T decrypt files.
-	// Bob adds Alice back.
-	// Alice verifies she CAN decrypt files.
-	// Bob adds an encrypted file by mistake, "bb add" and fixes it.
-	// Bob corrupts the blackbox-admins.txt file, verifies that commands fail.
+		// Test variations of cat
+
+		// foo.txt=plain    result=plain
+		phase("Alice cats plain:plain")
+		makeFile(t, "foo.txt", plaintextFoo)
+		assertFileExists(t, "foo.txt")
+		runBB(t, "encrypt", "foo.txt")
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+		checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+
+		// foo.txt=altered    result=plain
+		phase("Alice cats altered:plain")
+		makeFile(t, "foo.txt", plainAltered)
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+		checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+		assertFileExists(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+
+		// foo.txt=missing  result=plain
+		phase("Alice cats missing:plain")
+		removeFile(t, "foo.txt")
+		assertFileMissing(t, "foo.txt")
+		assertFileMissing(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+		checkOutput("alice-cat-plain.txt", t, "cat", "foo.txt")
+		assertFileMissing(t, "foo.txt")
+		assertFileExists(t, "foo.txt.gpg")
+
+		// Chapter 2: Bob
+		// Alice adds Bob.
+		// Bob encrypts a file.
+		// Bob makes sure he can decrypt alice's file.
+		// Bob removes Alice.
+		// Alice verifies she CAN'T decrypt files.
+		// Bob adds Alice back.
+		// Alice verifies she CAN decrypt files.
+		// Bob adds an encrypted file by mistake, "bb add" and fixes it.
+		// Bob corrupts the blackbox-admins.txt file, verifies that commands fail.
+
+	}
 
 }
 
@@ -274,8 +306,8 @@ func TestEvilFilenames(t *testing.T) {
 		`smile☺`,
 		`dub𝓦`,
 		"my/path/to/relsecrets.txt",
-		"my/../my/path/../path/to/myother.txt",
-		"other/../my//path/../path/to/otherother.txt",
+		//"my/../my/path/../path/to/myother.txt",  // Not permitted yet
+		//"other/../my//path/../path/to/otherother.txt", // Not permitted yet
 		//"new\nnew.txt",  // \n not permitted
 		//"two\n",  // \n not permitted (yet)
 		//"four\U0010FFFF",  // Illegal byte sequence. git won't accept.
