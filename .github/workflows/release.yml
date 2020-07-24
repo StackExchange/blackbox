@@ -8,8 +8,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build project (dummy)
-        run: zip my-artifact README.md  # TODO - actually create all the binaries, artifacts etc
+#      - name: Build project (dummy)
+#        run: zip my-artifact README.md  # TODO - actually create all the binaries, artifacts etc
+
+      - name: Package RPM
+        uses: bpicode/github-action-fpm@master
+        with:
+          fpm_args: './build'
+          fpm_opts: '--debug -n mypackage -t deb -s dir'
 
       - name: Create Release
         id: create_release
@@ -23,13 +29,13 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Upload binaries
-        id: upload_binaries 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
-          asset_content_type: application/zip
+#      - name: Upload binaries
+#        id: upload_binaries 
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+#          asset_path: ./my-artifact.zip
+#          asset_name: my-artifact.zip
+#          asset_content_type: application/zip
