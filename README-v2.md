@@ -1,5 +1,9 @@
-BlackBox
-========
+BlackBox v2
+===========
+
+WARNING: v2 is still experimental.  It is in the same git repo as v1
+because the filenames do not overlap.  Please do not mix the two.  v1
+is in `bin`.  v2 is in `cmd/blackbox` and `binv2`.
 
 Blackbox is an open source tool that enables you to safe store sensitive information in
 Git (or other) repos by encrypting them with GPG.  Only the encrypted
