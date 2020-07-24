@@ -5,9 +5,6 @@ __pycache__/
 # C extensions
 *.so
 
-# backup shell files
-*~
-
 # Distribution / packaging
 .Python
 env/
@@ -54,3 +51,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# macOS
+.DS_Store
+
+# Blackbox
+bbintegration
+.*.swp
+/integrationTest/.blackbox

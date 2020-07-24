@@ -18,29 +18,22 @@ These are the things I'd like to change someday.
 
 There should be one program, with subcommands that have names that make more sense:
 
-* `blackbox init`
 * `blackbox admin add <key>`
-* `blackbox admin remove <key>`
 * `blackbox admin list`
-* `blackbox files add`
-* `blackbox files list`
-* `blackbox files remove`
-* `blackbox encrypt <filename> ...`
-* `blackbox decrypt <filename> ...`
-* `blackbox decrypt_all`
+* `blackbox admin remove <key>`
 * `blackbox cat <filename> ...`
-* `blackbox edit <filename> ...`
-* `blackbox reencrypt_all`
-* `blackbox shred_all`
+* `blackbox decrypt <filename> ...`
 * `blackbox diff <filename> ...`
-* `blackbox files unchanged`
-* `blackbox files changed`
-
-Flags where appropriate
-
-* -verbose -v
-* -noshred
-* -debug
+* `blackbox edit <filename> ...`
+* `blackbox encrypt <filename> ...`
+* `blackbox file add <filename> ...`
+* `blackbox file list`
+* `blackbox file remove <filename> ...`
+* `blackbox info`
+* `blackbox init`
+* `blackbox reencrypt`
+* `blackbox shred --all|<filename> ...`
+* `blackbox status --all|<filename> ...`
 
 Backwards compatibility: The old scripts will be rewritten to use the new commands.
 

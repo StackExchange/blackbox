@@ -1,0 +1,91 @@
+
+This should accept VCS-type and --crypto flags.
+Then a shell script should run various combinations of VCS and crypters.
+
+# Startup
+* Create a repo (git, none)
+
+# Test basic operations:
+* As Alice:
+  * initialize blackbox, add her keys to it, see that the usual files
+    exist. See her name in bb-admins.txt
+  * encrypt a file, see that the plaintext is deleted, see the file in bb-files.txt
+  * decrypt the file, see the original plaintext is recovered.
+  * Encrypt a file --noshred.
+  * Decrypt the file, it should fail as the plaintext exists.
+  * Remove the plaintext.
+  * Decrypt the file, it should fail as the plaintext exists.
+
+# Test hand-off from Alice to Bob.
+* As Bob
+    * add himself to the admins.
+* As Alice
+    * Update-all-files
+    * Create a new file. Encrypt it.
+* As Bob
+    * Decrypt both files
+    * Verify contents of the new file, and the file from previous.
+    * Create a new file. Encrypt it.
+* As Alice:
+    * Decrypt all files.
+    * Verify contents of the 3 plaintext files.
+
+# Test a git-less directory
+* Copy the old repo somewhere. Remove the .git directory.
+* As Alice:
+    * Decrypt all
+    * Verify plaintext contents
+
+# Test post-deploy with/without GID
+* Back at the original repo:
+* Shred all
+* Run post-deploy. Verify.
+* Shred all
+* Run post-deploy with a custom GID. Verify.
+
+# Test removing an admin
+* As Bob:
+    * removes Alice. (Verify)
+    * Re-encrypt
+    * Decrypt all & verify.
+* As alice
+    * Decrypting should fail.
+
+# Test funny names and paths
+    * my/path/to/relsecrets.txt
+    * cwd=other/place ../../my/path/to/relsecrets.txt
+    * !important!.txt
+    * #andpounds.txt
+    * stars*bars?.txt
+    * space space.txt
+* Do add/encrypt/decrypt
+* Do blackbox_update_all_files
+* Do remove them all
+
+# When people start asking for commands to work with relative paths
+# Test from outside the repo
+* mkdir ../other/place
+* cd    ../other/place
+* decrypt ../../secret1.txt
+* encrypt ../../secret1.txt
+
+# Test specific commands:
+# blackbox admins list
+# blackbox file list
+# blackbox status --name-only (create 1 of each "type")
+# blackbox status --type=FOO
+
+# These should all fail:
+# blackbox file list --all
+# blackbox file list blah
+# blackbox shred list --all
+# blackbox shred list blah
+
+
+
+rm -rf /tmp/bbhome-* && BLACKBOX_DEBUG=true go test -verbose -long -nocleanup
+rm -rf /tmp/bbhome-* && go test -long -nocleanup
+
+( gbb && cd cmd/blackbox && go install ) && blackbox
+
+cd /tmp && rm -rf /tmp/bbhome-* ; mkdir /tmp/bbhome-1 ; cd /tmp/bbhome-1 && git init ; gitmeWork ; ( gbb && cd cmd/blackbox && go install ) && blackbox init yes && gitmeWork ; git commit -mm -a ; blackbox admin add tlimoncelli ; git commit -mnewadmin -a ; echo secrt > secret.txt ; blackbox file add secret.txt
