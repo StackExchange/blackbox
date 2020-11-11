@@ -21,4 +21,4 @@ jobs:
         go-version: ^1.15
     - name: Build binaries
       working-directory: cmd/blackbox
-      run: go run build/build.go
+      run: go build
