@@ -22,3 +22,5 @@ jobs:
     - name: Build binaries
       working-directory: cmd/blackbox
       run: go build
+    - name: Run unit tests
+      run: go test ./...
