@@ -22,7 +22,7 @@ func TestPrettyCommitMessage(t *testing.T) {
 		{[]string{"tab\ttab", "two very long strings.txt"},
 			`HEADING: "tabXtab"(redacted) "two very long strings.txt"`},
 		{[]string{long, long, long, long},
-			"HEADING: " + long + " " + long + " " + long + " " + long + " ...    " + long + "\n    " + long + "\n    " + long + "\n    " + long + "\n"},
+			"HEADING: " + long + " " + long + " (and others)"},
 	} {
 		g := PrettyCommitMessage("HEADING", test.data)
 		if g == test.expected {
