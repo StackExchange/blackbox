@@ -26,4 +26,4 @@ jobs:
       run: go test ./...
     - name: Run integration tests
       working-directory: integrationTest
-      run: go test -long --nocleanup
+      run: umask 0027 ; rm -rf /tmp/bbhome-* && go test -long -nocleanup
