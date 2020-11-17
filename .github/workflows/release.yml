@@ -26,16 +26,34 @@ jobs:
         go-version: ^1.15
 
     - name: Build binaries
-      working-directory: cmd/blackbox
-      run: go build
+      run: go run build/build.go
 
-    - name: Upload binary
+    - name: Upload blackbox-Darwin
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ./cmd/blackbox/blackbox
-        asset_name: blackbox
+        asset_path: ./blackbox-Darwin
+        asset_name: blackbox-Darwin
         asset_content_type: application/octet-stream
 
+    - name: Upload blackbox-Linux
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./blackbox-Linux
+        asset_name: blackbox-Linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload blackbox.exe
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./blackbox.exe
+        asset_name: blackbox.exe
+        asset_content_type: application/octet-stream
