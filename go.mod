@@ -1,4 +1,4 @@
-module github.com/StackExchange/blackbox/v2
+module github.com/StackExchange/blackbox
 
 go 1.14
 
