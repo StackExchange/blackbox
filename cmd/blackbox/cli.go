@@ -4,9 +4,10 @@ package main
 
 import (
 	"fmt"
-	"syscall"
 
 	"github.com/urfave/cli/v2"
+
+	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
 )
 
 func flags() *cli.App {
@@ -14,8 +15,8 @@ func flags() *cli.App {
 	app.Version = "2.0.0"
 	app.Usage = "Maintain encrypted files in a VCS (Git, Hg, Svn)"
 
-	defUmask := syscall.Umask(0)
-	syscall.Umask(defUmask)
+	defUmask := bbutil.Umask(0)
+	bbutil.Umask(defUmask)
 	defUmaskS := fmt.Sprintf("%04o", defUmask)
 
 	app.Flags = []cli.Flag{

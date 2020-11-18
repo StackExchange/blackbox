@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 
 	"github.com/StackExchange/blackbox/v2/pkg/bblog"
 	"github.com/StackExchange/blackbox/v2/pkg/bbutil"
@@ -66,9 +65,9 @@ func (crypt CrypterHandle) Decrypt(filename string, umask int, overwrite bool) e
 	}
 	a = append(a, filename+".gpg")
 
-	oldumask := syscall.Umask(umask)
+	oldumask := bbutil.Umask(umask)
 	err := bbutil.RunBash(crypt.GPGCmd, a...)
-	syscall.Umask(oldumask)
+	bbutil.Umask(oldumask)
 	return err
 }
 
@@ -118,10 +117,10 @@ func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []strin
 	a = append(a, filename)
 	//err = bbutil.RunBash("ls", "-la")
 
-	oldumask := syscall.Umask(umask)
+	oldumask := bbutil.Umask(umask)
 	crypt.logDebug.Printf("Args = %q", a)
 	err = bbutil.RunBash(crypt.GPGCmd, a...)
-	syscall.Umask(oldumask)
+	bbutil.Umask(oldumask)
 
 	return encrypted, err
 }
