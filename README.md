@@ -347,7 +347,7 @@ FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the
 
 To join the list of people that can edit the file requires three steps; You create a GPG key and add it to the key ring. Then, someone that already has access adds you to the system. Lastly, you should test your access.
 
-### Step 1: YOU create a GPG key pair on a secure machine and add to public keychain.
+### Step 1: NEW USER creates a GPG key pair on a secure machine and adds to public keychain.
 
 If you don't already have a GPG key, here's how to generate one:
 
@@ -401,7 +401,7 @@ ht push
 
 NOTE: Creating a Role Account? If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter: `blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir`
 
-### Step 2: SOMEONE ELSE adds you to the system.
+### Step 2: EXISTING ADMIN adds new user to the system.
 
 Ask someone that already has access to re-encrypt the data files. This gives you access. They simply decrypt and re-encrypt the data without making any changes.
 
@@ -433,7 +433,7 @@ hg commit
 hg push
 ```
 
-### Step 3: YOU test.
+### Step 3: NEW USER tests.
 
 Make sure you can decrypt a file. (Suggestion: Keep a dummy file in VCS just for new people to practice on.)
 
