@@ -1,5 +1,5 @@
 # Update tools/mk_rpm_fpmdir.stack_blackbox.txt.  Other files generate from it.
-read /etc/profile.d/usrblackbox.sh               profile.d-usrblackbox.sh
+exec /etc/profile.d/usrblackbox.sh               profile.d-usrblackbox.sh
 exec /usr/blackbox/bin/_blackbox_common.sh       ../bin/_blackbox_common.sh
 exec /usr/blackbox/bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec /usr/blackbox/bin/blackbox_addadmin         ../bin/blackbox_addadmin

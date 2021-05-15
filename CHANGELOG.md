@@ -14,6 +14,12 @@ have access to.
 * Commit changes to gitignore when deregistering (#282)
 * Add support for NetBSD and SunOS (SmartOS)
 * Defend against ShellShock
+
+
+Release v1.20181219
+
+* New OS support: Add support for NetBSD and SunOS (SmartOS)
+* Testing: Improve confidence test.
 * .blackbox is now the default config directory for new repos. (#272)
 * Add blackbox_decrypt_file (#270)
 * Improved compatibility: change"/bin/[x]" to "/usr/bin/env [x]" (#265)

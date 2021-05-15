@@ -5,13 +5,9 @@ __pycache__/
 # C extensions
 *.so
 
-# backup shell files
-*~
-
 # Distribution / packaging
 .Python
 env/
-build/
 develop-eggs/
 dist/
 eggs/
@@ -54,3 +50,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# macOS
+.DS_Store
+
+# Blackbox
+bbintegration
+.*.swp
+/integrationTest/.blackbox

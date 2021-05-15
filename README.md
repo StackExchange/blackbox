@@ -1,4 +1,4 @@
-BlackBox [![CircleCI](https://circleci.com/gh/StackExchange/blackbox.svg?style=shield)](https://circleci.com/gh/StackExchange/workflows/blackbox)
+BlackBox [![CircleCI](https://circleci.com/gh/StackExchange/blackbox.svg?style=shield)](https://circleci.com/gh/StackExchange/workflows/blackbox) [![Build Status](https://github.com/StackExchange/blackbox/workflows/build/badge.svg)](https://github.com/StackExchange/blackbox/actions?query=workflow%3Abuild+branch%3Amaster)
 ========
 
 Safely store secrets in a VCS repo (i.e. Git, Mercurial, Subversion or Perforce). These commands make it easy for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are "encrypted at rest" in your repository. However, the scripts make it easy to decrypt them when you need to view or edit them, and decrypt them for use in production. Originally written for Puppet, BlackBox now works with any Git or Mercurial repository.
@@ -19,9 +19,11 @@ Table of Contents
 - [Compatibility](#compatibility)
 - [How is the encryption done?](#how-is-the-encryption-done)
 - [What does this look like to the typical user?](#what-does-this-look-like-to-the-typical-user)
-- [How to use the secrets with Puppet?](#how-to-use-the-secrets-with-puppet)
-  - [Entire files](#entire-files)
-  - [Small strings](#small-strings)
+- Configuration Management
+  - [How to use the secrets with Ansible?](#how-to-use-the-secrets-with-ansible)
+  - [How to use the secrets with Puppet?](#how-to-use-the-secrets-with-puppet)
+    - [Entire files](#entire-files)
+    - [Small strings](#small-strings)
 - File Management
   - [How to enroll a new file into the system?](#how-to-enroll-a-new-file-into-the-system)
   - [How to remove a file from the system?](#how-to-remove-a-file-from-the-system)
@@ -233,6 +235,22 @@ What does this look like to the typical user?
 
 Wait... it can be even easier than that! Run `blackbox_edit FILENAME`, and it'll decrypt the file in a temp file and call `$EDITOR` on it, re-encrypting again after the editor is closed.
 
+How to use the secrets with Ansible?
+===================================
+
+Ansible Vault provides functionality for encrypting both entire files and strings stored within files; however,
+keeping track of the password(s) required for decryption is not handled by this module.
+
+Instead one must specify a password file when running the playbook.
+
+Ansible example for password file: `my_secret_password.txt.gpg`
+
+```
+ansible-playbook --vault-password-file my_secret_password.txt site.yml
+```
+
+Alternatively, one can specify this in the `ANSIBLE_VAULT_PASSWORD_FILE` environment variable.
+
 How to use the secrets with Puppet?
 ===================================
 
@@ -329,7 +347,7 @@ FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the
 
 To join the list of people that can edit the file requires three steps; You create a GPG key and add it to the key ring. Then, someone that already has access adds you to the system. Lastly, you should test your access.
 
-### Step 1: YOU create a GPG key pair on a secure machine and add to public keychain.
+### Step 1: NEW USER creates a GPG key pair on a secure machine and adds to public keychain.
 
 If you don't already have a GPG key, here's how to generate one:
 
@@ -383,7 +401,7 @@ ht push
 
 NOTE: Creating a Role Account? If you are adding the pubring.gpg of a role account, you can specify the directory where the pubring.gpg file can be found as a 2nd parameter: `blackbox_addadmin puppetmaster@puppet-master-1.example.com /path/to/the/dir`
 
-### Step 2: SOMEONE ELSE adds you to the system.
+### Step 2: EXISTING ADMIN adds new user to the system.
 
 Ask someone that already has access to re-encrypt the data files. This gives you access. They simply decrypt and re-encrypt the data without making any changes.
 
@@ -415,7 +433,7 @@ hg commit
 hg push
 ```
 
-### Step 3: YOU test.
+### Step 3: NEW USER tests.
 
 Make sure you can decrypt a file. (Suggestion: Keep a dummy file in VCS just for new people to practice on.)
 

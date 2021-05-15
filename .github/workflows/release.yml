@@ -1,0 +1,59 @@
+on:
+  release:
+    types: [published]
+
+name: release
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15
+
+    - name: Build binaries
+      run: go run build/build.go
+
+    - name: Upload blackbox-Darwin
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./blackbox-Darwin
+        asset_name: blackbox-Darwin
+        asset_content_type: application/octet-stream
+
+    - name: Upload blackbox-Linux
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./blackbox-Linux
+        asset_name: blackbox-Linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload blackbox.exe
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./blackbox.exe
+        asset_name: blackbox.exe
+        asset_content_type: application/octet-stream

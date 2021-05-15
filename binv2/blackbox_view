@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+blackbox cat "$@" | ${PAGER:-less}

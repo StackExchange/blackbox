@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+blackbox decrypt --all --overwrite --group "$1"

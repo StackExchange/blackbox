@@ -1,0 +1,9 @@
++-------------+------------------------+
+|   STATUS    |          NAME          |
++-------------+------------------------+
+| BOTHMISSING | status-BOTHMISSING.txt |
+| DECRYPTED   | status-DECRYPTED.txt   |
+| ENCRYPTED   | status-ENCRYPTED.txt   |
+| GPGMISSING  | status-GPGMISSING.txt  |
+| SHREDDED    | status-SHREDDED.txt    |
++-------------+------------------------+
