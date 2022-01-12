@@ -99,7 +99,7 @@ Installation Instructions
 - *The Debian/Ubuntu way*: Check out the repo and make a DEB via `make packages-deb`; now you can distribute the DEB via local methods. (Requires [fpm](https://github.com/jordansissel/fpm).)
 - *The Antigen Way*: Add `antigen bundle StackExchange/blackbox` to your .zshrc
 - *The Zgen Way*: Add `zgen load StackExchange/blackbox` to your .zshrc where you're loading your other plugins.
-- *The Nix Way*: `nix-env -i blackbox`
+- *The Nix Way*: `nix-shell -p blackbox`
 - *The Pkgsrc Way*: `pkgin in scm-blackbox`
 
 Commands
