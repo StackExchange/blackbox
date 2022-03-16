@@ -432,7 +432,7 @@ function cp_permissions() {
   # Copy the perms of $1 onto $2 .. end.
   case $(uname -s) in
     Darwin )
-      chmod $( stat -f '%p' "$1" ) "${@:2}"
+      chmod $( stat -f '%Lp' "$1" ) "${@:2}"
       ;;
     FreeBSD | NetBSD )
       chmod $( stat -f '%p' "$1" | sed -e "s/^100//" ) "${@:2}"
