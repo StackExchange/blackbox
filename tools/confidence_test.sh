@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
-export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:/usr/pkg/bin:/usr/pkg/gnu/bin:${blackbox_home}"
+export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:/usr/pkg/bin:/usr/pkg/gnu/bin:/usr/local/MacGPG2/bin:/opt/homebrew/bin:${blackbox_home}"
 
 export LANG=C.UTF-8  # Required ro "gpg --export" to work properly.
 
@@ -233,7 +233,8 @@ become_bob
 # This users's default group:
 DEFAULT_GID_NUM=$(id -g)
 # Pick a group that is not the default group:
-TEST_GID_NUM=$(grep -v "$DEFAULT_GID_NUM" /etc/group | cut -d: -f3 | sort -rn | head -1)
+#TEST_GID_NUM=$(grep -v "$DEFAULT_GID_NUM" /etc/group | cut -d: -f3 | sort -rn | head -1)
+TEST_GID_NUM=$(id -G | tr ' ' "\n" | sort -nr | grep -x -v "$DEFAULT_GID_NUM" | head -1)
 echo "DEFAULT_GID_NUM=$DEFAULT_GID_NUM"
 echo "TEST_GID_NUM=$TEST_GID_NUM"
 
