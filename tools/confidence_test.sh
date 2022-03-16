@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 blackbox_home=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../bin
-export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:/usr/pkg/bin:/usr/pkg/gnu/bin:/usr/local/MacGPG2/bin:${blackbox_home}"
+export PATH="${blackbox_home}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/local/bin:/usr/pkg/bin:/usr/pkg/gnu/bin:/usr/local/MacGPG2/bin:/opt/homebrew/bin:${blackbox_home}"
 
 export LANG=C.UTF-8  # Required ro "gpg --export" to work properly.
 
