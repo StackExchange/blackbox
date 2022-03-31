@@ -44,7 +44,7 @@ if [[ $VCS_TYPE = "git" ]]; then
   grep -qF "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
   LINE='blackbox-files.txt text eol=lf'
   grep -qF "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
-
+  vcs_add "$FILE"
 fi
 
 if [[ $VCS_TYPE = "svn" ]]; then
