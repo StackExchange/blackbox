@@ -1,3 +1,16 @@
+Release v1.20220610
+
+NOTE: I don't have a lot of time to commit to this project.  I'd gladly accept help, especially
+with improving the testing on various operating systems.
+
+Major feature: macOS users rejoice!  Incompatibility with macOS Monterey 12.3 is fixed! (#347)
+
+* Add .gitattributes during repo initialization (#352)
+* Update zgen reference to zgenom (#350)
+* Improve test data generation (#348)
+* Fix 'chmod' for macOS Monterey 12.3 (#347)
+
+
 Release v1.20200429
 
 NOTE: While there is now support for NetBSD and SunOS/SmartOS, the
