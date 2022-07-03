@@ -89,7 +89,7 @@ func flags() *cli.App {
 			Aliases: []string{"en", "end"},
 			Usage:   "Encrypts file(s)",
 			Flags: []cli.Flag{
-				&cli.BoolFlag{Name: "shred", Usage: "Remove plaintext afterwords"},
+				&cli.BoolFlag{Name: "shred", Usage: "Remove plaintext afterwards"},
 			},
 			Action: func(c *cli.Context) error { return cmdEncrypt(c) },
 		},
