@@ -3,6 +3,7 @@ exec bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec bin/blackbox_addadmin         ../bin/blackbox_addadmin
 exec bin/blackbox_cat              ../bin/blackbox_cat
 exec bin/blackbox_decrypt_all_files  ../bin/blackbox_decrypt_all_files
+exec bin/blackbox_decrypt_file     ../bin/blackbox_decrypt_file
 exec bin/blackbox_deregister_file  ../bin/blackbox_deregister_file
 exec bin/blackbox_diff             ../bin/blackbox_diff
 exec bin/blackbox_edit             ../bin/blackbox_edit
@@ -13,8 +14,10 @@ exec bin/blackbox_listadmins       ../bin/blackbox_listadmins
 exec bin/blackbox_list_files       ../bin/blackbox_list_files
 exec bin/blackbox_list_admins      ../bin/blackbox_list_admins
 exec bin/blackbox_postdeploy       ../bin/blackbox_postdeploy
+exec bin/blackbox_recurse          ../bin/blackbox_recurse
 exec bin/blackbox_register_new_file ../bin/blackbox_register_new_file
 exec bin/blackbox_removeadmin      ../bin/blackbox_removeadmin
 exec bin/blackbox_shred_all_files  ../bin/blackbox_shred_all_files
 exec bin/blackbox_update_all_files ../bin/blackbox_update_all_files
+exec bin/blackbox_view             ../bin/blackbox_view
 exec bin/blackbox_whatsnew         ../bin/blackbox_whatsnew

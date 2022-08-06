@@ -5,6 +5,7 @@ exec /usr/blackbox/bin/_stack_lib.sh             ../bin/_stack_lib.sh
 exec /usr/blackbox/bin/blackbox_addadmin         ../bin/blackbox_addadmin
 exec /usr/blackbox/bin/blackbox_cat              ../bin/blackbox_cat
 exec /usr/blackbox/bin/blackbox_decrypt_all_files  ../bin/blackbox_decrypt_all_files
+exec /usr/blackbox/bin/blackbox_decrypt_file     ../bin/blackbox_decrypt_file
 exec /usr/blackbox/bin/blackbox_deregister_file  ../bin/blackbox_deregister_file
 exec /usr/blackbox/bin/blackbox_diff             ../bin/blackbox_diff
 exec /usr/blackbox/bin/blackbox_edit             ../bin/blackbox_edit
@@ -15,8 +16,10 @@ exec /usr/blackbox/bin/blackbox_listadmins       ../bin/blackbox_listadmins
 exec /usr/blackbox/bin/blackbox_list_files       ../bin/blackbox_list_files
 exec /usr/blackbox/bin/blackbox_list_admins      ../bin/blackbox_list_admins
 exec /usr/blackbox/bin/blackbox_postdeploy       ../bin/blackbox_postdeploy
+exec /usr/blackbox/bin/blackbox_recurse          ../bin/blackbox_recurse
 exec /usr/blackbox/bin/blackbox_register_new_file ../bin/blackbox_register_new_file
 exec /usr/blackbox/bin/blackbox_removeadmin      ../bin/blackbox_removeadmin
 exec /usr/blackbox/bin/blackbox_shred_all_files  ../bin/blackbox_shred_all_files
 exec /usr/blackbox/bin/blackbox_update_all_files ../bin/blackbox_update_all_files
+exec /usr/blackbox/bin/blackbox_view             ../bin/blackbox_view
 exec /usr/blackbox/bin/blackbox_whatsnew         ../bin/blackbox_whatsnew
