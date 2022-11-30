@@ -3,11 +3,15 @@ BlackBox [![CircleCI](https://circleci.com/gh/StackExchange/blackbox.svg?style=s
 
 Safely store secrets in a VCS repo (i.e. Git, Mercurial, Subversion or Perforce). These commands make it easy for you to Gnu Privacy Guard (GPG) encrypt specific files in a repo so they are "encrypted at rest" in your repository. However, the scripts make it easy to decrypt them when you need to view or edit them, and decrypt them for use in production. Originally written for Puppet, BlackBox now works with any Git or Mercurial repository.
 
-WARNING: The goal of this project is to be a simple wrapper around `gpg` so you and your coworkers don't have to remember its all those inscrutable and confusing flags.  It is *not* intented to be a sophisticated encryption system that solves all problems or supports a large numbers of files.  The ideal use-case is to keep secrets in a secure service such as Conjur, AWS KMS, Azure Key Vault or GCP KMS; then use Blackbox for safely storing the API keys needed to access that system. That way you are encrypting one tiny file.
 
-A slide presentation about an older release [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
+WARNING: The goal of this project is to be a simple wrapper around `gpg` so you and your coworkers don't have to remember its all those inscrutable and confusing flags.  It is *not* intended to be a sophisticated encryption system that solves all problems or supports a large numbers of files.  The ideal use-case is to keep secrets in a secure service such as Conjur, AWS KMS, Azure Key Vault or GCP KMS; then use Blackbox for safely storing the API keys needed to access that system. That way you are encrypting a single, tiny, file. Feature-requests for anything more will be rejected; do not expect or even request "enterprise features". If this disappoints you, please consider a competiting project such as https://www.agwa.name/projects/git-crypt
+
+A slide presentation (about an older release) [is on SlideShare](http://www.slideshare.net/TomLimoncelli/the-blackbox-project-sfae).
 
 Join our mailing list: [https://groups.google.com/d/forum/blackbox-project](https://groups.google.com/d/forum/blackbox-project)
+
+## What blackbox is NOT:
+
 
 Table of Contents
 =================
