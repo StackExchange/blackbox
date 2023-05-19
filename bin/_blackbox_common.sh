@@ -15,6 +15,11 @@ source "${0%/*}"/_stack_lib.sh
 # Where are we?
 : "${BLACKBOX_HOME:="$(cd "${0%/*}" ; pwd)"}" ;
 
+# Make grep and sort work like it did in the 1970s:
+# Without this, blackbox fails to match filenames in blackbox-files.txt
+export LC_ALL='C'
+export LANG='en_US.UTF-8'
+
 # What are the candidates for the blackbox data directory?
 #
 # The order of candidates matter. The first entry of the array
