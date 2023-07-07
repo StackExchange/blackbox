@@ -159,7 +159,7 @@ To add or fix support for a new operating system, look for the case statements i
 Using BlackBox on Windows
 =========================
 
-BlackBox can be used with Cygwin or MinGW.
+BlackBox can be used with Cygwin, MinGW or WSL2.
 
 ### Protect the line endings
 
@@ -206,6 +206,15 @@ Normal operation:
 Development:
 
 - unknown (if you develop Blackbox under MinGW, please let us know if any additional packages are required to run `make test`)
+
+### WSL2
+
+If you get the following error in WSL2, you can try to setup your environment with the following instructions (Tested with Ubuntu 22.04 on WSL2):
+
+- Install [Gpg4win](https://www.gpg4win.org/) (Tested with version 4.1.0)
+- Import your private key in Gpg4win (you can use Kleopatra on your Windows host if you wish).
+- Edit the file `~/.gnupg/gpg-agent.conf` on WSL and add the following line: `pinentry-program "/mnt/c/Program Files (x86)/GnuPG/bin/pinentry-basic.exe"`
+- Restart gpg agent on your linux system: `gpg-connect-agent reloadagent /bye`
 
 How is the encryption done?
 ===========================
