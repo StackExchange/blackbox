@@ -421,13 +421,8 @@ Expire-Date: 0
 
 func hasQuick(t *testing.T) bool {
 	testing.Init()
-	fmt.Println("========== Do we have --quick-generate-key?")
-	err := bbutil.RunBash("gpg2",
-		"--dry-run",
-		"--quick-generate-key",
-		"--batch",
-		"--passphrase", "",
-		"foo", "rsa", "encr")
+	fmt.Println("========== Do we run gpg2?")
+	err := bbutil.RunBash("gpg2", "--version")
 	fmt.Println("========== Done")
 	if err == nil {
 		return true
