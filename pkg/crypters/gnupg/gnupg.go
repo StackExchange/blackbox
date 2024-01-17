@@ -106,7 +106,6 @@ func (crypt CrypterHandle) Encrypt(filename string, umask int, receivers []strin
 	a := []string{
 		"--use-agent",
 		"--yes",
-		"--trust-model=always",
 		"--encrypt",
 		"-o", encrypted,
 	}
