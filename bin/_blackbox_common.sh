@@ -253,7 +253,7 @@ function encrypt_file() {
   encrypted="$2"
 
   echo "========== Encrypting: $unencrypted" >&2
-  $GPG --use-agent --yes --trust-model=always --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
+  $GPG --use-agent --yes --encrypt -o "$encrypted"  $(awk '{ print "-r" $1 }' < "$BB_ADMINS") "$unencrypted" >&2
   echo '========== Encrypting: DONE' >&2
 }
 

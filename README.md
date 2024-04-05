@@ -36,6 +36,7 @@ Table of Contents
 - User Management
   - [How to indoctrinate a new user into the system?](#how-to-indoctrinate-a-new-user-into-the-system)
   - [How to remove a user from the system?](#how-to-remove-a-user-from-the-system)
+  - [Note to the Web Of Trust](#note-to-the-web-of-trust)
 - Repo Management
   - [Enabling BlackBox For a Repo](#enabling-blackbox-for-a-repo)
 - [Set up automated users or &ldquo;role accounts&rdquo;](#set-up-automated-users-or-role-accounts)
@@ -481,6 +482,19 @@ FYI: Your repo may use `keyrings/live` instead of `.blackbox`. See "Where is the
 The key ring only has public keys. There are no secret keys to delete.
 
 Remember that this person did have access to all the secrets at one time. They could have made a copy. Therefore, to be completely secure, you should change all passwords, generate new SSL keys, and so on just like when anyone that had privileged access leaves an organization.
+
+Note to the Web Of Trust
+========================
+
+Validating the trustworthiness of keys is a task that can't be accomplished by Blackbox; this is a completely external topic that has to be dealt with manually (the same way as generating/managing your key is, for example) or by a dedicated mechanism (a company CA with corresponding workflows e.g.). Aside from the "common" benefits of a Web Of Trust (see [here](https://www.gnupg.org/gph/en/manual/x334.html) or [here](https://www.gnupg.org/gph/en/manual/x547.html) e.g.), it prevents several errors as well.
+
+Historically Blackbox was using and enforcing a "trust every key" model but this has changed! Now the decision of whether and how to use the PGP/GPG trust models is left up to the user by configuration (or by the PGP/GPG defaults).  
+When updating Blackbox people might run into functional problems if they haven't yet dealt with the trustability of the keys they're using. It's the right time to do so and built up your Web Of Trust now!
+
+If you have an external workflow in place that ensures the integrity of the keys Blackbox uses you might want to disable the PGP/GPG trust models and rely on this workflow.  
+This can be achieved by declaring "trust model always", either by passing the command line parameter `--trust-model=always` to your PGP/GPG binary when using Blackbox (by defining an alias or using the environment variable (e.g. `GPG="gpg2 --trust-model=always"`) or a combination of both) or by setting `trust-model always` in your `gpg.conf` (note that this disables the Web Of Trust everywhere, not just for Blackbox).
+
+WARNING: It is strongly disadvised to not use any key validation at all! This opens up various ways to bypass the confidentiality of your encrypted secrets!
 
 Where is the configuration stored? .blackbox vs. keyrings/live
 ==============================================================
