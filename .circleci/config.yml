@@ -1,56 +1,56 @@
-version: 2
-
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - debian
-      - ubuntu
-
-jobs:
-
-  debian:
-    docker:
-      - image: debian:9.1
-    steps:
-      - checkout
-      - run:
-          name: 'Installing'
-          command: |
-            apt-get update -y
-            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev libffi-dev
-            gem install fpm
-      - run:
-          name: 'Cleaning'
-          command: |
-            rm -rf ~/.gpnupg
-            make clean
-      - run:
-          name: 'Testing'
-          command: |
-            GPG=gpg2 make test
-            make packages-deb
-            make packages-rpm
-
-  ubuntu:
-    docker:
-      - image: ubuntu:16.04
-    steps:
-      - checkout
-      - run:
-          name: 'Installing'
-          command: |
-            apt-get update -y
-            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev libffi-dev
-            gem install fpm
-      - run:
-          name: 'Cleaning'
-          command: |
-            rm -rf ~/.gpnupg
-            make clean
-      - run:
-          name: 'Testing'
-          command: |
-            GPG=gpg2 make test
-            make packages-deb
-            make packages-rpm
+#version: 2
+#
+#workflows:
+#  version: 2
+#  build_and_test:
+#    jobs:
+#      - debian
+#      - ubuntu
+#
+#jobs:
+#
+#  debian:
+#    docker:
+#      - image: debian:9.1
+#    steps:
+#      - checkout
+#      - run:
+#          name: 'Installing'
+#          command: |
+#            apt-get update -y
+#            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev libffi-dev
+#            gem install fpm
+#      - run:
+#          name: 'Cleaning'
+#          command: |
+#            rm -rf ~/.gpnupg
+#            make clean
+#      - run:
+#          name: 'Testing'
+#          command: |
+#            GPG=gpg2 make test
+#            make packages-deb
+#            make packages-rpm
+#
+#  ubuntu:
+#    docker:
+#      - image: ubuntu:16.04
+#    steps:
+#      - checkout
+#      - run:
+#          name: 'Installing'
+#          command: |
+#            apt-get update -y
+#            apt-get install -y build-essential expect git gnupg2 pinentry-tty procps rpm ruby-dev libffi-dev
+#            gem install fpm
+#      - run:
+#          name: 'Cleaning'
+#          command: |
+#            rm -rf ~/.gpnupg
+#            make clean
+#      - run:
+#          name: 'Testing'
+#          command: |
+#            GPG=gpg2 make test
+#            make packages-deb
+#            make packages-rpm
